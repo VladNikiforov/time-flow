@@ -3,11 +3,11 @@ let elapsedSeconds = 0
 let currentTabId
 let currentTabDomain = ''
 
-let data = []
+let data = {}
 
 chrome.storage.local.get(['data'], (result) => {
   if (result.data) {
-    data = result.data // Load saved data
+    data = result.data
     console.log('Loaded data:', data)
   } else {
     console.log('No data found.')
@@ -21,6 +21,11 @@ function getDomain(url) {
   } catch {
     return 'Unknown URL'
   }
+}
+
+function getTodayDate() {
+  const today = new Date()
+  return today.toISOString().split('T')[0]
 }
 
 function startTimer(tabId) {
@@ -40,20 +45,19 @@ function startTimer(tabId) {
 
 function stopTimer() {
   if (currentTabId) {
+    const today = getTodayDate()
     console.log(`URL: ${currentTabDomain}, Total Time: ${elapsedSeconds} seconds`)
 
-    data.push({ website: currentTabDomain, time: elapsedSeconds })
+    if (!data[today]) {
+      data[today] = []
+    }
 
-    const groupData = data.reduce((accumulator, entry) => {
-      if (accumulator[entry.website]) {
-        accumulator[entry.website] += entry.time
-      } else {
-        accumulator[entry.website] = entry.time
-      }
-      return accumulator
-    }, {})
-
-    data = Object.entries(groupData).map(([website, time]) => ({ website, time }))
+    const siteData = data[today].find((entry) => entry.website === currentTabDomain)
+    if (siteData) {
+      siteData.time += elapsedSeconds
+    } else {
+      data[today].push({ website: currentTabDomain, time: elapsedSeconds })
+    }
 
     console.log('Updated data:', data)
 
@@ -68,6 +72,7 @@ function stopTimer() {
   currentTabDomain = ''
 }
 
+// Listeners
 chrome.tabs.onActivated.addListener((activeInfo) => {
   stopTimer()
   startTimer(activeInfo.tabId)
