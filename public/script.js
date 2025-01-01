@@ -1,35 +1,47 @@
-const displayData = document.getElementById('displayData')
+let data
 
-document.getElementById('getData').addEventListener('click', () => {
-  chrome.storage.local.get(['data'], (result) => {
-    if (result.data) {
-      displayData.innerText = JSON.stringify(result.data)
-      console.log(JSON.stringify(result.data))
+fetch('/data')
+  .then((response) => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    return response.json()
+  })
+  .then((receivedData) => {
+    console.log('Received data from server:', receivedData)
+    
+    data = receivedData
+
+    if (data) {
+      displayData.innerText = JSON.stringify(data)
+      console.log(JSON.stringify(data))
+      const labels = data.data['2025-01-01'].map((item) => item.website || 'Unknown')
+      const times = data.data['2025-01-01'].map((item) => item.time)
+
+      const ctx = document.getElementById('myChart')
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'seconds',
+              data: times,
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      })
     } else {
       displayData.innerText = 'Error'
     }
   })
-})
-
-const ctx = document.getElementById('myChart')
-
-new Chart(ctx, {
-  type: 'bar',
-  data: {
-    labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-    datasets: [
-      {
-        label: '# of Votes',
-        data: [12, 19, 3, 5, 2, 3],
-        borderWidth: 1,
-      },
-    ],
-  },
-  options: {
-    scales: {
-      y: {
-        beginAtZero: true,
-      },
-    },
-  },
-})
+  .catch((error) => console.error('Error fetching data:', error))

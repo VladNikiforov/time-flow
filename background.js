@@ -9,6 +9,22 @@ chrome.storage.local.get(['data'], (result) => {
   if (result.data) {
     data = result.data
     console.log('Loaded data:', data)
+
+    fetch('http://localhost:3000/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(result),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        return response.json()
+      })
+      .then((data) => console.log('Response from server:', data))
+      .catch((error) => console.error('Fetch error:', error))
   } else {
     console.log('No data found.')
   }
