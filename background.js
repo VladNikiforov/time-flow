@@ -24,7 +24,6 @@ chrome.storage.local.get(['data'], (result) => {
         return response.json()
       })
       .then((data) => console.log('Response from server:', data))
-      .catch((error) => console.error('Fetch error:', error))
   } else {
     console.log('No data found.')
   }

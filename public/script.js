@@ -9,34 +9,48 @@ fetch('/data')
   })
   .then((receivedData) => {
     console.log('Received data from server:', receivedData)
-    
+
     data = receivedData
 
     if (data) {
       displayData.innerText = JSON.stringify(data)
-      console.log(JSON.stringify(data))
-      const labels = data.data['2025-01-01'].map((item) => item.website || 'Unknown')
-      const times = data.data['2025-01-01'].map((item) => item.time)
+
+      const dates = Object.keys(data.data)
+      const times = Object.values(data.data).map((entries) => entries.reduce((sum, entry) => sum + entry.time, 0))
+
+      console.log('dates:', dates)
+      console.log('times:', times)
 
       const ctx = document.getElementById('myChart')
+      const secondChartCanvas = document.getElementById('dayChart').getContext('2d')
 
       new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: labels,
+          labels: dates,
           datasets: [
             {
-              label: 'seconds',
+              label: 'Time',
               data: times,
               borderWidth: 1,
             },
           ],
         },
         options: {
+          responsive: true,
           scales: {
             y: {
               beginAtZero: true,
             },
+          },
+          onClick: (event, elements) => {
+            if (elements.length > 0) {
+              const index = elements[0].index
+              const label = dates[index]
+              const entries = Object.values(data.data)[index]
+
+              renderSecondChart(label, entries, secondChartCanvas)
+            }
           },
         },
       })
@@ -44,4 +58,29 @@ fetch('/data')
       displayData.innerText = 'Error'
     }
   })
-  .catch((error) => console.error('Error fetching data:', error))
+
+function renderSecondChart(label, entries, canvas) {
+  const times = entries.map((entry) => entry.time)
+  const labels = entries.map((entry) => entry.website)
+
+  if (window.secondChart) {
+    window.secondChart.destroy()
+  }
+
+  window.secondChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Time',
+          data: times,
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+    },
+  })
+}
