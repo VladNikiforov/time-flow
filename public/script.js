@@ -28,6 +28,7 @@ fetch('/data')
       displayData.innerText = 'Error receiving data'
     }
   })
+
 function formatTime(value) {
   const hours = Math.floor(value / 3600)
   const minutes = Math.floor((value % 3600) / 60)
