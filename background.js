@@ -3,40 +3,75 @@ if (typeof browser === 'undefined') {
 }
 
 let timerInterval
-let elapsedSeconds = 0
+let startTime = 0 // Timestamp when tracking starts
+let elapsedSeconds = 0 // Total time spent on the current tab
 let currentTabId
-let currentTabDomain = ''
+let currentTabUrl = ''
 
-let data = {}
+const STORE_NAME = 'BrowsingData'
 
-browser.storage.local.get(['data'], (result) => {
-  if (result.data) {
-    data = result.data
-    console.log('Loaded data:', data)
+function openDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('BrowsingDataDB', 1)
 
-    fetch('http://localhost:3000/', {
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        const store = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true })
+        store.createIndex('date', 'date', { unique: false })
+        store.createIndex('url', 'url', { unique: false })
+      }
+    }
+
+    request.onsuccess = (event) => resolve(event.target.result)
+    request.onerror = (event) => reject(request.error)
+  })
+}
+
+async function getData(date) {
+  const db = await openDatabase()
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readonly')
+    const store = transaction.objectStore(STORE_NAME)
+    const index = store.index('date')
+
+    const request = index.getAll(date)
+
+    request.onsuccess = () => resolve(request.result || [])
+    request.onerror = () => reject(request.error)
+  })
+}
+
+async function saveData(data) {
+  const db = await openDatabase()
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readwrite')
+    const store = transaction.objectStore(STORE_NAME)
+    const request = store.put(data)
+
+    request.onsuccess = () => resolve()
+    request.onerror = () => reject(request.error)
+  })
+}
+
+async function postDataToServer(data) {
+  try {
+    const response = await fetch('http://localhost:3000/', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(result),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
     })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        return response.json()
-      })
-      .then((data) => console.log('Response from server:', data))
-  } else {
-    console.log('No data found.')
+    const result = await response.json()
+    console.log('Response from server:', result)
+  } catch (error) {
+    console.error('Error posting data:', error)
   }
-})
+}
 
 function getDomain(url) {
   try {
     const parsedUrl = new URL(url)
-    return `${parsedUrl.protocol}//${parsedUrl.hostname}`
+    return parsedUrl.hostname
   } catch {
     return 'Unknown URL'
   }
@@ -47,48 +82,55 @@ function getTodayDate() {
   return today.toISOString().split('T')[0]
 }
 
+function calculateElapsedTime() {
+  if (startTime) {
+    const now = Date.now()
+    elapsedSeconds += Math.floor((now - startTime) / 1000)
+    startTime = now // Reset start time for further tracking
+  }
+}
+
 function startTimer(tabId) {
   clearInterval(timerInterval)
-  elapsedSeconds = 0
+  calculateElapsedTime()
+
   currentTabId = tabId
 
   browser.tabs.get(tabId, (tab) => {
-    currentTabDomain = getDomain(tab.url || '')
-    console.log(`Started timer on: ${currentTabDomain}`)
+    currentTabUrl = tab.url || ''
+    console.log(`Started timer on: ${currentTabUrl}`)
   })
 
-  timerInterval = setInterval(() => {
-    elapsedSeconds++
-  }, 1000)
+  startTime = Date.now()
+  timerInterval = setInterval(calculateElapsedTime, 1000) // Update elapsedSeconds every second
 }
 
-function stopTimer() {
-  if (currentTabId) {
+async function stopTimer() {
+  if (currentTabId && currentTabUrl) {
+    calculateElapsedTime() // Finalize time before stopping
+
     const today = getTodayDate()
-    console.log(`URL: ${currentTabDomain}, Total Time: ${elapsedSeconds} seconds`)
+    console.log(`URL: ${currentTabUrl}, Total Time: ${elapsedSeconds} seconds`)
 
-    if (!data[today]) {
-      data[today] = []
-    }
+    const data = await getData(today)
 
-    const siteData = data[today].find((entry) => entry.website === currentTabDomain)
+    const siteData = data.find((entry) => entry.url === currentTabUrl)
     if (siteData) {
       siteData.time += elapsedSeconds
+      await saveData(siteData) // Update the existing entry
     } else {
-      data[today].push({ website: currentTabDomain, time: elapsedSeconds })
+      const newData = { date: today, url: currentTabUrl, time: elapsedSeconds }
+      await saveData(newData) // Add a new entry
     }
 
-    console.log('Updated data:', data)
-
-    browser.storage.local.set({ data }, () => {
-      console.log('Data saved.')
-    })
+    postDataToServer(data)
   }
 
   clearInterval(timerInterval)
-  elapsedSeconds = 0
+  elapsedSeconds = 0 // Reset time for the next session
+  startTime = 0
   currentTabId = null
-  currentTabDomain = ''
+  currentTabUrl = ''
 }
 
 // Listeners
@@ -99,7 +141,7 @@ browser.tabs.onActivated.addListener((activeInfo) => {
 
 browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (tabId === currentTabId && changeInfo.status === 'complete') {
-    console.log(`Tab updated: ${getDomain(tab.url)}`)
+    console.log(`Tab updated: ${tab.url}`)
     stopTimer()
     startTimer(tabId)
   }

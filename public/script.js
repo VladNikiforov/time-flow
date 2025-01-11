@@ -1,5 +1,4 @@
 let data
-
 let dates, times
 
 const mainChart = document.getElementById('mainChart')
@@ -10,14 +9,35 @@ fetch('/data')
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
+
     return response.json()
   })
-  .then((receivedData) => {
-    console.log('Received data from server:', receivedData)
+  .then((rawData) => {
+    function formatData(data) {
+      const formattedData = { data: {} }
 
-    data = receivedData
+      data.forEach((item) => {
+        const { date, url, time } = item
 
-    if (data) {
+        if (!formattedData.data[date]) {
+          formattedData.data[date] = []
+        }
+
+        formattedData.data[date].push({
+          time: time,
+          website: url || '',
+        })
+      })
+
+      return formattedData
+    }
+
+    data = formatData(rawData)
+
+    console.log('Received data from server:', rawData)
+    console.log('Formatted Data:', data)
+
+    if (data && data.data) {
       displayData.innerText = JSON.stringify(data)
 
       dates = Object.keys(data.data)
@@ -27,6 +47,9 @@ fetch('/data')
     } else {
       displayData.innerText = 'Error receiving data'
     }
+  })
+  .catch((error) => {
+    console.error('Error fetching data:', error)
   })
 
 function formatTime(value) {
