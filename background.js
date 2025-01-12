@@ -1,12 +1,8 @@
-if (typeof browser === 'undefined') {
-  var browser = chrome
-}
-
-let timerInterval
-let startTime = 0 // Timestamp when tracking starts
-let elapsedSeconds = 0 // Total time spent on the current tab
-let currentTabId
-let currentTabUrl = ''
+let timerInterval,
+  startTime = 0,
+  elapsedSeconds = 0,
+  currentTabId,
+  currentTabUrl = ''
 
 const STORE_NAME = 'BrowsingData'
 
@@ -54,29 +50,6 @@ async function saveData(data) {
   })
 }
 
-async function postDataToServer(data) {
-  try {
-    const response = await fetch('http://localhost:3000/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-    const result = await response.json()
-    console.log('Response from server:', result)
-  } catch (error) {
-    console.error('Error posting data:', error)
-  }
-}
-
-function getDomain(url) {
-  try {
-    const parsedUrl = new URL(url)
-    return parsedUrl.hostname
-  } catch {
-    return 'Unknown URL'
-  }
-}
-
 function getTodayDate() {
   const today = new Date()
   return today.toISOString().split('T')[0]
@@ -86,7 +59,17 @@ function calculateElapsedTime() {
   if (startTime) {
     const now = Date.now()
     elapsedSeconds += Math.floor((now - startTime) / 1000)
-    startTime = now // Reset start time for further tracking
+    startTime = now
+  }
+}
+
+function getDomain(url) {
+  try {
+    const parsedUrl = new URL(url)
+    return parsedUrl.hostname.replace('www.', '')
+  } catch (e) {
+    console.error('Invalid URL:', url)
+    return ''
   }
 }
 
@@ -97,17 +80,17 @@ function startTimer(tabId) {
   currentTabId = tabId
 
   browser.tabs.get(tabId, (tab) => {
-    currentTabUrl = tab.url || ''
+    currentTabUrl = getDomain(tab.url) || ''
     console.log(`Started timer on: ${currentTabUrl}`)
   })
 
   startTime = Date.now()
-  timerInterval = setInterval(calculateElapsedTime, 1000) // Update elapsedSeconds every second
+  timerInterval = setInterval(calculateElapsedTime, 1000)
 }
 
 async function stopTimer() {
   if (currentTabId && currentTabUrl) {
-    calculateElapsedTime() // Finalize time before stopping
+    calculateElapsedTime()
 
     const today = getTodayDate()
     console.log(`URL: ${currentTabUrl}, Total Time: ${elapsedSeconds} seconds`)
@@ -117,17 +100,31 @@ async function stopTimer() {
     const siteData = data.find((entry) => entry.url === currentTabUrl)
     if (siteData) {
       siteData.time += elapsedSeconds
-      await saveData(siteData) // Update the existing entry
+      await saveData(siteData)
     } else {
       const newData = { date: today, url: currentTabUrl, time: elapsedSeconds }
-      await saveData(newData) // Add a new entry
+      await saveData(newData)
     }
 
-    postDataToServer(data)
+    const formattedData = await getData(today)
+    const result = {}
+
+    formattedData.forEach((entry) => {
+      const { date, url, time } = entry
+      if (!result[date]) {
+        result[date] = []
+      }
+      result[date].push({ website: url, time })
+    })
+
+    browser.runtime.sendMessage({
+      action: 'sendData',
+      data: result,
+    })
   }
 
   clearInterval(timerInterval)
-  elapsedSeconds = 0 // Reset time for the next session
+  elapsedSeconds = 0
   startTime = 0
   currentTabId = null
   currentTabUrl = ''
@@ -148,7 +145,7 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 })
 
 browser.windows.onFocusChanged.addListener((windowId) => {
-  if (windowId === chrome.windows.WINDOW_ID_NONE) {
+  if (windowId === browser.windows.WINDOW_ID_NONE) {
     stopTimer()
   }
 })

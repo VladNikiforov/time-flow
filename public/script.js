@@ -1,56 +1,14 @@
-let data
-let dates, times
+browser.runtime.onMessage.addListener((message) => {
+  if (message.action === 'sendData') {
+    const data = message.data
+    console.log('Received formatted data from background.js:', data)
 
-const mainChart = document.getElementById('mainChart')
-const detailChart = document.getElementById('detailChart')
+    const displayData = document.getElementById('displayData')
+    displayData.textContent = `Received data: ${JSON.stringify(data)}`
 
-fetch('/data')
-  .then((response) => {
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    return response.json()
-  })
-  .then((rawData) => {
-    function formatData(data) {
-      const formattedData = { data: {} }
-
-      data.forEach((item) => {
-        const { date, url, time } = item
-
-        if (!formattedData.data[date]) {
-          formattedData.data[date] = []
-        }
-
-        formattedData.data[date].push({
-          time: time,
-          website: url || '',
-        })
-      })
-
-      return formattedData
-    }
-
-    data = formatData(rawData)
-
-    console.log('Received data from server:', rawData)
-    console.log('Formatted Data:', data)
-
-    if (data && data.data) {
-      displayData.innerText = JSON.stringify(data)
-
-      dates = Object.keys(data.data)
-      times = Object.values(data.data).map((entries) => entries.reduce((sum, entry) => sum + entry.time, 0))
-
-      renderMainChart()
-    } else {
-      displayData.innerText = 'Error receiving data'
-    }
-  })
-  .catch((error) => {
-    console.error('Error fetching data:', error)
-  })
+    renderMainChart(data)
+  }
+})
 
 function formatTime(value) {
   const hours = Math.floor(value / 3600)
@@ -59,14 +17,25 @@ function formatTime(value) {
   return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }
 
-function renderMainChart() {
-  new Chart(mainChart, {
+function renderMainChart(data) {
+  const mainChartCanvas = document.getElementById('mainChart')
+
+  if (window.chartInstance) {
+    window.chartInstance.destroy()
+  }
+
+  const dates = Object.keys(data)
+  const times = dates.map((date) => {
+    return data[date].reduce((sum, entry) => sum + entry.time, 0)
+  })
+
+  window.chartInstance = new Chart(mainChartCanvas, {
     type: 'bar',
     data: {
       labels: dates,
       datasets: [
         {
-          label: 'Time',
+          label: 'Time spent on each Day',
           data: times,
           borderWidth: 1,
         },
@@ -78,10 +47,7 @@ function renderMainChart() {
         title: {
           display: true,
           text: 'Web Usage',
-          font: {
-            size: 24,
-            weight: 'bold',
-          },
+          font: { size: 24, weight: 'bold' },
         },
         tooltip: {
           callbacks: {
@@ -101,9 +67,8 @@ function renderMainChart() {
         if (elements.length > 0) {
           const index = elements[0].index
           const label = dates[index]
-          const entries = Object.values(data.data)[index]
 
-          renderDetailChart(label, entries, detailChart.getContext('2d'))
+          renderDetailChart(label, data[label], detailChart.getContext('2d'))
         }
       },
     },
@@ -124,7 +89,7 @@ function renderDetailChart(label, entries, canvas) {
       labels: dates,
       datasets: [
         {
-          label: 'Time',
+          label: 'Time spent on each Website',
           data: times,
           borderWidth: 1,
         },
@@ -135,11 +100,8 @@ function renderDetailChart(label, entries, canvas) {
       plugins: {
         title: {
           display: true,
-          text: 'Details',
-          font: {
-            size: 16,
-            weight: 'italic bold',
-          },
+          text: `Details for ${label}`,
+          font: { size: 16, weight: 'italic bold' },
         },
         tooltip: {
           callbacks: {
