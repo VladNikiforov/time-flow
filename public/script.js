@@ -48,18 +48,30 @@ function renderMainChart(data) {
           display: true,
           text: 'Web Usage',
           font: { size: 24, weight: 'bold' },
+          color: '#fff',
         },
         tooltip: {
           callbacks: {
             label: (context) => formatTime(context.raw),
           },
         },
+        legend: {
+          labels: {
+            color: '#fff',
+          },
+        },
       },
       scales: {
+        x: {
+          ticks: {
+            color: '#fff',
+          },
+        },
         y: {
           beginAtZero: true,
           ticks: {
             callback: (value) => formatTime(value),
+            color: '#fff',
           },
         },
       },
@@ -92,16 +104,26 @@ function renderDetailChart(label, entries, canvas) {
           label: 'Time spent on each Website',
           data: times,
           borderWidth: 1,
+          borderRadius: 8,
+          maxBarThickness: 12,
         },
       ],
     },
     options: {
       responsive: true,
+      indexAxis: 'y',
       plugins: {
+        legend: {
+          position: 'right',
+          labels: {
+            color: '#fff',
+          },
+        },
         title: {
           display: true,
           text: `Details for ${label}`,
           font: { size: 16, weight: 'italic bold' },
+          color: '#fff',
         },
         tooltip: {
           callbacks: {
@@ -110,10 +132,16 @@ function renderDetailChart(label, entries, canvas) {
         },
       },
       scales: {
-        y: {
+        x: {
           beginAtZero: true,
           ticks: {
             callback: (value) => formatTime(value),
+            color: '#fff',
+          },
+        },
+        y: {
+          ticks: {
+            color: '#fff',
           },
         },
       },
