@@ -88,30 +88,58 @@ function renderMainChart(data) {
 }
 
 function renderDetailChart(label, entries, canvas) {
-  const dates = entries.map((entry) => entry.website)
+  const websites = entries.map((entry) => entry.website)
   const times = entries.map((entry) => entry.time)
+
+  const totalSpentTime = times.reduce((sum, time) => sum + time, 0)
+
+  const progressContainer = document.getElementById('progressContainer')
+  progressContainer.innerHTML = ''
+
+  const title = document.createElement('h3')
+  title.textContent = `Time Distribution for ${label}`
+  progressContainer.appendChild(title)
+ 
+  entries.forEach((entry) => {
+    const percentage = ((entry.time / totalSpentTime) * 100).toFixed(2)
+
+    const entryContainer = document.createElement('div')
+
+    const label = document.createElement('span')
+    label.textContent = `${entry.website}: ${formatTime(entry.time)} (${percentage}%)`
+    entryContainer.appendChild(label)
+
+    const progressBar = document.createElement('progress')
+    progressBar.max = 100
+    progressBar.value = percentage
+
+    entryContainer.appendChild(progressBar)
+    progressContainer.appendChild(entryContainer)
+  })
+
+  const totalTime = document.createElement('p')
+  totalTime.textContent = `Total Time: ${formatTime(totalSpentTime)}`
+  progressContainer.appendChild(totalTime)
 
   if (window.secondChart) {
     window.secondChart.destroy()
   }
 
   window.secondChart = new Chart(canvas, {
-    type: 'bar',
+    type: 'doughnut',
     data: {
-      labels: dates,
+      labels: websites,
       datasets: [
         {
           label: 'Time spent on each Website',
           data: times,
           borderWidth: 1,
           borderRadius: 8,
-          maxBarThickness: 12,
         },
       ],
     },
     options: {
       responsive: true,
-      indexAxis: 'y',
       plugins: {
         legend: {
           position: 'right',
@@ -128,20 +156,6 @@ function renderDetailChart(label, entries, canvas) {
         tooltip: {
           callbacks: {
             label: (context) => formatTime(context.raw),
-          },
-        },
-      },
-      scales: {
-        x: {
-          beginAtZero: true,
-          ticks: {
-            callback: (value) => formatTime(value),
-            color: '#fff',
-          },
-        },
-        y: {
-          ticks: {
-            color: '#fff',
           },
         },
       },
