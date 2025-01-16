@@ -88,38 +88,11 @@ function renderMainChart(data) {
 }
 
 function renderDetailChart(label, entries, canvas) {
-  const websites = entries.map((entry) => entry.website)
-  const times = entries.map((entry) => entry.time)
+  const filteredEntries = entries.filter((entry) => entry.website !== '' && entry.time !== 0)
 
+  const websites = filteredEntries.map((entry) => entry.website)
+  const times = filteredEntries.map((entry) => entry.time)
   const totalSpentTime = times.reduce((sum, time) => sum + time, 0)
-
-  const progressContainer = document.getElementById('progressContainer')
-  progressContainer.innerHTML = ''
-
-  const title = document.createElement('h3')
-  title.textContent = `Time Distribution for ${label}`
-  progressContainer.appendChild(title)
- 
-  entries.forEach((entry) => {
-    const percentage = ((entry.time / totalSpentTime) * 100).toFixed(2)
-
-    const entryContainer = document.createElement('div')
-
-    const label = document.createElement('span')
-    label.textContent = `${entry.website}: ${formatTime(entry.time)} (${percentage}%)`
-    entryContainer.appendChild(label)
-
-    const progressBar = document.createElement('progress')
-    progressBar.max = 100
-    progressBar.value = percentage
-
-    entryContainer.appendChild(progressBar)
-    progressContainer.appendChild(entryContainer)
-  })
-
-  const totalTime = document.createElement('p')
-  totalTime.textContent = `Total Time: ${formatTime(totalSpentTime)}`
-  progressContainer.appendChild(totalTime)
 
   if (window.secondChart) {
     window.secondChart.destroy()
@@ -140,18 +113,10 @@ function renderDetailChart(label, entries, canvas) {
     },
     options: {
       responsive: true,
+      cutout: '40%',
       plugins: {
         legend: {
-          position: 'right',
-          labels: {
-            color: '#fff',
-          },
-        },
-        title: {
-          display: true,
-          text: `Details for ${label}`,
-          font: { size: 16, weight: 'italic bold' },
-          color: '#fff',
+          display: false,
         },
         tooltip: {
           callbacks: {
@@ -161,4 +126,50 @@ function renderDetailChart(label, entries, canvas) {
       },
     },
   })
+
+  const chartColors = window.secondChart.data.datasets[0].backgroundColor
+
+  const progressContainer = document.getElementById('progressContainer')
+  filteredEntries.forEach((entry, colorIndex) => {
+    const percentage = ((entry.time / totalSpentTime) * 100).toFixed(2)
+    const entryContainer = document.createElement('div')
+
+    const textWebsite = document.createElement('span')
+    textWebsite.textContent = entry.website
+    entryContainer.appendChild(textWebsite)
+
+    const progressBar = document.createElement('progress')
+    progressBar.max = 100
+    progressBar.value = percentage
+    progressBar.style.setProperty('background-color', '#ddd')
+    progressBar.style.setProperty('--progress-bar-fill', chartColors[colorIndex])
+    progressBar.style.height = '1rem'
+    progressBar.style.borderRadius = '1rem'
+    entryContainer.appendChild(progressBar)
+
+    const textNumbers = document.createElement('span')
+    textNumbers.textContent = `${formatTime(entry.time)} (${percentage}%)`
+    entryContainer.appendChild(textNumbers)
+
+    entryContainer.classList.add('gridDisplay')
+    progressContainer.appendChild(entryContainer)
+
+    if (!document.getElementById('progress-styles')) {
+      const style = document.createElement('style')
+      style.id = 'progress-styles'
+      style.textContent = `
+        progress::-webkit-progress-value {
+          background-color: var(--progress-bar-fill); 
+        }
+        progress::-moz-progress-bar {
+          background-color: var(--progress-bar-fill); 
+        }
+      `
+      document.head.appendChild(style)
+    }
+  })
+
+  const totalTime = document.createElement('p')
+  totalTime.textContent = `Total Time: ${formatTime(totalSpentTime)}`
+  progressContainer.appendChild(totalTime)
 }
