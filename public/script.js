@@ -14,7 +14,10 @@ function formatTime(value) {
   const hours = Math.floor(value / 3600)
   const minutes = Math.floor((value % 3600) / 60)
   const seconds = value % 60
-  return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+
+  if (value < 60) return `${value}s`
+  if (value < 3600) return `${minutes}m${seconds ? ` ${seconds}s` : ''}`
+  return `${hours}h${minutes ? ` ${minutes}m` : ''}${seconds ? ` ${seconds}s` : ''}`
 }
 
 function renderMainChart(data) {
@@ -130,8 +133,13 @@ function renderDetailChart(label, entries, canvas) {
   const chartColors = window.secondChart.data.datasets[0].backgroundColor
 
   const progressContainer = document.getElementById('progressContainer')
+
+  while (progressContainer.firstChild) {
+    progressContainer.removeChild(progressContainer.firstChild)
+  }
+
   filteredEntries.forEach((entry, colorIndex) => {
-    const percentage = ((entry.time / totalSpentTime) * 100).toFixed(2)
+    const percentage = Math.round((entry.time / totalSpentTime) * 100)
     const entryContainer = document.createElement('div')
 
     const textWebsite = document.createElement('span')
