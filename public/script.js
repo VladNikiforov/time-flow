@@ -41,6 +41,8 @@ function renderMainChart(data) {
           label: 'Time spent on each Day',
           data: times,
           borderWidth: 1,
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgba(75, 192, 192, 1)',
         },
       ],
     },
@@ -82,7 +84,6 @@ function renderMainChart(data) {
         if (elements.length > 0) {
           const index = elements[0].index
           const label = dates[index]
-
           renderDetailChart(label, data[label], detailChart.getContext('2d'))
         }
       },
@@ -91,11 +92,20 @@ function renderMainChart(data) {
 }
 
 function renderDetailChart(label, entries, canvas) {
-  const filteredEntries = entries.filter((entry) => entry.website !== '' && entry.time !== 0)
+  const viewMode = document.getElementById('view').value
+  const aggregatedData = {}
 
-  const websites = filteredEntries.map((entry) => entry.website)
-  const times = filteredEntries.map((entry) => entry.time)
-  const totalSpentTime = times.reduce((sum, time) => sum + time, 0)
+  entries.forEach((entry) => {
+    if (viewMode == 'time') {
+      aggregatedData[entry.website] = (aggregatedData[entry.website] || 0) + entry.time
+    } else if (viewMode == 'sessions') {
+      aggregatedData[entry.website] = (aggregatedData[entry.website] || 0) + 1
+    }
+  })
+
+  const websites = Object.keys(aggregatedData)
+  const values = Object.values(aggregatedData)
+  const totalSpentTime = values.reduce((sum, value) => sum + value, 0)
 
   if (window.secondChart) {
     window.secondChart.destroy()
@@ -107,8 +117,8 @@ function renderDetailChart(label, entries, canvas) {
       labels: websites,
       datasets: [
         {
-          label: 'Time spent on each Website',
-          data: times,
+          label: viewMode == 'time' ? 'Time spent on each Website' : 'Session count',
+          data: values,
           borderWidth: 1,
           borderRadius: 8,
         },
@@ -123,14 +133,12 @@ function renderDetailChart(label, entries, canvas) {
         },
         tooltip: {
           callbacks: {
-            label: (context) => formatTime(context.raw),
+            label: (context) => (viewMode == 'time' ? formatTime(context.raw) : `${context.raw} sessions`),
           },
         },
       },
     },
   })
-
-  const chartColors = window.secondChart.data.datasets[0].backgroundColor
 
   const progressContainer = document.getElementById('progressContainer')
 
@@ -138,28 +146,28 @@ function renderDetailChart(label, entries, canvas) {
     progressContainer.removeChild(progressContainer.firstChild)
   }
 
-  filteredEntries.forEach((entry, colorIndex) => {
-    const percentage = Math.round((entry.time / totalSpentTime) * 100)
+  websites.forEach((website, index) => {
+    const percentage = Math.round((values[index] / totalSpentTime) * 100)
     const entryContainer = document.createElement('div')
+    entryContainer.classList.add('gridDisplay')
 
     const textWebsite = document.createElement('span')
-    textWebsite.textContent = entry.website
+    textWebsite.textContent = website
     entryContainer.appendChild(textWebsite)
 
     const progressBar = document.createElement('progress')
     progressBar.max = 100
     progressBar.value = percentage
     progressBar.style.setProperty('background-color', '#ddd')
-    progressBar.style.setProperty('--progress-bar-fill', chartColors[colorIndex])
+    progressBar.style.setProperty('--progress-bar-fill', window.secondChart.data.datasets[0].backgroundColor[index])
     progressBar.style.height = '1rem'
     progressBar.style.borderRadius = '1rem'
     entryContainer.appendChild(progressBar)
 
     const textNumbers = document.createElement('span')
-    textNumbers.textContent = `${formatTime(entry.time)} (${percentage}%)`
+    textNumbers.textContent = viewMode === 'time' ? `${formatTime(values[index])} (${percentage}%)` : `${values[index]} session${values[index] === 1 ? '' : 's'} (${percentage}%)`
     entryContainer.appendChild(textNumbers)
 
-    entryContainer.classList.add('gridDisplay')
     progressContainer.appendChild(entryContainer)
 
     if (!document.getElementById('progress-styles')) {
