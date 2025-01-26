@@ -73,16 +73,20 @@ function getDomain(url) {
   }
 }
 
-function startTimer(tabId) {
+async function startTimer(tabId) {
   clearInterval(timerInterval)
   calculateElapsedTime()
 
   currentTabId = tabId
 
-  browser.tabs.get(tabId, (tab) => {
+  try {
+    const tab = await browser.tabs.get(tabId)
     currentTabUrl = getDomain(tab.url) || ''
     console.log(`Started timer on: ${currentTabUrl}`)
-  })
+  } catch (error) {
+    console.error('Failed to get tab:', error)
+    return
+  }
 
   startTime = Date.now()
   timerInterval = setInterval(calculateElapsedTime, 1000)
@@ -95,16 +99,8 @@ async function stopTimer() {
     const today = getTodayDate()
     console.log(`URL: ${currentTabUrl}, Total Time: ${elapsedSeconds} seconds`)
 
-    const data = await getData(today)
-
-    const siteData = data.find((entry) => entry.url === currentTabUrl)
-    if (siteData) {
-      siteData.time += elapsedSeconds
-      await saveData(siteData)
-    } else {
-      const newData = { date: today, url: currentTabUrl, time: elapsedSeconds }
-      await saveData(newData)
-    }
+    const newData = { date: today, url: currentTabUrl, time: elapsedSeconds }
+    await saveData(newData)
 
     const formattedData = await getData(today)
     const result = {}
