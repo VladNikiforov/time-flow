@@ -11,16 +11,25 @@
 <body>
     <p id="displayData"></p>
 
+    <div>
+        <div>
+            <button id="prevButton">&lt;</button>
+            <select id="viewMain">
+                <option value="week" selected>Week</option>
+                <option value="month">Month</option>
+            </select>
+            <button id="nextButton">&gt;</button>
+        </div>
+
+        <canvas id="mainChart"></canvas>
+    </div>
 
     <label>View by:</label>
-    <select id="view">
+    <select id="viewDetail">
         <option value="time">time</option>
         <option value="sessions">sessions</option>
     </select>
 
-    <div>
-        <canvas id="mainChart"></canvas>
-    </div>
     <div style="display: flex; align-items: center;">
         <div style="height: 300px; width: 300px;">
             <canvas id="detailChart"></canvas>

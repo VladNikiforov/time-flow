@@ -1,14 +1,64 @@
+let rawData
+
 browser.runtime.onMessage.addListener((message) => {
   if (message.action === 'sendData') {
     const data = message.data
+    rawData = data
     console.log('Received formatted data from background.js:', data)
 
     const displayData = document.getElementById('displayData')
     displayData.textContent = `Received data: ${JSON.stringify(data)}`
 
-    renderMainChart(data)
+    currentStartDate = getEarliestDate(data)
+    updateChart(data)
   }
 })
+
+let currentView = 'week'
+let currentStartDate = null
+
+document.getElementById('prevButton').addEventListener('click', () => navigateChart(-1))
+document.getElementById('nextButton').addEventListener('click', () => navigateChart(1))
+document.getElementById('viewMain').addEventListener('change', (event) => {
+  currentView = event.target.value
+  updateChart()
+})
+
+function updateChart(data) {
+  const dateRange = generateDateRange(currentStartDate, currentView)
+  const filledData = fillMissingDates(data, dateRange)
+  renderMainChart(filledData)
+}
+
+function navigateChart(direction) {
+  const step = currentView === 'week' ? 7 : 30
+  currentStartDate.setDate(currentStartDate.getDate() + step * direction)
+  updateChart(rawData)
+}
+
+function getEarliestDate(data) {
+  const allDates = Object.keys(data).sort()
+  return new Date(allDates[0])
+}
+
+function generateDateRange(startDate, view) {
+  let range = []
+  let days = view === 'week' ? 7 : 30
+  for (let i = 0; i < days; i++) {
+    let date = new Date(startDate)
+    date.setDate(startDate.getDate() + i)
+    range.push(date.toISOString().split('T')[0])
+  }
+  return range
+}
+
+function fillMissingDates(data, dateRange) {
+  let filledData = {}
+  dateRange.forEach((date) => {
+    filledData[date] = data[date] || [{ time: 0 }]
+  })
+  return filledData
+}
 
 function formatTime(value) {
   const hours = Math.floor(value / 3600)
@@ -28,9 +78,7 @@ function renderMainChart(data) {
   }
 
   const dates = Object.keys(data)
-  const times = dates.map((date) => {
-    return data[date].reduce((sum, entry) => sum + entry.time, 0)
-  })
+  const times = dates.map((date) => data[date].reduce((sum, entry) => sum + entry.time, 0))
 
   window.chartInstance = new Chart(mainChartCanvas, {
     type: 'bar',
@@ -43,6 +91,7 @@ function renderMainChart(data) {
           borderWidth: 1,
           backgroundColor: 'rgba(75, 192, 192, 0.2)',
           borderColor: 'rgba(75, 192, 192, 1)',
+          maxBarThickness: 100,
         },
       ],
     },
@@ -92,7 +141,7 @@ function renderMainChart(data) {
 }
 
 function renderDetailChart(label, entries, canvas) {
-  const viewMode = document.getElementById('view').value
+  const viewMode = document.getElementById('viewDetail').value
   const aggregatedData = {}
 
   entries.forEach((entry) => {
@@ -165,7 +214,7 @@ function renderDetailChart(label, entries, canvas) {
     entryContainer.appendChild(progressBar)
 
     const textNumbers = document.createElement('span')
-    textNumbers.textContent = viewMode === 'time' ? `${formatTime(values[index])} (${percentage}%)` : `${values[index]} session${values[index] === 1 ? '' : 's'} (${percentage}%)`
+    textNumbers.textContent = viewMode == 'time' ? `${formatTime(values[index])} (${percentage}%)` : `${values[index]} session${values[index] === 1 ? '' : 's'} (${percentage}%)`
     entryContainer.appendChild(textNumbers)
 
     progressContainer.appendChild(entryContainer)
@@ -186,6 +235,6 @@ function renderDetailChart(label, entries, canvas) {
   })
 
   const totalTime = document.createElement('p')
-  totalTime.textContent = `Total Time: ${formatTime(totalSpentTime)}`
+  totalTime.textContent = viewMode == 'time' ? `Total Time: ${formatTime(totalSpentTime)}` : `Total Sessions: ${totalSpentTime}`
   progressContainer.appendChild(totalTime)
 }
