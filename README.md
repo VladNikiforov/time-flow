@@ -1,2 +1,2 @@
 # TimeFlow
-View your web usage with this simple to use **Firefox add-on**
+View your web usage with this simple but useful **Firefox add-on**
