@@ -1,53 +1,80 @@
 let rawData
+let currentView = 'week'
+let currentStartDate = null
+
+function getStartOfWeek(date) {
+  const day = date.getDay() - 1
+  const difference = date.getDate() - day + (day === 0 ? -6 : 1)
+  const startOfWeek = new Date(date)
+  startOfWeek.setDate(difference)
+  startOfWeek.setHours(0, 0, 0, 0)
+  return startOfWeek
+}
+
+function getStartOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1)
+}
+
+function getDaysInMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+}
 
 browser.runtime.onMessage.addListener((message) => {
   if (message.action === 'sendData') {
-    const data = message.data
-    rawData = data
-    console.log('Received formatted data from background.js:', data)
+    rawData = message.data
+    console.log('Received formatted data from background.js:', rawData)
 
     const displayData = document.getElementById('displayData')
-    displayData.textContent = `Received data: ${JSON.stringify(data)}`
+    displayData.textContent = `Received data: ${JSON.stringify(rawData)}`
 
-    currentStartDate = getEarliestDate(data)
-    updateChart(data)
+    const now = new Date()
+    currentStartDate = currentView === 'week' ? getStartOfWeek(now) : getStartOfMonth(now)
+
+    updateChart()
   }
 })
-
-let currentView = 'week'
-let currentStartDate = null
 
 document.getElementById('prevButton').addEventListener('click', () => navigateChart(-1))
 document.getElementById('nextButton').addEventListener('click', () => navigateChart(1))
 document.getElementById('viewMain').addEventListener('change', (event) => {
   currentView = event.target.value
+  const now = new Date()
+  currentStartDate = currentView === 'week' ? getStartOfWeek(now) : getStartOfMonth(now)
   updateChart()
 })
 
-function updateChart(data) {
+function updateChart() {
+  if (!rawData) return
   const dateRange = generateDateRange(currentStartDate, currentView)
-  const filledData = fillMissingDates(data, dateRange)
+  const filledData = fillMissingDates(rawData, dateRange)
   renderMainChart(filledData)
 }
 
 function navigateChart(direction) {
-  const step = currentView === 'week' ? 7 : 30
-  currentStartDate.setDate(currentStartDate.getDate() + step * direction)
-  updateChart(rawData)
-}
-
-function getEarliestDate(data) {
-  const allDates = Object.keys(data).sort()
-  return new Date(allDates[0])
+  if (currentView === 'week') {
+    currentStartDate.setDate(currentStartDate.getDate() + direction * 7)
+  } else {
+    const year = currentStartDate.getFullYear()
+    const month = currentStartDate.getMonth() + direction
+    currentStartDate = new Date(year, month, 1)
+  }
+  updateChart()
 }
 
 function generateDateRange(startDate, view) {
   let range = []
-  let days = view === 'week' ? 7 : 30
-  for (let i = 0; i < days; i++) {
-    let date = new Date(startDate)
-    date.setDate(startDate.getDate() + i)
-    range.push(date.toISOString().split('T')[0])
+  if (view === 'week') {
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startDate)
+      date.setDate(startDate.getDate() + i)
+      range.push(date.toISOString().split('T')[0])
+    }
+  } else {
+    const daysInMonth = getDaysInMonth(startDate)
+    for (let i = 0; i < daysInMonth; i++) {
+      const date = new Date(startDate.getFullYear(), startDate.getMonth(), i + 1)
+      range.push(date.toISOString().split('T')[0])
+    }
   }
   return range
 }
@@ -72,10 +99,7 @@ function formatTime(value) {
 
 function renderMainChart(data) {
   const mainChartCanvas = document.getElementById('mainChart')
-
-  if (window.chartInstance) {
-    window.chartInstance.destroy()
-  }
+  if (window.chartInstance) window.chartInstance.destroy()
 
   const dates = Object.keys(data)
   const times = dates.map((date) => data[date].reduce((sum, entry) => sum + entry.time, 0))
@@ -83,10 +107,13 @@ function renderMainChart(data) {
   window.chartInstance = new Chart(mainChartCanvas, {
     type: 'bar',
     data: {
-      labels: dates,
+      labels: dates.map((date) => {
+        const d = new Date(date)
+        return currentView === 'week' ? `${d.toLocaleDateString('en-US', { weekday: 'short' })} ${d.getDate()}` : d.getDate()
+      }),
       datasets: [
         {
-          label: 'Time spent on each Day',
+          label: 'Time spent each Day',
           data: times,
           borderWidth: 1,
           backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -100,26 +127,21 @@ function renderMainChart(data) {
       plugins: {
         title: {
           display: true,
-          text: 'Web Usage',
+          text: `Web Usage - ${currentView === 'week' ? 'Weekly' : 'Monthly'} View`,
           font: { size: 24, weight: 'bold' },
           color: '#fff',
         },
         tooltip: {
           callbacks: {
+            title: (context) => context[0].label,
             label: (context) => formatTime(context.raw),
-          },
-        },
-        legend: {
-          labels: {
-            color: '#fff',
           },
         },
       },
       scales: {
         x: {
-          ticks: {
-            color: '#fff',
-          },
+          ticks: { color: '#fff' },
+          grid: { color: 'rgba(255,255,255,0.1)' },
         },
         y: {
           beginAtZero: true,
@@ -127,13 +149,14 @@ function renderMainChart(data) {
             callback: (value) => formatTime(value),
             color: '#fff',
           },
+          grid: { color: 'rgba(255,255,255,0.1)' },
         },
       },
       onClick: (event, elements) => {
         if (elements.length > 0) {
           const index = elements[0].index
           const label = dates[index]
-          renderDetailChart(label, data[label], detailChart.getContext('2d'))
+          renderDetailChart(label, data[label], document.getElementById('detailChart').getContext('2d'))
         }
       },
     },
