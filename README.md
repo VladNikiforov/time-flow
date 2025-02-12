@@ -5,3 +5,4 @@ Goals:
 1. **Privacy** - Your data is stored locally (using IndexedDB). We don't track, view, or sell it. Only you have access to it
 2. **Open-Source** - Everyone can view the code
 3. **Free** - 100% free forever, no ads whatsoever
+4. **Lightweight** - No bloatware, only the good stuff
