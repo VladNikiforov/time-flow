@@ -104,6 +104,9 @@ function renderMainChart(data) {
   const dates = Object.keys(data)
   const times = dates.map((date) => data[date].reduce((sum, entry) => sum + entry.time, 0))
 
+  const averageTime = Math.round(times.reduce((sum, time) => sum + time, 0) / times.length)
+  document.getElementById('average').textContent = `${currentView === 'week' ? 'Week' : 'Month'} Average: ${formatTime(averageTime)}`
+
   window.chartInstance = new Chart(mainChartCanvas, {
     type: 'bar',
     data: {
