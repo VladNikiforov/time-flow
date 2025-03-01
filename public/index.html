@@ -9,8 +9,6 @@
 </head>
 
 <body>
-    <p id="displayData"></p>
-
     <div>
         <div>
             <button id="prevButton">&lt;</button>
@@ -19,18 +17,16 @@
                 <option value="week" selected>Week</option>
                 <option value="month">Month</option>
             </select>
+            <select id="viewDetail">
+                <option value="time">time</option>
+                <option value="sessions">sessions</option>
+            </select>
 
             <h2 id="average"></h2>
         </div>
 
         <canvas id="mainChart"></canvas>
     </div>
-
-    <label>View by:</label>
-    <select id="viewDetail">
-        <option value="time">time</option>
-        <option value="sessions">sessions</option>
-    </select>
 
     <div style="display: flex; align-items: center;">
         <div style="height: 300px; width: 300px;">

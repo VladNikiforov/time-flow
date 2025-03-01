@@ -24,8 +24,7 @@ browser.runtime.onMessage.addListener((message) => {
     rawData = message.data
     console.log('Received formatted data from background.js:', rawData)
 
-    const displayData = document.getElementById('displayData')
-    displayData.textContent = `Received data: ${JSON.stringify(rawData)}`
+    console.log(`Received data: ${JSON.stringify(rawData)}`)
 
     const now = new Date()
     currentStartDate = currentView === 'week' ? getStartOfWeek(now) : getStartOfMonth(now)
@@ -102,10 +101,19 @@ function renderMainChart(data) {
   if (window.chartInstance) window.chartInstance.destroy()
 
   const dates = Object.keys(data)
-  const times = dates.map((date) => data[date].reduce((sum, entry) => sum + entry.time, 0))
+  const viewMode = document.getElementById('viewDetail').value
+  const times = dates.map((date) => {
+    if (viewMode === 'time') {
+      return data[date].reduce((sum, entry) => sum + entry.time, 0)
+    } else if (viewMode === 'sessions') {
+      return data[date].length - 1
+    }
+  })
 
-  const averageTime = Math.round(times.reduce((sum, time) => sum + time, 0) / times.length)
-  document.getElementById('average').textContent = `${currentView === 'week' ? 'Week' : 'Month'} Average: ${formatTime(averageTime)}`
+  const averageValue = Math.round(times.reduce((sum, time) => sum + time, 0) / times.length)
+  document.getElementById('average').textContent = `${currentView === 'week' ? 'Week' : 'Month'} Average: ${
+    viewMode === 'time' ? formatTime(averageValue) : Math.round(averageValue) + 'sessions'
+  }`
 
   window.chartInstance = new Chart(mainChartCanvas, {
     type: 'bar',
@@ -116,7 +124,7 @@ function renderMainChart(data) {
       }),
       datasets: [
         {
-          label: 'Time spent each Day',
+          label: viewMode === 'time' ? 'Time spent each Day' : 'Sessions each Day',
           data: times,
           borderWidth: 1,
           backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -137,7 +145,7 @@ function renderMainChart(data) {
         tooltip: {
           callbacks: {
             title: (context) => context[0].label,
-            label: (context) => formatTime(context.raw),
+            label: (context) => (viewMode === 'time' ? formatTime(context.raw) : `${context.raw} sessions`),
           },
         },
       },
@@ -149,7 +157,7 @@ function renderMainChart(data) {
         y: {
           beginAtZero: true,
           ticks: {
-            callback: (value) => formatTime(value),
+            callback: (value) => (viewMode === 'time' ? formatTime(value) : `${value} sessions`),
             color: '#fff',
           },
           grid: { color: 'rgba(255,255,255,0.1)' },
@@ -240,7 +248,10 @@ function renderDetailChart(label, entries, canvas) {
     entryContainer.appendChild(progressBar)
 
     const textNumbers = document.createElement('span')
-    textNumbers.textContent = viewMode == 'time' ? `${formatTime(values[index])} (${percentage}%)` : `${values[index]} session${values[index] === 1 ? '' : 's'} (${percentage}%)`
+    textNumbers.textContent =
+      viewMode == 'time'
+        ? `${formatTime(values[index])} (${percentage}%)`
+        : `${values[index]} session${values[index] === 1 ? '' : 's'} (${percentage}%)`
     entryContainer.appendChild(textNumbers)
 
     progressContainer.appendChild(entryContainer)
