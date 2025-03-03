@@ -148,6 +148,9 @@ function renderMainChart(data) {
             label: (context) => (viewMode === 'time' ? formatTime(context.raw) : `${context.raw} sessions`),
           },
         },
+        legend: {
+          display: false,
+        },
       },
       scales: {
         x: {
@@ -275,3 +278,7 @@ function renderDetailChart(label, entries, canvas) {
   totalTime.textContent = viewMode == 'time' ? `Total Time: ${formatTime(totalSpentTime)}` : `Total Sessions: ${totalSpentTime}`
   progressContainer.appendChild(totalTime)
 }
+
+document.getElementById('viewDetail').addEventListener('change', () => {
+  updateChart()
+})
