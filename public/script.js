@@ -105,7 +105,7 @@ function renderMainChart(data) {
   const times = dates.map((date) => {
     if (viewMode === 'time') {
       return data[date].reduce((sum, entry) => sum + entry.time, 0)
-    } else if (viewMode === 'sessions') {
+    } else {
       return data[date].length - 1
     }
   })
@@ -114,6 +114,8 @@ function renderMainChart(data) {
   document.getElementById('average').textContent = `${currentView === 'week' ? 'Week' : 'Month'} Average: ${
     viewMode === 'time' ? formatTime(averageValue) : Math.round(averageValue) + 'sessions'
   }`
+
+  document.getElementById('title').textContent = `Web Usage - ${currentView === 'week' ? 'Weekly' : 'Monthly'} View`
 
   window.chartInstance = new Chart(mainChartCanvas, {
     type: 'bar',
@@ -137,10 +139,7 @@ function renderMainChart(data) {
       responsive: true,
       plugins: {
         title: {
-          display: true,
-          text: `Web Usage - ${currentView === 'week' ? 'Weekly' : 'Monthly'} View`,
-          font: { size: 24, weight: 'bold' },
-          color: '#fff',
+          display: false,
         },
         tooltip: {
           callbacks: {
