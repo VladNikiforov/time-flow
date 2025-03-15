@@ -5,7 +5,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TimeFlow</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="styles/main-style.css" />
+    <link rel="stylesheet" href="styles/progress-style.css" />
 </head>
 
 <body>
@@ -13,11 +14,11 @@
         <div>
             <button id="prevButton">&lt;</button>
             <button id="nextButton">&gt;</button>
-            <select id="viewMain">
+            <select id="viewRange">
                 <option value="week" selected>Week</option>
                 <option value="month">Month</option>
             </select>
-            <select id="viewDetail">
+            <select id="viewMode">
                 <option value="time">time</option>
                 <option value="sessions">sessions</option>
             </select>
@@ -30,11 +31,11 @@
         <canvas id="mainChart"></canvas>
     </div>
 
-    <div style="display: flex; align-items: center;">
-        <div style="height: 300px; width: 300px; margin-right: 2rem;">
+    <div style="display: flex">
+        <div style="height: 300px; width: 300px; margin-right: 2rem">
             <canvas id="detailChart"></canvas>
         </div>
-        <div id="progressContainer"></div>
+        <div id="progressContainer" style="flex: 1"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

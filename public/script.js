@@ -1,6 +1,6 @@
 let rawData = null
 let currentStartDate = null
-let currentView = 'week'
+let viewRange = document.getElementById('viewRange').value
 
 function getStartOfWeek(date) {
   const day = date.getDay() - 1
@@ -21,7 +21,7 @@ function getDaysInMonth(date) {
 
 function viewCheck() {
   const now = new Date()
-  currentStartDate = currentView === 'week' ? getStartOfWeek(now) : getStartOfMonth(now)
+  currentStartDate = viewRange === 'week' ? getStartOfWeek(now) : getStartOfMonth(now)
   updateChart()
 }
 
@@ -36,20 +36,20 @@ browser.runtime.onMessage.addListener((message) => {
 document.getElementById('prevButton').addEventListener('click', () => navigateChart(-1))
 document.getElementById('nextButton').addEventListener('click', () => navigateChart(1))
 
-document.getElementById('viewMain').addEventListener('change', (event) => {
-  currentView = event.target.value
+document.getElementById('viewRange').addEventListener('change', (event) => {
+  viewRange = event.target.value
   viewCheck()
 })
 
 function updateChart() {
   if (!rawData) return
-  const dateRange = generateDateRange(currentStartDate, currentView)
+  const dateRange = generateDateRange(currentStartDate)
   const filledData = fillMissingDates(rawData, dateRange)
   renderMainChart(filledData)
 }
 
 function navigateChart(direction) {
-  if (currentView === 'week') {
+  if (viewRange === 'week') {
     const date = currentStartDate.getDate()
     currentStartDate.setDate(date + direction * 7)
   } else {
@@ -60,9 +60,9 @@ function navigateChart(direction) {
   updateChart()
 }
 
-function generateDateRange(startDate, view) {
+function generateDateRange(startDate) {
   let range = []
-  if (view === 'week') {
+  if (viewRange === 'week') {
     for (let i = 0; i < 7; i++) {
       const date = new Date(startDate)
       date.setDate(startDate.getDate() + i)
@@ -86,7 +86,7 @@ function fillMissingDates(data, dateRange) {
   return filledData
 }
 
-document.getElementById('viewDetail').addEventListener('change', () => {
+document.getElementById('viewMode').addEventListener('change', () => {
   updateChart()
 })
 
@@ -98,7 +98,7 @@ function formatTime(value) {
   return h ? `${h}h${m ? ` ${m}m` : ''}${s ? ` ${s}s` : ''}` : m ? `${m}m${s ? ` ${s}s` : ''}` : `${s}s`
 }
 
-function formatKeys(key) {
+function formatKey(key) {
   return key.length > 24 ? key.slice(0, 24) + '...' : key
 }
 
@@ -107,7 +107,7 @@ function renderMainChart(data) {
   if (window.chartInstance) window.chartInstance.destroy()
 
   const dates = Object.keys(data)
-  const viewMode = document.getElementById('viewDetail').value
+  const viewMode = document.getElementById('viewMode').value
   const times = calculateTimes(dates, data, viewMode)
 
   updateAverage(times, viewMode)
@@ -123,13 +123,11 @@ function calculateTimes(dates, data, viewMode) {
 
 function updateAverage(times, viewMode) {
   const averageValue = Math.round(times.reduce((sum, time) => sum + time, 0) / times.length)
-  document.getElementById('average').textContent =
-    `${currentView === 'week' ? 'Week' : 'Month'} Average: ` +
-    (viewMode === 'time' ? formatTime(averageValue) : `${Math.round(averageValue)} sessions`)
+  document.getElementById('average').textContent = `${viewRange === 'week' ? 'Week' : 'Month'} Average: ` + (viewMode === 'time' ? formatTime(averageValue) : `${Math.round(averageValue)} sessions`)
 }
 
 function updateTitle() {
-  document.getElementById('title').textContent = `Web Usage - ${currentView === 'week' ? 'Weekly' : 'Monthly'} View`
+  document.getElementById('title').textContent = `Web Usage - ${viewRange === 'week' ? 'Weekly' : 'Monthly'} View`
 }
 
 function createMainChart(canvas, dates, times, viewMode, data) {
@@ -155,7 +153,7 @@ function createMainChart(canvas, dates, times, viewMode, data) {
 function formatLabels(dates) {
   return dates.map((date) => {
     const d = new Date(date)
-    return currentView === 'week' ? `${d.toLocaleDateString('en-US', { weekday: 'short' })} ${d.getDate()}` : d.getDate()
+    return viewRange === 'week' ? `${d.toLocaleDateString('en-US', { weekday: 'short' })} ${d.getDate()}` : d.getDate()
   })
 }
 
@@ -194,12 +192,12 @@ function handleChartClick(event, elements, dates, data) {
   if (elements.length > 0) {
     const index = elements[0].index
     const label = dates[index]
-    renderDetailChart(label, data[label], document.getElementById('detailChart').getContext('2d'))
+    renderDetailChart(data[label], document.getElementById('detailChart').getContext('2d'))
   }
 }
 
-function renderDetailChart(label, entries, canvas) {
-  const viewMode = document.getElementById('viewDetail').value
+function renderDetailChart(entries, canvas) {
+  const viewMode = document.getElementById('viewMode').value
   const aggregatedData = aggregateEntries(entries, viewMode)
   const { websites, values, totalSpentTime } = processAggregatedData(aggregatedData)
 
@@ -277,35 +275,19 @@ function createProgressEntry(website, value, percentage, viewMode, index) {
   entryContainer.classList.add('gridDisplay')
 
   const textWebsite = document.createElement('span')
-  textWebsite.textContent = formatKeys(website)
+  textWebsite.textContent = formatKey(website)
   entryContainer.appendChild(textWebsite)
 
   const progressBar = document.createElement('progress')
   progressBar.max = 100
   progressBar.value = percentage
-  progressBar.style.backgroundColor = '#ddd'
   progressBar.style.setProperty('--progress-bar-fill', window.detailChartInstance.data.datasets[0].backgroundColor[index])
-  progressBar.style.height = '1rem'
-  progressBar.style.borderRadius = '1rem'
   entryContainer.appendChild(progressBar)
 
   const textNumbers = document.createElement('span')
-  textNumbers.textContent =
-    viewMode == 'time' ? `${formatTime(value)} (${percentage}%)` : `${value} session${value === 1 ? '' : 's'} (${percentage}%)`
+  textNumbers.style.textAlign = 'center'
+  textNumbers.textContent = viewMode == 'time' ? `${formatTime(value)} (${percentage}%)` : `${value} session${value === 1 ? '' : 's'} (${percentage}%)`
   entryContainer.appendChild(textNumbers)
 
-  injectProgressStyles()
   return entryContainer
-}
-
-function injectProgressStyles() {
-  if (!document.getElementById('progress-styles')) {
-    const style = document.createElement('style')
-    style.id = 'progress-styles'
-    style.textContent = `
-      progress::-webkit-progress-value { background-color: var(--progress-bar-fill); }
-      progress::-moz-progress-bar { background-color: var(--progress-bar-fill); }
-    `
-    document.head.appendChild(style)
-  }
 }
