@@ -28,10 +28,7 @@ function viewCheck() {
 browser.runtime.onMessage.addListener((message) => {
   if (message.action === 'sendData') {
     rawData = message.data
-    console.log('Received formatted data from background.js:', rawData)
-
-    console.log(`Received data: ${JSON.stringify(rawData)}`)
-
+    console.log('Received data from background.js:', rawData)
     viewCheck()
   }
 })
@@ -90,21 +87,15 @@ function fillMissingDates(data, dateRange) {
 }
 
 function formatTime(value) {
-  const hours = Math.floor(value / 3600)
-  const minutes = Math.floor((value % 3600) / 60)
-  const seconds = value % 60
+  const h = Math.floor(value / 3600)
+  const m = Math.floor((value % 3600) / 60)
+  const s = value % 60
 
-  if (value < 60) return `${value}s`
-  if (value < 3600) return `${minutes}m${seconds ? ` ${seconds}s` : ''}`
-  return `${hours}h${minutes ? ` ${minutes}m` : ''}${seconds ? ` ${seconds}s` : ''}`
+  return h ? `${h}h${m ? ` ${m}m` : ''}${s ? ` ${s}s` : ''}` : m ? `${m}m${s ? ` ${s}s` : ''}` : `${s}s`
 }
 
 function formatKeys(key) {
-  if (key.split('').length > 24) {
-    key = key.split('').slice(0, 24).join('') + '...'
-  }
-
-  return key
+  return key.length > 24 ? key.slice(0, 24) + '...' : key
 }
 
 function renderMainChart(data) {
