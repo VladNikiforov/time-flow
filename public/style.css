@@ -4,6 +4,12 @@ body {
   color: #fff;
 }
 
+#progressContainter {
+  margin-left: 20px;
+  text-align: center;
+  color: #fff;
+}
+
 .gridDisplay {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

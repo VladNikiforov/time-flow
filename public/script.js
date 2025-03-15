@@ -19,6 +19,12 @@ function getDaysInMonth(date) {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
 }
 
+function viewCheck() {
+  const now = new Date()
+  currentStartDate = currentView === 'week' ? getStartOfWeek(now) : getStartOfMonth(now)
+  updateChart()
+}
+
 browser.runtime.onMessage.addListener((message) => {
   if (message.action === 'sendData') {
     rawData = message.data
@@ -26,20 +32,17 @@ browser.runtime.onMessage.addListener((message) => {
 
     console.log(`Received data: ${JSON.stringify(rawData)}`)
 
-    const now = new Date()
-    currentStartDate = currentView === 'week' ? getStartOfWeek(now) : getStartOfMonth(now)
-
-    updateChart()
+    viewCheck()
   }
 })
 
 document.getElementById('prevButton').addEventListener('click', () => navigateChart(-1))
 document.getElementById('nextButton').addEventListener('click', () => navigateChart(1))
+
 document.getElementById('viewMain').addEventListener('change', (event) => {
   currentView = event.target.value
-  const now = new Date()
-  currentStartDate = currentView === 'week' ? getStartOfWeek(now) : getStartOfMonth(now)
-  updateChart()
+
+  viewCheck()
 })
 
 function updateChart() {
@@ -94,6 +97,14 @@ function formatTime(value) {
   if (value < 60) return `${value}s`
   if (value < 3600) return `${minutes}m${seconds ? ` ${seconds}s` : ''}`
   return `${hours}h${minutes ? ` ${minutes}m` : ''}${seconds ? ` ${seconds}s` : ''}`
+}
+
+function formatKeys(key) {
+  if (key.split('').length > 24) {
+    key = key.split('').slice(0, 24).join('') + '...'
+  }
+
+  return key
 }
 
 function renderMainChart(data) {
@@ -237,13 +248,13 @@ function renderDetailChart(label, entries, canvas) {
     entryContainer.classList.add('gridDisplay')
 
     const textWebsite = document.createElement('span')
-    textWebsite.textContent = website
+    textWebsite.textContent = formatKeys(website)
     entryContainer.appendChild(textWebsite)
 
     const progressBar = document.createElement('progress')
     progressBar.max = 100
     progressBar.value = percentage
-    progressBar.style.setProperty('background-color', '#ddd')
+    progressBar.style.backgroundColor = '#ddd'
     progressBar.style.setProperty('--progress-bar-fill', window.secondChart.data.datasets[0].backgroundColor[index])
     progressBar.style.height = '1rem'
     progressBar.style.borderRadius = '1rem'
