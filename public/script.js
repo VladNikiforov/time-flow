@@ -9,7 +9,6 @@ let viewMode = viewModeElement.value
 viewRangeElement.addEventListener('change', () => {
   viewRange = viewRangeElement.value
   getStartDate()
-  updateChart()
 })
 
 viewModeElement.addEventListener('change', () => {
@@ -38,6 +37,7 @@ let currentStartDate = null
 function getStartDate() {
   const now = new Date()
   currentStartDate = viewRange === 'Week' ? getStartOfWeek(now) : getStartOfMonth(now)
+  updateChart()
 }
 
 browser.runtime.onMessage.addListener((message) => {
@@ -48,7 +48,6 @@ browser.runtime.onMessage.addListener((message) => {
   rawData = message.data
   console.log('Received data from background.js:', rawData)
   getStartDate()
-  updateChart()
 })
 
 document.getElementById('prevButton').addEventListener('click', () => navigateChart(-1))
@@ -139,7 +138,7 @@ function updateAverage(values) {
 }
 
 function updateTitle() {
-  document.getElementById('title').textContent = `Web Usage - ${viewRange}ly View`
+  document.querySelector('h1').textContent = `Web Usage - ${viewRange}ly View`
 }
 
 function createMainChart(canvas, dates, values, data) {
@@ -149,7 +148,6 @@ function createMainChart(canvas, dates, values, data) {
       labels: formatLabels(dates),
       datasets: [
         {
-          label: viewMode === 'time' ? 'Time spent each Day' : 'Sessions each Day',
           data: values,
           borderWidth: 1,
           backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -244,7 +242,6 @@ function createDetailChart(canvas, websites, values) {
       labels: websites,
       datasets: [
         {
-          label: viewMode === 'time' ? 'Time spent on each Website' : 'Session count',
           data: values,
           borderWidth: 1,
           borderRadius: 8,

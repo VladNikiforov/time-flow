@@ -10,24 +10,32 @@
 </head>
 
 <body>
-    <div>
-        <div>
-            <button id="prevButton">&lt;</button>
-            <button id="nextButton">&gt;</button>
-            <select id="viewRange">
-                <option value="Week" selected>Week</option>
-                <option value="Month">Month</option>
-            </select>
-            <select id="viewMode">
-                <option value="time" selected>time</option>
-                <option value="sessions">sessions</option>
-            </select>
-
-            <h1 id="title"></h1>
-
-            <h2 id="average"></h2>
+    <nav>
+        <div id="leftNav">
+            <div id="navButtons">
+                <button id="prevButton">&lt;</button>
+                <button id="nextButton">&gt;</button>
+            </div>
+            <div id="navView">
+                <select id="viewRange">
+                    <option value="Week" selected>Week</option>
+                    <option value="Month">Month</option>
+                </select>
+                <select id="viewMode">
+                    <option value="time" selected>time</option>
+                    <option value="sessions">sessions</option>
+                </select>
+            </div>
         </div>
 
+        <h1>Web Usage - View</h1>
+
+        <img id="settingsIcon" src="assets/settingsLight.png">
+    </nav>
+
+    <h2 id="average"></h2>
+
+    <div>
         <canvas id="mainChart"></canvas>
     </div>
 
@@ -35,7 +43,7 @@
         <div style="height: 300px; width: 300px; margin-right: 2rem">
             <canvas id="detailChart"></canvas>
         </div>
-        <div id="progressContainer" style="flex: 1"></div>
+        <div id="progressContainer"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

@@ -4,6 +4,31 @@ body {
   color: #fff;
 }
 
+nav,
+#leftNav {
+  display: flex;
+  justify-content: space-between;
+}
+
+#navButtons,
+#navView {
+  margin-right: 2rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+#settingsIcon {
+  width: 2rem;
+  height: 2rem;
+}
+
+#progressContainer {
+  flex: 1;
+}
+
 .gridDisplay {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
