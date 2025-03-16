@@ -216,10 +216,19 @@ function renderDetailChart(entries, canvas) {
 }
 
 function aggregateEntries(entries) {
-  return entries.reduce((acc, entry) => {
+  const aggregatedData = entries.reduce((acc, entry) => {
     acc[entry.website] = (acc[entry.website] || 0) + (viewMode === 'time' ? entry.time : 1)
     return acc
   }, {})
+
+  const sortedAggregatedData = Object.entries(aggregatedData)
+    .sort((a, b) => b[1] - a[1])
+    .reduce((acc, [website, value]) => {
+      acc[website] = value
+      return acc
+    }, {})
+
+  return sortedAggregatedData
 }
 
 function processAggregatedData(aggregatedData) {
@@ -236,6 +245,9 @@ function destroyPreviousChart() {
 }
 
 function createDetailChart(canvas, websites, values) {
+  const backgroundColors = websites.map((_, index) => `hsla(${180 + index * 30}, 48%, 52%, 0.2)`)
+  const borderColors = websites.map((_, index) => `hsl(${180 + index * 30}, 48%, 52%)`)
+
   window.detailChartInstance = new Chart(canvas, {
     type: 'doughnut',
     data: {
@@ -245,6 +257,8 @@ function createDetailChart(canvas, websites, values) {
           data: values,
           borderWidth: 1,
           borderRadius: 8,
+          backgroundColor: backgroundColors,
+          borderColor: borderColors,
         },
       ],
     },
@@ -289,7 +303,8 @@ function createProgressEntry(website, value, percentage, index) {
   const progressBar = document.createElement('progress')
   progressBar.max = 100
   progressBar.value = percentage
-  progressBar.style.setProperty('--progress-bar-fill', window.detailChartInstance.data.datasets[0].backgroundColor[index])
+  progressBar.style.setProperty('--progress-bar-background', `hsla(${180 + index * 30}, 48%, 52%, 0.2)`)
+  progressBar.style.setProperty('--progress-bar-fill', `hsl(${180 + index * 30}, 48%, 52%)`)
   entryContainer.appendChild(progressBar)
 
   const valueText = document.createElement('span')
@@ -299,3 +314,35 @@ function createProgressEntry(website, value, percentage, index) {
 
   return entryContainer
 }
+
+//TODO
+function settingsPopup() {
+  const settingsIcon = document.getElementById('settingsIcon')
+  const overlay = document.getElementById('overlay')
+  const popup = document.getElementById('popup')
+  const closeButton = document.getElementById('closeButton')
+  const theme = document.getElementById('theme')
+
+  theme.addEventListener('change', () => {
+    if (theme.checked) {
+      document.body.style.backgroundColor = '#fff'
+      document.body.style.color = '#000'
+    }
+  })
+
+  settingsIcon.addEventListener('click', () => {
+    overlay.style.display = 'block'
+    popup.style.display = 'block'
+  })
+
+  closeButton.addEventListener('click', () => {
+    overlay.style.display = 'none'
+    popup.style.display = 'none'
+  })
+
+  overlay.addEventListener('click', () => {
+    overlay.style.display = 'none'
+    popup.style.display = 'none'
+  })
+}
+settingsPopup()

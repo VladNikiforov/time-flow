@@ -4,8 +4,7 @@ body {
   color: #fff;
 }
 
-nav,
-#leftNav {
+nav {
   display: flex;
   justify-content: space-between;
 }
@@ -15,12 +14,37 @@ nav,
   margin-right: 2rem;
 }
 
+#leftNav {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  border-radius: 8px;
+  align-items: center;
+}
+
+#navButtons button,
+#navView select {
+  background-color: hsla(180, 48%, 52%, 0.2);
+  color: #fff;
+  border: 1px solid #4bc0c0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+#navButtons button:hover,
+#navView select:focus {
+  background-color: #4bc0c0;
+}
+
 h1 {
   margin: 0;
   font-size: 2rem;
 }
 
 #settingsIcon {
+  cursor: pointer;
   width: 2rem;
   height: 2rem;
 }
@@ -39,15 +63,39 @@ h1 {
 }
 
 progress {
-  background-color: #ddd;
+  background-color: var(--progress-bar-background);
   height: 1rem;
   border-radius: 1rem;
 }
 
-progress::-webkit-progress-value {
+progress::-webkit-progress-value,
+progress::-moz-progress-bar {
   background-color: var(--progress-bar-fill);
 }
 
-progress::-moz-progress-bar {
-  background-color: var(--progress-bar-fill);
+#popup {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #333;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 0.5rem;
+  width: 50vw;
+  height: 50vh;
+  padding: 2rem;
+  z-index: 1001;
+}
+
+#overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(1px);
+  z-index: 1000;
 }
