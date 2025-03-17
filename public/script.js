@@ -315,7 +315,6 @@ function createProgressEntry(website, value, percentage, index) {
   return entryContainer
 }
 
-//TODO
 function settingsPopup() {
   const settingsIcon = document.getElementById('settingsIcon')
   const overlay = document.getElementById('overlay')
@@ -323,11 +322,24 @@ function settingsPopup() {
   const closeButton = document.getElementById('closeButton')
   const theme = document.getElementById('theme')
 
-  theme.addEventListener('change', () => {
-    if (theme.checked) {
+  //finish dark/theme switch
+  function applyTheme(isDark) {
+    if (isDark) {
+      document.body.style.backgroundColor = '#222'
+      document.body.style.color = '#fff'
+      theme.checked = true
+    } else {
       document.body.style.backgroundColor = '#fff'
       document.body.style.color = '#000'
+      theme.checked = false
     }
+  }
+
+  applyTheme(true)
+
+  theme.addEventListener('change', () => {
+    const isDark = theme.checked
+    applyTheme(isDark)
   })
 
   settingsIcon.addEventListener('click', () => {
@@ -345,4 +357,5 @@ function settingsPopup() {
     popup.style.display = 'none'
   })
 }
+
 settingsPopup()

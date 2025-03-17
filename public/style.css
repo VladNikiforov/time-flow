@@ -47,6 +47,7 @@ h1 {
   cursor: pointer;
   width: 2rem;
   height: 2rem;
+  filter: invert(1);
 }
 
 #progressContainer {
