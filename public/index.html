@@ -38,18 +38,20 @@
         <canvas id="mainChart"></canvas>
     </div>
 
-    <div style="display: flex">
+    <div style="display: flex; margin-top: 2rem;">
         <div style="height: 300px; width: 300px; margin-right: 2rem">
             <canvas id="detailChart"></canvas>
         </div>
         <div id="progressContainer"></div>
     </div>
 
-    <div id="overlay" id="overlay"></div>
-    <div id="popup" id="popup">
+    <div id="overlay"></div>
+    <div id="popup">
         <h2>Settings</h2>
-        <span>Theme: </span>
-        <input id="theme" type="checkbox"><br>
+        <h3 id="themeSection">Theme: </h3>
+        <img id="themeIcon" src="assets/theme/light-icon.svg">
+        <input type="range" id="hueSlider" min="1" max="360" value="180">
+
         <button id="closeButton">Close</button>
     </div>
 

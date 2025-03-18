@@ -1,5 +1,8 @@
 let rawData = null
 
+let isDark = true
+let uiHue = 180
+
 const viewRangeElement = document.getElementById('viewRange')
 const viewModeElement = document.getElementById('viewMode')
 
@@ -98,6 +101,10 @@ function fillMissingDates(data, dateRange) {
   return filledData
 }
 
+function formatKey(key) {
+  return key.length > 24 ? key.slice(0, 24) + '...' : key
+}
+
 function formatValue(value) {
   if (viewMode === 'time') {
     const h = Math.floor(value / 3600)
@@ -108,10 +115,6 @@ function formatValue(value) {
   } else if (viewMode === 'sessions') {
     return `${value} session${value === 1 ? '' : 's'}`
   }
-}
-
-function formatKey(key) {
-  return key.length > 24 ? key.slice(0, 24) + '...' : key
 }
 
 function renderMainChart(data) {
@@ -150,8 +153,8 @@ function createMainChart(canvas, dates, values, data) {
         {
           data: values,
           borderWidth: 1,
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
-          borderColor: 'rgb(75, 192, 192)',
+          backgroundColor: `hsla(${uiHue}, 48%, 52%, 0.2)`,
+          borderColor: `hsl(${uiHue}, 48%, 52%)`,
           maxBarThickness: 100,
         },
       ],
@@ -182,16 +185,18 @@ function getChartOptions(dates, data) {
     },
     scales: {
       x: {
-        ticks: { color: '#fff' },
-        grid: { color: 'rgba(255,255,255,0.1)' },
+        ticks: {
+          color: isDark ? '#fff' : '#000',
+        },
+        grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' },
       },
       y: {
         beginAtZero: true,
         ticks: {
           callback: (value) => formatValue(value),
-          color: '#fff',
+          color: isDark ? '#fff' : '#000',
         },
-        grid: { color: 'rgba(255,255,255,0.1)' },
+        grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' },
       },
     },
     onClick: (_, elements) => handleChartClick(elements, dates, data),
@@ -245,8 +250,8 @@ function destroyPreviousChart() {
 }
 
 function createDetailChart(canvas, websites, values) {
-  const backgroundColors = websites.map((_, index) => `hsla(${180 + index * 30}, 48%, 52%, 0.2)`)
-  const borderColors = websites.map((_, index) => `hsl(${180 + index * 30}, 48%, 52%)`)
+  const backgroundColors = websites.map((_, index) => `hsla(${uiHue + index * 20}, 48%, 52%, 0.2)`)
+  const borderColors = websites.map((_, index) => `hsl(${uiHue + index * 20}, 48%, 52%)`)
 
   window.detailChartInstance = new Chart(canvas, {
     type: 'doughnut',
@@ -303,8 +308,8 @@ function createProgressEntry(website, value, percentage, index) {
   const progressBar = document.createElement('progress')
   progressBar.max = 100
   progressBar.value = percentage
-  progressBar.style.setProperty('--progress-bar-background', `hsla(${180 + index * 30}, 48%, 52%, 0.2)`)
-  progressBar.style.setProperty('--progress-bar-fill', `hsl(${180 + index * 30}, 48%, 52%)`)
+  progressBar.style.setProperty('--progress-bar-background', `hsla(${uiHue + index * 20}, 48%, 52%, 0.2)`)
+  progressBar.style.setProperty('--progress-bar-fill', `hsl(${uiHue + index * 20}, 48%, 52%)`)
   entryContainer.appendChild(progressBar)
 
   const valueText = document.createElement('span')
@@ -315,47 +320,48 @@ function createProgressEntry(website, value, percentage, index) {
   return entryContainer
 }
 
-function settingsPopup() {
-  const settingsIcon = document.getElementById('settingsIcon')
-  const overlay = document.getElementById('overlay')
-  const popup = document.getElementById('popup')
-  const closeButton = document.getElementById('closeButton')
-  const theme = document.getElementById('theme')
+const settingsIcon = document.getElementById('settingsIcon')
+const overlay = document.getElementById('overlay')
+const popup = document.getElementById('popup')
+const closeButton = document.getElementById('closeButton')
+const themeIcon = document.getElementById('themeIcon')
+const hueSlider = document.getElementById('hueSlider')
 
-  //finish dark/theme switch
-  function applyTheme(isDark) {
-    if (isDark) {
-      document.body.style.backgroundColor = '#222'
-      document.body.style.color = '#fff'
-      theme.checked = true
-    } else {
-      document.body.style.backgroundColor = '#fff'
-      document.body.style.color = '#000'
-      theme.checked = false
-    }
-  }
+function applyTheme(isDark) {
+  const backgroundColor = isDark ? '#222' : '#eee'
+  const textColor = isDark ? '#fff' : '#000'
+  const themeIconSrc = isDark ? 'light' : 'dark'
+  const filterValue = isDark ? 'invert(1)' : 'invert(0)'
 
-  applyTheme(true)
+  document.documentElement.style.setProperty('--background-color', backgroundColor)
+  document.documentElement.style.setProperty('--text-color', textColor)
+  themeIcon.src = `assets/theme/${themeIconSrc}-icon.svg`
+  themeIcon.style.filter = filterValue
+  settingsIcon.style.filter = filterValue
 
-  theme.addEventListener('change', () => {
-    const isDark = theme.checked
-    applyTheme(isDark)
-  })
-
-  settingsIcon.addEventListener('click', () => {
-    overlay.style.display = 'block'
-    popup.style.display = 'block'
-  })
-
-  closeButton.addEventListener('click', () => {
-    overlay.style.display = 'none'
-    popup.style.display = 'none'
-  })
-
-  overlay.addEventListener('click', () => {
-    overlay.style.display = 'none'
-    popup.style.display = 'none'
-  })
+  updateChart()
 }
 
-settingsPopup()
+themeIcon.addEventListener('click', () => {
+  isDark = !isDark
+  applyTheme(isDark)
+})
+
+function togglePopup(action) {
+  overlay.style.display = action === 'open' ? 'block' : 'none'
+  popup.style.display = action === 'open' ? 'block' : 'none'
+}
+
+settingsIcon.addEventListener('click', () => togglePopup('open'))
+closeButton.addEventListener('click', () => togglePopup('close'))
+overlay.addEventListener('click', () => togglePopup('close'))
+
+hueSlider.addEventListener('input', () => {
+  uiHue = hueSlider.value
+  document.documentElement.style.setProperty('--special-color-dark', `hsla(${uiHue}, 48%, 52%, 0.2)`)
+  document.documentElement.style.setProperty('--special-color-light', `hsl(${uiHue}, 48%, 52%)`)
+  updateChart()
+})
+
+hueSlider.addEventListener('mousedown', () => (popup.style.visibility = 'hidden'))
+hueSlider.addEventListener('mouseup', () => (popup.style.visibility = 'visible'))
