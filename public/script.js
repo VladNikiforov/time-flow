@@ -249,9 +249,14 @@ function destroyPreviousChart() {
   }
 }
 
+function colorAlgorithm(color, index) {
+  const colorFormula = `${uiHue + index * 20}, 48%, 52%`
+  color === 'dark' ? `hsla(${colorFormula}, 0.2)` : `hsl(${colorFormula})`
+}
+
 function createDetailChart(canvas, websites, values) {
-  const backgroundColors = websites.map((_, index) => `hsla(${uiHue + index * 20}, 48%, 52%, 0.2)`)
-  const borderColors = websites.map((_, index) => `hsl(${uiHue + index * 20}, 48%, 52%)`)
+  const backgroundColors = websites.map((_, index) => colorAlgorithm('dark', index))
+  const borderColors = websites.map((_, index) => colorAlgorithm('light', index))
 
   window.detailChartInstance = new Chart(canvas, {
     type: 'doughnut',
@@ -308,8 +313,8 @@ function createProgressEntry(website, value, percentage, index) {
   const progressBar = document.createElement('progress')
   progressBar.max = 100
   progressBar.value = percentage
-  progressBar.style.setProperty('--progress-bar-background', `hsla(${uiHue + index * 20}, 48%, 52%, 0.2)`)
-  progressBar.style.setProperty('--progress-bar-fill', `hsl(${uiHue + index * 20}, 48%, 52%)`)
+  progressBar.style.setProperty('--progress-bar-background', colorAlgorithm('dark', index))
+  progressBar.style.setProperty('--progress-bar-fill', colorAlgorithm('light', index))
   entryContainer.appendChild(progressBar)
 
   const valueText = document.createElement('span')
@@ -327,11 +332,11 @@ const closeButton = document.getElementById('closeButton')
 const themeIcon = document.getElementById('themeIcon')
 const hueSlider = document.getElementById('hueSlider')
 
-function applyTheme(isDark) {
+function applyTheme() {
   const backgroundColor = isDark ? '#222' : '#eee'
   const textColor = isDark ? '#fff' : '#000'
   const themeIconSrc = isDark ? 'light' : 'dark'
-  const filterValue = isDark ? 'invert(1)' : 'invert(0)'
+  const filterValue = `invert(${+isDark})`
 
   document.documentElement.style.setProperty('--background-color', backgroundColor)
   document.documentElement.style.setProperty('--text-color', textColor)
@@ -344,12 +349,13 @@ function applyTheme(isDark) {
 
 themeIcon.addEventListener('click', () => {
   isDark = !isDark
-  applyTheme(isDark)
+  applyTheme()
 })
 
 function togglePopup(action) {
-  overlay.style.display = action === 'open' ? 'block' : 'none'
-  popup.style.display = action === 'open' ? 'block' : 'none'
+  const actionCheck = action === 'open' ? 'block' : 'none'
+  overlay.style.display = actionCheck
+  popup.style.display = actionCheck
 }
 
 settingsIcon.addEventListener('click', () => togglePopup('open'))
