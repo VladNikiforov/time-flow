@@ -153,8 +153,8 @@ function createMainChart(canvas, dates, values, data) {
         {
           data: values,
           borderWidth: 1,
-          backgroundColor: `hsla(${uiHue}, 48%, 52%, 0.2)`,
-          borderColor: `hsl(${uiHue}, 48%, 52%)`,
+          backgroundColor: colorAlgorithm('dark'),
+          borderColor: colorAlgorithm('light'),
           maxBarThickness: 100,
         },
       ],
@@ -172,6 +172,9 @@ function formatLabels(dates) {
 
 function getChartOptions(dates, data) {
   return {
+    animation: {
+      duration: 0,
+    },
     responsive: true,
     plugins: {
       title: { display: false },
@@ -249,9 +252,9 @@ function destroyPreviousChart() {
   }
 }
 
-function colorAlgorithm(color, index) {
+function colorAlgorithm(color, index = 0) {
   const colorFormula = `${uiHue + index * 20}, 48%, 52%`
-  color === 'dark' ? `hsla(${colorFormula}, 0.2)` : `hsl(${colorFormula})`
+  return color === 'dark' ? `hsla(${colorFormula}, 0.2)` : `hsl(${colorFormula})`
 }
 
 function createDetailChart(canvas, websites, values) {
@@ -364,10 +367,39 @@ overlay.addEventListener('click', () => togglePopup('close'))
 
 hueSlider.addEventListener('input', () => {
   uiHue = hueSlider.value
-  document.documentElement.style.setProperty('--special-color-dark', `hsla(${uiHue}, 48%, 52%, 0.2)`)
-  document.documentElement.style.setProperty('--special-color-light', `hsl(${uiHue}, 48%, 52%)`)
+  document.documentElement.style.setProperty('--special-color-dark', colorAlgorithm('dark'))
+  document.documentElement.style.setProperty('--special-color-light', colorAlgorithm('light'))
   updateChart()
 })
 
 hueSlider.addEventListener('mousedown', () => (popup.style.visibility = 'hidden'))
 hueSlider.addEventListener('mouseup', () => (popup.style.visibility = 'visible'))
+
+function easterEgg() {
+  let sequence = ''
+  const target = 'cool'
+  let interval = null
+
+  document.addEventListener('keydown', (event) => {
+    sequence += event.key.toLowerCase()
+
+    if (!target.startsWith(sequence)) {
+      sequence = event.key.toLowerCase()
+    }
+
+    if (sequence === target) {
+      if (interval) clearInterval(interval)
+
+      interval = setInterval(() => {
+        uiHue = (uiHue + 1) % 360
+        document.documentElement.style.setProperty('--special-color-dark', colorAlgorithm('dark'))
+        document.documentElement.style.setProperty('--special-color-light', colorAlgorithm('light'))
+        updateChart()
+      }, 50)
+
+      sequence = ''
+    }
+  })
+}
+
+easterEgg()
