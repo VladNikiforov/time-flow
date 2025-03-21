@@ -20,8 +20,8 @@ viewModeElement.addEventListener('change', () => {
 })
 
 function getStartOfWeek(date) {
-  const day = date.getDay() - 1
-  const difference = date.getDate() - day + (day === 0 ? -6 : 1)
+  const day = date.getDay()
+  const difference = date.getDate() - (day === 0 ? 6 : day - 1)
   const startOfWeek = new Date(date)
   startOfWeek.setDate(difference)
   startOfWeek.setHours(0, 0, 0, 0)
@@ -75,19 +75,26 @@ function navigateChart(direction) {
   updateChart()
 }
 
+function toLocalISODate(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 function generateDateRange(startDate) {
   let range = []
   if (viewRange === 'Week') {
     for (let i = 0; i < 7; i++) {
       const date = new Date(startDate)
       date.setDate(startDate.getDate() + i)
-      range.push(date.toISOString().split('T')[0])
+      range.push(toLocalISODate(date))
     }
   } else if (viewRange === 'Month') {
     const daysInMonth = getDaysInMonth(startDate)
     for (let i = 0; i < daysInMonth; i++) {
       const date = new Date(startDate.getFullYear(), startDate.getMonth(), i + 1)
-      range.push(date.toISOString().split('T')[0])
+      range.push(toLocalISODate(date))
     }
   }
   return range
@@ -191,7 +198,7 @@ function getChartOptions(dates, data) {
         ticks: {
           color: isDark ? '#fff' : '#000',
         },
-        grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' },
+        grid: { color: isDark ? '#ffffff1a' : '#0000001a' },
       },
       y: {
         beginAtZero: true,
@@ -199,7 +206,7 @@ function getChartOptions(dates, data) {
           callback: (value) => formatValue(value),
           color: isDark ? '#fff' : '#000',
         },
-        grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' },
+        grid: { color: isDark ? '#ffffff1a' : '#0000001a' },
       },
     },
     onClick: (_, elements) => handleChartClick(elements, dates, data),
@@ -213,6 +220,11 @@ function handleChartClick(elements, dates, data) {
     renderDetailChart(data[label], document.getElementById('detailChart').getContext('2d'))
   }
 }
+
+/*
+const today = new Date().toISOString().split('T')[0]
+renderDetailChart(rawData[today], document.getElementById('detailChart').getContext('2d'))
+*/
 
 function renderDetailChart(entries, canvas) {
   const aggregatedData = aggregateEntries(entries)
@@ -375,6 +387,7 @@ hueSlider.addEventListener('input', () => {
 hueSlider.addEventListener('mousedown', () => (popup.style.visibility = 'hidden'))
 hueSlider.addEventListener('mouseup', () => (popup.style.visibility = 'visible'))
 
+/*
 function easterEgg() {
   let sequence = ''
   const target = 'cool'
@@ -401,5 +414,5 @@ function easterEgg() {
     }
   })
 }
-
 easterEgg()
+*/
