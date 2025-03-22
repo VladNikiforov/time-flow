@@ -1,4 +1,14 @@
-let rawData = null
+const rawData = {}
+browser.runtime.onMessage.addListener(getData)
+function getData(message) {
+  if (message.action !== 'sendData') {
+    console.error('Error receiving data from background.js:', rawData)
+  }
+
+  Object.assign(rawData, message.data)
+  console.log('Received data from background.js:', rawData)
+  getStartDate()
+}
 
 let isDark = true
 let uiHue = 180
@@ -19,6 +29,14 @@ viewModeElement.addEventListener('change', () => {
   updateChart()
 })
 
+let currentStartDate = null
+function getStartDate() {
+  if (viewRange === 'Day') return
+  const now = new Date()
+  currentStartDate = viewRange === 'Week' ? getStartOfWeek(now) : getStartOfMonth(now)
+  updateChart()
+}
+
 function getStartOfWeek(date) {
   const day = date.getDay()
   const difference = date.getDate() - (day === 0 ? 6 : day - 1)
@@ -35,23 +53,6 @@ function getStartOfMonth(date) {
 function getDaysInMonth(date) {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
 }
-
-let currentStartDate = null
-function getStartDate() {
-  const now = new Date()
-  currentStartDate = viewRange === 'Week' ? getStartOfWeek(now) : getStartOfMonth(now)
-  updateChart()
-}
-
-browser.runtime.onMessage.addListener((message) => {
-  if (message.action !== 'sendData') {
-    console.error('Error receiving data from background.js:', rawData)
-  }
-
-  rawData = message.data
-  console.log('Received data from background.js:', rawData)
-  getStartDate()
-})
 
 document.getElementById('prevButton').addEventListener('click', () => navigateChart(-1))
 document.getElementById('nextButton').addEventListener('click', () => navigateChart(1))
@@ -235,6 +236,12 @@ function renderDetailChart(entries, canvas) {
   renderProgressBars(websites, values, totalSpentTime)
 }
 
+function destroyPreviousChart() {
+  if (window.detailChartInstance) {
+    window.detailChartInstance.destroy()
+  }
+}
+
 function aggregateEntries(entries) {
   const aggregatedData = entries.reduce((acc, entry) => {
     acc[entry.website] = (acc[entry.website] || 0) + (viewMode === 'time' ? entry.time : 1)
@@ -256,12 +263,6 @@ function processAggregatedData(aggregatedData) {
   const values = Object.values(aggregatedData)
   const totalSpentTime = values.reduce((sum, value) => sum + value, 0)
   return { websites, values, totalSpentTime }
-}
-
-function destroyPreviousChart() {
-  if (window.detailChartInstance) {
-    window.detailChartInstance.destroy()
-  }
 }
 
 function colorAlgorithm(color, index = 0) {
