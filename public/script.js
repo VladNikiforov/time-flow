@@ -31,7 +31,6 @@ viewModeElement.addEventListener('change', () => {
 
 let currentStartDate = null
 function getStartDate() {
-  if (viewRange === 'Day') return
   const now = new Date()
   currentStartDate = viewRange === 'Week' ? getStartOfWeek(now) : getStartOfMonth(now)
   updateChart()
@@ -214,13 +213,23 @@ function getChartOptions(dates, data) {
   }
 }
 
+const dailyStatsElement = document.getElementById('dailyStats')
+
 function handleChartClick(elements, dates, data) {
   if (elements.length > 0) {
     const index = elements[0].index
     const label = dates[index]
     renderDetailChart(data[label], document.getElementById('detailChart').getContext('2d'))
+
+    dailyStatsElement.style.display = 'flex'
   }
 }
+
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('#mainChart') && !event.target.closest('#dailyStats')) {
+    dailyStatsElement.style.display = 'none'
+  }
+})
 
 /*
 const today = new Date().toISOString().split('T')[0]
@@ -303,17 +312,32 @@ function createDetailChart(canvas, websites, values) {
   })
 }
 
+const maxItems = 3
 function renderProgressBars(websites, values, totalSpentTime) {
   const progressContainer = document.getElementById('progressContainer')
   progressContainer.innerHTML = ''
 
-  websites.forEach((website, index) => {
+  const entries = websites.map((website, index) => {
     const percentage = Math.round((values[index] / totalSpentTime) * 100)
     const entryContainer = createProgressEntry(website, values[index], percentage, index)
     progressContainer.appendChild(entryContainer)
+    return entryContainer
   })
 
-  const totalTime = document.createElement('p')
+  if (websites.length > maxItems) {
+    const showMoreButton = document.createElement('button')
+    showMoreButton.textContent = 'Show All'
+    showMoreButton.style.marginRight = '1rem'
+    showMoreButton.addEventListener('click', () => {
+      entries.slice(maxItems).forEach((entry) => {
+        entry.classList.remove('hidden')
+      })
+      showMoreButton.style.display = 'none'
+    })
+    progressContainer.appendChild(showMoreButton)
+  }
+
+  const totalTime = document.createElement('span')
   totalTime.textContent = `Total: ${formatValue(totalSpentTime)}`
   progressContainer.appendChild(totalTime)
 }
@@ -321,6 +345,10 @@ function renderProgressBars(websites, values, totalSpentTime) {
 function createProgressEntry(website, value, percentage, index) {
   const entryContainer = document.createElement('div')
   entryContainer.classList.add('gridDisplay')
+
+  if (index >= maxItems) {
+    entryContainer.classList.add('hidden')
+  }
 
   const labelText = document.createElement('span')
   labelText.textContent = formatKey(website)
