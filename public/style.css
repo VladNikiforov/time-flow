@@ -6,6 +6,7 @@
 }
 
 body {
+  margin-top: 0;
   font-family: sans-serif;
   background-color: var(--background-color);
   color: var(--text-color);
@@ -17,6 +18,10 @@ h1 {
 }
 
 nav {
+  background-color: #222222e6;
+  backdrop-filter: blur(1px);
+  position: sticky;
+  top: 0;
   display: flex;
   justify-content: space-between;
 }
@@ -38,15 +43,13 @@ select:hover {
 }
 
 #navButtons,
-#navView {
-  margin-right: 2rem;
+#viewRange,
+#viewMode {
+  margin-right: 1rem;
 }
 
-#leftNav {
+#rightNav {
   display: flex;
-  justify-content: space-between;
-  padding: 10px;
-  border-radius: 8px;
   align-items: center;
 }
 
@@ -55,8 +58,8 @@ select:hover {
   border-radius: 0.5rem;
   padding: 2rem;
   flex: 1;
-  overflow-y: auto; 
-  max-height: 300px; 
+  overflow-y: auto;
+  max-height: 300px;
 }
 
 .gridDisplay {
@@ -147,4 +150,13 @@ progress::-moz-progress-bar {
 
 .hidden {
   display: none;
+}
+
+#average {
+  display: inline;
+}
+
+#mainChartNav {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }

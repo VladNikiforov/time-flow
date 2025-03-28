@@ -61,6 +61,10 @@ function updateChart() {
   const dateRange = generateDateRange(currentStartDate)
   const filledData = fillMissingDates(rawData, dateRange)
   renderMainChart(filledData)
+
+  const today = toLocalISODate(new Date())
+  const simulatedElement = [{ index: dateRange.indexOf(today) }]
+  handleChartClick(simulatedElement, dateRange, filledData)
 }
 
 function navigateChart(direction) {
@@ -132,7 +136,6 @@ function renderMainChart(data) {
   const values = getValues(dates, data)
 
   updateAverage(values)
-  updateTitle()
   createMainChart(mainChartCanvas, dates, values, data)
 }
 
@@ -145,10 +148,6 @@ function getValues(dates, data) {
 function updateAverage(values) {
   const averageValue = Math.round(values.reduce((sum, time) => sum + time, 0) / values.length)
   document.getElementById('average').textContent = `${viewRange} Average: ${formatValue(averageValue)}`
-}
-
-function updateTitle() {
-  document.querySelector('h1').textContent = `Web Usage - ${viewRange}ly View`
 }
 
 function createMainChart(canvas, dates, values, data) {
@@ -224,17 +223,6 @@ function handleChartClick(elements, dates, data) {
     dailyStatsElement.style.display = 'flex'
   }
 }
-
-document.addEventListener('click', (event) => {
-  if (!event.target.closest('#mainChart') && !event.target.closest('#dailyStats')) {
-    dailyStatsElement.style.display = 'none'
-  }
-})
-
-/*
-const today = new Date().toISOString().split('T')[0]
-renderDetailChart(rawData[today], document.getElementById('detailChart').getContext('2d'))
-*/
 
 function renderDetailChart(entries, canvas) {
   const aggregatedData = aggregateEntries(entries)

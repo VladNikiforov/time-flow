@@ -10,26 +10,15 @@
 
 <body>
     <nav>
-        <div id="leftNav">
-            <div id="navButtons">
-                <button id="prevButton">&lt;</button>
-                <button id="nextButton">&gt;</button>
-            </div>
-            <div id="navView">
-                <select id="viewRange">
-                    <option value="Week" selected>Week</option>
-                    <option value="Month">Month</option>
-                </select>
-                <select id="viewMode">
-                    <option value="time" selected>time</option>
-                    <option value="sessions">sessions</option>
-                </select>
-            </div>
+        <h1>TimeFlow - Dashboard</h1>
+
+        <div id="rightNav">
+            <select id="viewMode">
+                <option value="time" selected>time</option>
+                <option value="sessions">sessions</option>
+            </select>
+            <img id="settingsIcon" src="assets/settings-icon.svg">
         </div>
-
-        <h1>Web Usage - View</h1>
-
-        <img id="settingsIcon" src="assets/settings-icon.svg">
     </nav>
 
     <div id="dailyStats">
@@ -39,7 +28,17 @@
         <div id="progressContainer"></div>
     </div>
 
-    <h2 id="average"></h2>
+    <div id="mainChartNav">
+        <span id="navButtons">
+            <button id="prevButton">&lt;</button>
+            <button id="nextButton">&gt;</button>
+        </span>
+        <select id="viewRange">
+            <option value="Week" selected>Week</option>
+            <option value="Month">Month</option>
+        </select>
+        <h2 id="average"></h2>
+    </div>
 
     <div>
         <canvas id="mainChart"></canvas>
