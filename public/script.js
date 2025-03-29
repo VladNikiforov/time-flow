@@ -10,6 +10,27 @@ function getData(message) {
   getStartDate()
 }
 
+// Note that this is only sample data
+function generateSampleData() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day)
+    const isoDate = toLocalISODate(date)
+
+    rawData[isoDate] = Array.from({ length: Math.floor(Math.random() * 5) + 1 }, () => ({
+      website: `example${Math.floor(Math.random() * 10)}.com`,
+      time: Math.floor(Math.random() * 3600) + 60,
+    }))
+  }
+
+  console.log('Generated mock rawData:', rawData)
+}
+generateSampleData()
+
 let isDark = true
 let uiHue = 180
 
@@ -53,18 +74,48 @@ function getDaysInMonth(date) {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
 }
 
-document.getElementById('prevButton').addEventListener('click', () => navigateChart(-1))
-document.getElementById('nextButton').addEventListener('click', () => navigateChart(1))
+const prevButton = document.getElementById('prevButton')
+const nextButton = document.getElementById('nextButton')
+
+prevButton.addEventListener('click', () => navigateChart(-1))
+nextButton.addEventListener('click', () => navigateChart(1))
 
 function updateChart() {
-  if (!rawData) return
   const dateRange = generateDateRange(currentStartDate)
   const filledData = fillMissingDates(rawData, dateRange)
   renderMainChart(filledData)
+  updateDailyStats(dateRange, filledData)
+}
 
+function updateDailyStats(dateRange, filledData) {
   const today = toLocalISODate(new Date())
   const simulatedElement = [{ index: dateRange.indexOf(today) }]
   handleChartClick(simulatedElement, dateRange, filledData)
+}
+
+const prevStat = document.getElementById('prevStat')
+const nextStat = document.getElementById('nextStat')
+
+prevStat.addEventListener('click', () => navigateStats(-1))
+nextStat.addEventListener('click', () => navigateStats(1))
+
+let currentStatIndex = 0
+
+function navigateStats(direction) {
+  const dateRange = generateDateRange(currentStartDate)
+  const filledData = fillMissingDates(rawData, dateRange)
+
+  currentStatIndex += direction
+  if (currentStatIndex < 0) currentStatIndex = dateRange.length - 1
+  if (currentStatIndex >= dateRange.length) currentStatIndex = 0
+
+  const today = toLocalISODate(new Date())
+  const currentIndex = (dateRange.indexOf(today) + currentStatIndex) % dateRange.length
+
+  document.getElementById('date').textContent = dateRange[currentIndex]
+
+  const simulatedElement = { index: currentIndex }
+  handleChartClick([simulatedElement], dateRange, filledData)
 }
 
 function navigateChart(direction) {
@@ -212,16 +263,12 @@ function getChartOptions(dates, data) {
   }
 }
 
-const dailyStatsElement = document.getElementById('dailyStats')
-
 function handleChartClick(elements, dates, data) {
-  if (elements.length > 0) {
-    const index = elements[0].index
-    const label = dates[index]
-    renderDetailChart(data[label], document.getElementById('detailChart').getContext('2d'))
-
-    dailyStatsElement.style.display = 'flex'
-  }
+  if (elements.length == 0) return
+  const index = elements[0].index
+  const label = dates[index]
+  renderDetailChart(data[label], document.getElementById('detailChart').getContext('2d'))
+  document.getElementById('date').textContent = label
 }
 
 function renderDetailChart(entries, canvas) {

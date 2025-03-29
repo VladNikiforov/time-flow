@@ -18,7 +18,7 @@ h1 {
 }
 
 nav {
-  background-color: #222222e6;
+  background-color: var(--background-color);
   backdrop-filter: blur(1px);
   position: sticky;
   top: 0;
@@ -144,7 +144,7 @@ progress::-moz-progress-bar {
 }
 
 #dailyStats {
-  display: none;
+  display: flex;
   margin-top: 2rem;
 }
 
