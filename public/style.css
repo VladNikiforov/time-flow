@@ -56,8 +56,7 @@ select:hover {
 #progressContainer {
   border: 1px solid var(--text-color);
   border-radius: 0.5rem;
-  padding: 2rem;
-  flex: 1;
+  padding: 1rem;
   overflow-y: auto;
   max-height: 300px;
 }
@@ -145,7 +144,6 @@ progress::-moz-progress-bar {
 
 #dailyStats {
   display: flex;
-  margin-top: 2rem;
 }
 
 .hidden {
@@ -159,4 +157,17 @@ progress::-moz-progress-bar {
 #mainChartNav {
   margin-top: 1rem;
   margin-bottom: 1rem;
+}
+
+#date {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+#totalDaily {
+  font-size: 2rem;
+}
+
+#statDiv {
+  flex: 1;
 }

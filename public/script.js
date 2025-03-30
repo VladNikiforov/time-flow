@@ -112,7 +112,7 @@ function navigateStats(direction) {
   const today = toLocalISODate(new Date())
   const currentIndex = (dateRange.indexOf(today) + currentStatIndex) % dateRange.length
 
-  document.getElementById('date').textContent = dateRange[currentIndex]
+  document.getElementById('date').textContent = formatDate(dateRange[currentIndex])
 
   const simulatedElement = { index: currentIndex }
   handleChartClick([simulatedElement], dateRange, filledData)
@@ -128,13 +128,6 @@ function navigateChart(direction) {
     currentStartDate = new Date(year, month, 1)
   }
   updateChart()
-}
-
-function toLocalISODate(date) {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
 }
 
 function generateDateRange(startDate) {
@@ -161,6 +154,19 @@ function fillMissingDates(data, dateRange) {
     filledData[date] = data[date] || [{ time: 0 }]
   })
   return filledData
+}
+
+function toLocalISODate(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function formatDate(date) {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const [year, month, day] = date.split('-')
+  return `${parseInt(day)} ${months[parseInt(month) - 1]} ${year}`
 }
 
 function formatKey(key) {
@@ -229,9 +235,6 @@ function formatLabels(dates) {
 
 function getChartOptions(dates, data) {
   return {
-    animation: {
-      duration: 0,
-    },
     responsive: true,
     plugins: {
       title: { display: false },
@@ -268,7 +271,7 @@ function handleChartClick(elements, dates, data) {
   const index = elements[0].index
   const label = dates[index]
   renderDetailChart(data[label], document.getElementById('detailChart').getContext('2d'))
-  document.getElementById('date').textContent = label
+  document.getElementById('date').textContent = formatDate(label)
 }
 
 function renderDetailChart(entries, canvas) {
@@ -372,9 +375,8 @@ function renderProgressBars(websites, values, totalSpentTime) {
     progressContainer.appendChild(showMoreButton)
   }
 
-  const totalTime = document.createElement('span')
-  totalTime.textContent = `Total: ${formatValue(totalSpentTime)}`
-  progressContainer.appendChild(totalTime)
+  const totalTime = document.getElementById('totalDaily')
+  totalTime.textContent = formatValue(totalSpentTime)
 }
 
 function createProgressEntry(website, value, percentage, index) {
@@ -450,33 +452,3 @@ hueSlider.addEventListener('input', () => {
 
 hueSlider.addEventListener('mousedown', () => (popup.style.visibility = 'hidden'))
 hueSlider.addEventListener('mouseup', () => (popup.style.visibility = 'visible'))
-
-/*
-function easterEgg() {
-  let sequence = ''
-  const target = 'cool'
-  let interval = null
-
-  document.addEventListener('keydown', (event) => {
-    sequence += event.key.toLowerCase()
-
-    if (!target.startsWith(sequence)) {
-      sequence = event.key.toLowerCase()
-    }
-
-    if (sequence === target) {
-      if (interval) clearInterval(interval)
-
-      interval = setInterval(() => {
-        uiHue = (uiHue + 1) % 360
-        document.documentElement.style.setProperty('--special-color-dark', colorAlgorithm('dark'))
-        document.documentElement.style.setProperty('--special-color-light', colorAlgorithm('light'))
-        updateChart()
-      }, 50)
-
-      sequence = ''
-    }
-  })
-}
-easterEgg()
-*/
