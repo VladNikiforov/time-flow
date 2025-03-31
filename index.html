@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TimeFlow</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <nav>
+        <h1>TimeFlow - Dashboard</h1>
+
+        <div id="rightNav">
+            <select id="viewMode">
+                <option value="time" selected>time</option>
+                <option value="sessions">sessions</option>
+            </select>
+            <img id="settingsIcon" src="assets/settings-icon.svg">
+        </div>
+    </nav>
+
+    <div>
+        <span id="statButtons">
+            <button id="prevStat">&lt;</button>
+            <button id="nextStat">&gt;</button>
+        </span>
+        <span id="date"></span>
+    </div>
+
+    <div id="dailyStats">
+        <div style="height: 300px; width: 300px; margin-right: 2rem">
+            <canvas id="detailChart"></canvas>
+        </div>
+        <div id="statDiv">
+            <div id="totalDaily"></div>
+            <div id="progressContainer"></div>
+        </div>
+    </div>
+
+    <div id="mainChartNav">
+        <span id="navButtons">
+            <button id="prevButton">&lt;</button>
+            <button id="nextButton">&gt;</button>
+        </span>
+        <select id="viewRange">
+            <option value="Week" selected>Week</option>
+            <option value="Month">Month</option>
+        </select>
+        <h2 id="average"></h2>
+    </div>
+
+    <div>
+        <canvas id="mainChart"></canvas>
+    </div>
+
+    <div id="overlay"></div>
+    <div id="popup">
+        <h2>Settings</h2>
+        <h3 id="themeSection">Theme: </h3>
+        <img id="themeIcon" src="assets/theme/light-icon.svg">
+        <input type="range" id="hueSlider" min="1" max="360" value="180">
+
+        <button id="closeButton">Close</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script type="module" src="dist/script.js"></script>
+</body>
+
+</html>
