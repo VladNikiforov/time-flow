@@ -12,7 +12,7 @@
         "sourceMap": true
     },
     "include": [
-        "src/**/*.ts"
+        "public/src/**/*.ts"
     ],
     "exclude": [
         "node_modules"

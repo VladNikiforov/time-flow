@@ -1,4 +1,13 @@
-const rawData: any = {}
+type WebsiteData = {
+  website: string
+  time: number
+}
+
+type RawData = {
+  [date: string]: WebsiteData[]
+}
+
+const rawData: RawData = {}
 browser.runtime.onMessage.addListener(getData)
 function getData(message: any) {
   if (message.action !== 'sendData') {
@@ -34,19 +43,22 @@ generateSampleData()
 let isDark = true
 let uiHue = 180
 
-const viewRangeElement: any = document.getElementById('viewRange')
-const viewModeElement: any = document.getElementById('viewMode')
+const viewRangeElement = document.getElementById('viewRange') as HTMLSelectElement
+const viewModeElement = document.getElementById('viewMode') as HTMLSelectElement
 
-let viewRange: any = viewRangeElement.value
-let viewMode: any = viewModeElement.value
+type ViewRange = 'Week' | 'Month'
+let viewRange: ViewRange = viewRangeElement.value as ViewRange
+
+type ViewMode = 'time' | 'sessions'
+let viewMode: ViewMode = viewModeElement.value as ViewMode
 
 viewRangeElement.addEventListener('change', () => {
-  viewRange = viewRangeElement.value
+  viewRange = viewRangeElement.value as ViewRange
   getStartDate()
 })
 
 viewModeElement.addEventListener('change', () => {
-  viewMode = viewModeElement.value
+  viewMode = viewModeElement.value as ViewMode
   updateChart()
 })
 
@@ -57,7 +69,7 @@ function getStartDate() {
   updateChart()
 }
 
-function getStartOfWeek(date: any) {
+function getStartOfWeek(date: Date) {
   const day = date.getDay()
   const difference = date.getDate() - (day === 0 ? 6 : day - 1)
   const startOfWeek = new Date(date)
@@ -66,16 +78,16 @@ function getStartOfWeek(date: any) {
   return startOfWeek
 }
 
-function getStartOfMonth(date: any) {
+function getStartOfMonth(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), 1)
 }
 
-function getDaysInMonth(date: any) {
+function getDaysInMonth(date: Date) {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
 }
 
-const prevButton: any = document.getElementById('prevButton')
-const nextButton: any = document.getElementById('nextButton')
+const prevButton = document.getElementById('prevButton') as HTMLButtonElement
+const nextButton = document.getElementById('nextButton') as HTMLButtonElement
 
 prevButton.addEventListener('click', () => navigateChart(-1))
 nextButton.addEventListener('click', () => navigateChart(1))
@@ -93,15 +105,15 @@ function updateDailyStats(dateRange: any, filledData: any) {
   handleChartClick(simulatedElement, dateRange, filledData)
 }
 
-const prevStat: any = document.getElementById('prevStat')
-const nextStat: any = document.getElementById('nextStat')
+const prevStat = document.getElementById('prevStat') as HTMLButtonElement
+const nextStat = document.getElementById('nextStat') as HTMLButtonElement
 
 prevStat.addEventListener('click', () => navigateStats(-1))
 nextStat.addEventListener('click', () => navigateStats(1))
 
 let currentStatIndex = 0
 
-function navigateStats(direction: any) {
+function navigateStats(direction: number) {
   const dateRange = generateDateRange(currentStartDate)
   const filledData = fillMissingDates(rawData, dateRange)
 
@@ -120,7 +132,7 @@ function navigateStats(direction: any) {
   handleChartClick([simulatedElement], dateRange, filledData)
 }
 
-function navigateChart(direction: any) {
+function navigateChart(direction: number) {
   if (viewRange === 'Week') {
     const date = currentStartDate.getDate()
     currentStartDate.setDate(date + direction * 7)
@@ -132,27 +144,27 @@ function navigateChart(direction: any) {
   updateChart()
 }
 
-function generateDateRange(startDate: any) {
-  let range = []
+function generateDateRange(startDate: Date) {
+  let dateRange = []
   if (viewRange === 'Week') {
     for (let i = 0; i < 7; i++) {
       const date = new Date(startDate)
       date.setDate(startDate.getDate() + i)
-      range.push(toLocalISODate(date))
+      dateRange.push(toLocalISODate(date))
     }
   } else if (viewRange === 'Month') {
     const daysInMonth = getDaysInMonth(startDate)
     for (let i = 0; i < daysInMonth; i++) {
       const date = new Date(startDate.getFullYear(), startDate.getMonth(), i + 1)
-      range.push(toLocalISODate(date))
+      dateRange.push(toLocalISODate(date))
     }
   }
-  return range
+  return dateRange
 }
 
-function fillMissingDates(data: any, dateRange: any) {
-  let filledData: any = {}
-  dateRange.forEach((date: any) => {
+function fillMissingDates(data: RawData, dateRange: any) {
+  let filledData: RawData = {}
+  dateRange.forEach((date: number) => {
     filledData[date] = data[date] || [{ time: 0 }]
   })
   return filledData
@@ -171,11 +183,11 @@ function formatDate(date: any) {
   return `${parseInt(day)} ${months[parseInt(month) - 1]} ${year}`
 }
 
-function formatKey(key: any) {
+function formatKey(key: string) {
   return key.length > 24 ? key.slice(0, 24) + '...' : key
 }
 
-function formatValue(value: any) {
+function formatValue(value: number) {
   if (viewMode === 'time') {
     const h = Math.floor(value / 3600)
     const m = Math.floor((value % 3600) / 60)
@@ -239,7 +251,7 @@ function createMainChart(canvas: any, dates: any, values: any, data: any) {
         grid: { color: isDark ? '#ffffff1a' : '#0000001a' },
       },
     },
-    onClick: (_: any, elements: any) => handleChartClick(elements, dates, data),
+    onClick: (_: null, elements: any) => handleChartClick(elements, dates, data),
   }
 
   window.chartInstance = new Chart(canvas, {
@@ -315,7 +327,7 @@ function processAggregatedData(aggregatedData: any) {
   return { websites, values, totalSpentTime }
 }
 
-function colorAlgorithm(color: any, index = 0) {
+function colorAlgorithm(color: 'dark' | 'light', index = 0) {
   const colorFormula = `${uiHue + index * 20}, 48%, 52%`
   return color === 'dark' ? `hsla(${colorFormula}, 0.2)` : `hsl(${colorFormula})`
 }
@@ -324,7 +336,7 @@ function createDetailChart(canvas: any, websites: any, values: any) {
   const backgroundColors = websites.map((_: any, index: any) => colorAlgorithm('dark', index))
   const borderColors = websites.map((_: any, index: any) => colorAlgorithm('light', index))
 
-  const chartStuff: any = {
+  const chartConfig = {
     type: 'doughnut',
     data: {
       labels: websites,
@@ -352,7 +364,7 @@ function createDetailChart(canvas: any, websites: any, values: any) {
     },
   }
 
-  window.detailChartInstance = new Chart(canvas, chartStuff)
+  window.detailChartInstance = new Chart(canvas, chartConfig)
 }
 
 const maxItems = 3
@@ -384,7 +396,7 @@ function renderProgressBars(websites: any, values: any, totalSpentTime: any) {
   totalTime.textContent = formatValue(totalSpentTime)
 }
 
-function createProgressEntry(website: any, value: any, percentage: any, index: any) {
+function createProgressEntry(website: any, value: any, percentage: number, index: number) {
   const entryContainer = document.createElement('div')
   entryContainer.classList.add('gridDisplay')
 
@@ -438,7 +450,7 @@ themeIcon.addEventListener('click', () => {
   applyTheme()
 })
 
-function togglePopup(action: any) {
+function togglePopup(action: 'open' | 'close') {
   const actionCheck = action === 'open' ? 'block' : 'none'
   overlay.style.display = actionCheck
   popup.style.display = actionCheck

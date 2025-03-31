@@ -58,7 +58,7 @@ select:hover {
   border-radius: 0.5rem;
   padding: 1rem;
   overflow-y: auto;
-  max-height: 300px;
+  height: 300px;
 }
 
 .gridDisplay {

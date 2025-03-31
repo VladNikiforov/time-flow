@@ -108,22 +108,22 @@ function navigateChart(direction) {
     updateChart();
 }
 function generateDateRange(startDate) {
-    let range = [];
+    let dateRange = [];
     if (viewRange === 'Week') {
         for (let i = 0; i < 7; i++) {
             const date = new Date(startDate);
             date.setDate(startDate.getDate() + i);
-            range.push(toLocalISODate(date));
+            dateRange.push(toLocalISODate(date));
         }
     }
     else if (viewRange === 'Month') {
         const daysInMonth = getDaysInMonth(startDate);
         for (let i = 0; i < daysInMonth; i++) {
             const date = new Date(startDate.getFullYear(), startDate.getMonth(), i + 1);
-            range.push(toLocalISODate(date));
+            dateRange.push(toLocalISODate(date));
         }
     }
-    return range;
+    return dateRange;
 }
 function fillMissingDates(data, dateRange) {
     let filledData = {};
@@ -278,7 +278,7 @@ function colorAlgorithm(color, index = 0) {
 function createDetailChart(canvas, websites, values) {
     const backgroundColors = websites.map((_, index) => colorAlgorithm('dark', index));
     const borderColors = websites.map((_, index) => colorAlgorithm('light', index));
-    const chartStuff = {
+    const chartConfig = {
         type: 'doughnut',
         data: {
             labels: websites,
@@ -305,7 +305,7 @@ function createDetailChart(canvas, websites, values) {
             },
         },
     };
-    window.detailChartInstance = new Chart(canvas, chartStuff);
+    window.detailChartInstance = new Chart(canvas, chartConfig);
 }
 const maxItems = 3;
 function renderProgressBars(websites, values, totalSpentTime) {
