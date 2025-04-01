@@ -43,7 +43,7 @@ viewModeElement.addEventListener('change', () => {
 let currentStartDate = null;
 function getStartDate() {
     const now = new Date();
-    currentStartDate = viewRange === 'Week' ? getStartOfWeek(now) : getStartOfMonth(now);
+    currentStartDate = (viewRange === 'Week' ? getStartOfWeek : getStartOfMonth)(now);
     updateChart();
 }
 function getStartOfWeek(date) {
@@ -75,11 +75,12 @@ function updateDailyStats(dateRange, filledData) {
     const simulatedElement = [{ index: dateRange.indexOf(today) }];
     handleChartClick(simulatedElement, dateRange, filledData);
 }
-const prevStat = document.getElementById('prevStat');
-const nextStat = document.getElementById('nextStat');
-prevStat.addEventListener('click', () => navigateStats(-1));
-nextStat.addEventListener('click', () => navigateStats(1));
+const prevDay = document.getElementById('prevDay');
+const nextDay = document.getElementById('nextDay');
+prevDay.addEventListener('click', () => navigateStats(-1));
+nextDay.addEventListener('click', () => navigateStats(1));
 let currentStatIndex = 0;
+const dayDateElement = document.getElementById('dayDate');
 function navigateStats(direction) {
     const dateRange = generateDateRange(currentStartDate);
     const filledData = fillMissingDates(rawData, dateRange);
@@ -90,8 +91,7 @@ function navigateStats(direction) {
         currentStatIndex = 0;
     const today = toLocalISODate(new Date());
     const currentIndex = (dateRange.indexOf(today) + currentStatIndex) % dateRange.length;
-    const dateElement = document.getElementById('date');
-    dateElement.textContent = formatDate(dateRange[currentIndex]);
+    dayDateElement.textContent = formatDate(dateRange[currentIndex]);
     const simulatedElement = { index: currentIndex };
     handleChartClick([simulatedElement], dateRange, filledData);
 }
@@ -173,7 +173,7 @@ function getValues(dates, data) {
 }
 function updateAverage(values) {
     const averageValue = Math.round(values.reduce((sum, time) => sum + time, 0) / values.length);
-    const averageElement = document.getElementById('average');
+    const averageElement = document.getElementById('averageTime');
     averageElement.textContent = `${viewRange} Average: ${formatValue(averageValue)}`;
 }
 function createMainChart(canvas, dates, values, data) {
@@ -237,8 +237,7 @@ function handleChartClick(elements, dates, data) {
     const label = dates[index];
     const detailChartElement = document.getElementById('detailChart');
     renderDetailChart(data[label], detailChartElement.getContext('2d'));
-    const dateElement = document.getElementById('date');
-    dateElement.textContent = formatDate(label);
+    dayDateElement.textContent = formatDate(label);
 }
 function renderDetailChart(entries, canvas) {
     const aggregatedData = aggregateEntries(entries);
@@ -329,7 +328,7 @@ function renderProgressBars(websites, values, totalSpentTime) {
         });
         progressContainer.appendChild(showMoreButton);
     }
-    const totalTime = document.getElementById('totalDaily');
+    const totalTime = document.getElementById('dayTotal');
     totalTime.textContent = formatValue(totalSpentTime);
 }
 function createProgressEntry(website, value, percentage, index) {

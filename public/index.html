@@ -22,41 +22,38 @@
     </nav>
 
     <main>
-        <div id="dailyStats">
+        <div id="dayInfo">
             <div style="height: 300px; width: 300px; margin-right: 2rem">
                 <div>
-                    <span id="statButtons">
-                        <button id="prevStat">&lt;</button>
-                        <button id="nextStat">&gt;</button>
-                    </span>
-                    <span id="date"></span>
+                    <div class="navButtons">
+                        <button id="prevDay">&lt;</button>
+                        <button id="nextDay">&gt;</button>
+                    </div>
+                    <div id="dayDate"></div>
                 </div>
-                <div>
-                    <canvas id="detailChart"></canvas>
-                </div>
+
+                <canvas id="detailChart"></canvas>
             </div>
-            <div id="statDiv">
-                <div id="totalDaily"></div>
+            <div id="dayStats">
+                <div id="dayTotal"></div>
                 <div id="progressContainer"></div>
             </div>
         </div>
 
         <div>
             <div id="mainChartNav">
-                <span id="navButtons">
+                <div class="navButtons">
                     <button id="prevButton">&lt;</button>
                     <button id="nextButton">&gt;</button>
-                </span>
+                </div>
                 <select id="viewRange">
                     <option value="Week" selected>Week</option>
                     <option value="Month">Month</option>
                 </select>
-                <h2 id="average"></h2>
+                <div id="averageTime"></div>
             </div>
 
-            <div>
-                <canvas id="mainChart"></canvas>
-            </div>
+            <canvas id="mainChart"></canvas>
         </div>
     </main>
 

@@ -42,9 +42,7 @@ select:hover {
   background-color: var(--special-color-light);
 }
 
-#navButtons,
-#viewRange,
-#viewMode {
+select {
   margin-right: 1rem;
 }
 
@@ -142,7 +140,7 @@ progress::-moz-progress-bar {
   display: block;
 }
 
-#dailyStats {
+#dayInfo {
   display: flex;
 }
 
@@ -150,8 +148,10 @@ progress::-moz-progress-bar {
   display: none;
 }
 
-#average {
+#averageTime {
   display: inline;
+  font-size: 1.2rem;
+  font-weight: bold;
 }
 
 #mainChartNav {
@@ -159,15 +159,22 @@ progress::-moz-progress-bar {
   margin-bottom: 1rem;
 }
 
-#date {
+#dayDate {
+  display: inline;
   font-weight: bold;
   font-size: 1.1rem;
 }
 
-#totalDaily {
+#dayTotal {
   font-size: 2rem;
+  text-align: center;
 }
 
-#statDiv {
+#dayStats {
   flex: 1;
+}
+
+.navButtons {
+  display: inline;
+  margin-right: 1rem;
 }

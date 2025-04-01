@@ -65,7 +65,7 @@ viewModeElement.addEventListener('change', () => {
 let currentStartDate: any = null
 function getStartDate() {
   const now = new Date()
-  currentStartDate = viewRange === 'Week' ? getStartOfWeek(now) : getStartOfMonth(now)
+  currentStartDate = (viewRange === 'Week' ? getStartOfWeek : getStartOfMonth)(now)
   updateChart()
 }
 
@@ -105,13 +105,15 @@ function updateDailyStats(dateRange: any, filledData: any) {
   handleChartClick(simulatedElement, dateRange, filledData)
 }
 
-const prevStat = document.getElementById('prevStat') as HTMLButtonElement
-const nextStat = document.getElementById('nextStat') as HTMLButtonElement
+const prevDay = document.getElementById('prevDay') as HTMLButtonElement
+const nextDay = document.getElementById('nextDay') as HTMLButtonElement
 
-prevStat.addEventListener('click', () => navigateStats(-1))
-nextStat.addEventListener('click', () => navigateStats(1))
+prevDay.addEventListener('click', () => navigateStats(-1))
+nextDay.addEventListener('click', () => navigateStats(1))
 
 let currentStatIndex = 0
+
+const dayDateElement = document.getElementById('dayDate') as HTMLElement
 
 function navigateStats(direction: number) {
   const dateRange = generateDateRange(currentStartDate)
@@ -124,9 +126,7 @@ function navigateStats(direction: number) {
   const today = toLocalISODate(new Date())
   const currentIndex = (dateRange.indexOf(today) + currentStatIndex) % dateRange.length
 
-  const dateElement: any = document.getElementById('date')
-
-  dateElement.textContent = formatDate(dateRange[currentIndex])
+  dayDateElement.textContent = formatDate(dateRange[currentIndex])
 
   const simulatedElement = { index: currentIndex }
   handleChartClick([simulatedElement], dateRange, filledData)
@@ -199,7 +199,7 @@ function formatValue(value: number) {
   }
 }
 
-function renderMainChart(data: any) {
+function renderMainChart(data: RawData) {
   const mainChartCanvas = document.getElementById('mainChart')
   if (window.chartInstance) window.chartInstance.destroy()
 
@@ -212,13 +212,13 @@ function renderMainChart(data: any) {
 
 function getValues(dates: any, data: any) {
   return dates.map((date: any) => {
-    return viewMode === 'time' ? data[date].reduce((sum: any, entry: any) => sum + entry.time, 0) : data[date].length - 1
+    return viewMode === 'time' ? data[date].reduce((sum: number, entry: any) => sum + entry.time, 0) : data[date].length - 1
   })
 }
 
 function updateAverage(values: any) {
-  const averageValue = Math.round(values.reduce((sum: any, time: any) => sum + time, 0) / values.length)
-  const averageElement: any = document.getElementById('average')
+  const averageValue = Math.round(values.reduce((sum: number, time: number) => sum + time, 0) / values.length)
+  const averageElement = document.getElementById('averageTime') as HTMLDivElement
   averageElement.textContent = `${viewRange} Average: ${formatValue(averageValue)}`
 }
 
@@ -285,8 +285,7 @@ function handleChartClick(elements: any, dates: any, data: any) {
   const label = dates[index]
   const detailChartElement: any = document.getElementById('detailChart')
   renderDetailChart(data[label], detailChartElement.getContext('2d'))
-  const dateElement: any = document.getElementById('date')
-  dateElement.textContent = formatDate(label)
+  dayDateElement.textContent = formatDate(label)
 }
 
 function renderDetailChart(entries: any, canvas: any) {
@@ -332,9 +331,9 @@ function colorAlgorithm(color: 'dark' | 'light', index = 0) {
   return color === 'dark' ? `hsla(${colorFormula}, 0.2)` : `hsl(${colorFormula})`
 }
 
-function createDetailChart(canvas: any, websites: any, values: any) {
-  const backgroundColors = websites.map((_: any, index: any) => colorAlgorithm('dark', index))
-  const borderColors = websites.map((_: any, index: any) => colorAlgorithm('light', index))
+function createDetailChart(canvas: HTMLCanvasElement, websites: any, values: any) {
+  const backgroundColors = websites.map((_: any, index: number) => colorAlgorithm('dark', index))
+  const borderColors = websites.map((_: any, index: number) => colorAlgorithm('light', index))
 
   const chartConfig = {
     type: 'doughnut',
@@ -392,11 +391,11 @@ function renderProgressBars(websites: any, values: any, totalSpentTime: any) {
     progressContainer.appendChild(showMoreButton)
   }
 
-  const totalTime: any = document.getElementById('totalDaily')
-  totalTime.textContent = formatValue(totalSpentTime)
+  const totalTime = document.getElementById('dayTotal') as HTMLDivElement
+  totalTime.textContent = formatValue(totalSpentTime) as string
 }
 
-function createProgressEntry(website: any, value: any, percentage: number, index: number) {
+function createProgressEntry(website: string, value: number, percentage: number, index: number) {
   const entryContainer = document.createElement('div')
   entryContainer.classList.add('gridDisplay')
 
@@ -423,12 +422,12 @@ function createProgressEntry(website: any, value: any, percentage: number, index
   return entryContainer
 }
 
-const settingsIcon: any = document.getElementById('settingsIcon')
-const overlay: any = document.getElementById('overlay')
-const popup: any = document.getElementById('popup')
-const closeButton: any = document.getElementById('closeButton')
-const themeIcon: any = document.getElementById('themeIcon')
-const hueSlider: any = document.getElementById('hueSlider')
+const settingsIcon = document.getElementById('settingsIcon') as HTMLImageElement
+const overlay = document.getElementById('overlay') as HTMLDivElement
+const popup = document.getElementById('popup') as HTMLDivElement
+const closeButton = document.getElementById('closeButton') as HTMLButtonElement
+const themeIcon = document.getElementById('themeIcon') as HTMLImageElement
+const hueSlider: any = document.getElementById('hueSlider') as HTMLInputElement
 
 function applyTheme() {
   const backgroundColor = isDark ? '#222' : '#eee'
@@ -450,7 +449,8 @@ themeIcon.addEventListener('click', () => {
   applyTheme()
 })
 
-function togglePopup(action: 'open' | 'close') {
+type Action = 'open' | 'close'
+function togglePopup(action: Action) {
   const actionCheck = action === 'open' ? 'block' : 'none'
   overlay.style.display = actionCheck
   popup.style.display = actionCheck
