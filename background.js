@@ -65,8 +65,7 @@ function calculateElapsedTime() {
 
 function getDomain(url) {
   try {
-    const parsedUrl = new URL(url)
-    return parsedUrl.hostname.replace('www.', '')
+    return new URL(url).origin
   } catch (e) {
     console.error('Invalid URL:', url)
     return ''
@@ -93,31 +92,30 @@ async function startTimer(tabId) {
 }
 
 async function stopTimer() {
-  if (currentTabId && currentTabUrl) {
-    calculateElapsedTime()
+  if (!currentTabId || !currentTabUrl) return
+  calculateElapsedTime()
 
-    const today = getTodayDate()
-    console.log(`URL: ${currentTabUrl}, Total Time: ${elapsedSeconds} seconds`)
+  const today = getTodayDate()
+  console.log(`URL: ${currentTabUrl}, Total Time: ${elapsedSeconds} seconds`)
 
-    const newData = { date: today, url: currentTabUrl, time: elapsedSeconds }
-    await saveData(newData)
+  const newData = { date: today, url: currentTabUrl, time: elapsedSeconds }
+  await saveData(newData)
 
-    const formattedData = await getData(today)
-    const result = {}
+  const formattedData = await getData(today)
+  const result = {}
 
-    formattedData.forEach((entry) => {
-      const { date, url, time } = entry
-      if (!result[date]) {
-        result[date] = []
-      }
-      result[date].push({ website: url, time })
-    })
+  formattedData.forEach((entry) => {
+    const { date, url, time } = entry
+    if (!result[date]) {
+      result[date] = []
+    }
+    result[date].push({ website: url, time })
+  })
 
-    browser.runtime.sendMessage({
-      action: 'sendData',
-      data: result,
-    })
-  }
+  browser.runtime.sendMessage({
+    action: 'sendData',
+    data: result,
+  })
 
   clearInterval(timerInterval)
   elapsedSeconds = 0

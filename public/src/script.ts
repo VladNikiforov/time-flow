@@ -163,9 +163,10 @@ function generateDateRange(startDate: Date) {
 }
 
 function fillMissingDates(data: RawData, dateRange: any) {
-  let filledData: RawData = {}
+  let filledData: any = {}
   dateRange.forEach((date: number) => {
-    filledData[date] = data[date] || [{ time: 0 }]
+    const validEntries = (data[date] || []).filter((entry) => entry.website && !entry.website.startsWith('moz-extension://') && entry.time !== 0)
+    filledData[date] = validEntries.length > 0 ? validEntries : [{ time: 0 }]
   })
   return filledData
 }
@@ -184,6 +185,10 @@ function formatDate(date: any) {
 }
 
 function formatKey(key: string) {
+  key = key
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .split('/')[0]
   return key.length > 24 ? key.slice(0, 24) + '...' : key
 }
 
@@ -212,7 +217,18 @@ function renderMainChart(data: RawData) {
 
 function getValues(dates: any, data: any) {
   return dates.map((date: any) => {
-    return viewMode === 'time' ? data[date].reduce((sum: number, entry: any) => sum + entry.time, 0) : data[date].length - 1
+    if (!data[date]) return 0
+
+    if (viewMode === 'time') {
+      return data[date].reduce((sum: number, entry: any) => {
+        if (!entry.website || entry.website.startsWith('moz-extension://') || entry.time === 0) {
+          return sum
+        }
+        return sum + entry.time
+      }, 0)
+    } else {
+      return data[date].filter((entry: any) => entry.website && !entry.website.startsWith('moz-extension://') && entry.time !== 0).length
+    }
   })
 }
 
@@ -305,6 +321,9 @@ function destroyPreviousChart() {
 
 function aggregateEntries(entries: any) {
   const aggregatedData = entries.reduce((acc: any, entry: any) => {
+    if (!entry.website || entry.website.startsWith('moz-extension://') || (viewMode === 'time' && entry.time === 0)) {
+      return acc
+    }
     acc[entry.website] = (acc[entry.website] || 0) + (viewMode === 'time' ? entry.time : 1)
     return acc
   }, {})
@@ -327,7 +346,8 @@ function processAggregatedData(aggregatedData: any) {
 }
 
 function colorAlgorithm(color: 'dark' | 'light', index = 0) {
-  const colorFormula = `${uiHue + index * 20}, 48%, 52%`
+  const hue = ((uiHue + index) * 20) % 360
+  const colorFormula = `${hue}, 48%, 52%`
   return color === 'dark' ? `hsla(${colorFormula}, 0.2)` : `hsl(${colorFormula})`
 }
 
@@ -403,7 +423,9 @@ function createProgressEntry(website: string, value: number, percentage: number,
     entryContainer.classList.add('hidden')
   }
 
-  const labelText = document.createElement('span')
+  const labelText = document.createElement('a')
+  labelText.target = '_blank'
+  labelText.href = website
   labelText.textContent = formatKey(website)
   entryContainer.appendChild(labelText)
 
@@ -427,7 +449,11 @@ const overlay = document.getElementById('overlay') as HTMLDivElement
 const popup = document.getElementById('popup') as HTMLDivElement
 const closeButton = document.getElementById('closeButton') as HTMLButtonElement
 const themeIcon = document.getElementById('themeIcon') as HTMLImageElement
-const hueSlider: any = document.getElementById('hueSlider') as HTMLInputElement
+const hueSlider: any = document.getElementById('hueSlider')
+const hueValue: any = document.getElementById('hueValue')
+
+hueSlider.value = 180
+hueValue.value = hueSlider.value
 
 function applyTheme() {
   const backgroundColor = isDark ? '#222' : '#eee'
@@ -460,11 +486,22 @@ settingsIcon.addEventListener('click', () => togglePopup('open'))
 closeButton.addEventListener('click', () => togglePopup('close'))
 overlay.addEventListener('click', () => togglePopup('close'))
 
-hueSlider.addEventListener('input', () => {
-  uiHue = hueSlider.value
+function updateHue() {
   document.documentElement.style.setProperty('--special-color-dark', colorAlgorithm('dark'))
   document.documentElement.style.setProperty('--special-color-light', colorAlgorithm('light'))
   updateChart()
+}
+
+hueSlider.addEventListener('input', () => {
+  hueValue.value = hueSlider.value
+  uiHue = hueValue.value
+  updateHue()
+})
+
+hueValue.addEventListener('input', () => {
+  hueSlider.value = hueValue.value
+  uiHue = hueSlider.value
+  updateHue()
 })
 
 hueSlider.addEventListener('mousedown', () => (popup.style.visibility = 'hidden'))

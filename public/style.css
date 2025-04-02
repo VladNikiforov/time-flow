@@ -46,6 +46,16 @@ select {
   margin-right: 1rem;
 }
 
+a {
+  text-decoration: none;
+  color: var(--text-color);
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: var(--special-color-light);
+}
+
 #rightNav {
   display: flex;
   align-items: center;
@@ -108,7 +118,7 @@ progress::-moz-progress-bar {
 
 #themeSection {
   font-weight: bold;
-  margin-right: 1rem;
+  margin-left: 0.5rem;
   display: inline;
 }
 
@@ -177,4 +187,13 @@ progress::-moz-progress-bar {
 .navButtons {
   display: inline;
   margin-right: 1rem;
+}
+
+#hueValue {
+  width: 3rem;
+}
+
+#popup div {
+  margin-left: 1rem;
+  margin-top: 1rem;
 }
