@@ -346,7 +346,7 @@ function processAggregatedData(aggregatedData: any) {
 }
 
 function colorAlgorithm(color: 'dark' | 'light', index = 0) {
-  const hue = ((uiHue + index) * 20) % 360
+  const hue = (uiHue + index * 20) % 360
   const colorFormula = `${hue}, 48%, 52%`
   return color === 'dark' ? `hsla(${colorFormula}, 0.2)` : `hsl(${colorFormula})`
 }
@@ -451,9 +451,6 @@ const closeButton = document.getElementById('closeButton') as HTMLButtonElement
 const themeIcon = document.getElementById('themeIcon') as HTMLImageElement
 const hueSlider: any = document.getElementById('hueSlider')
 const hueValue: any = document.getElementById('hueValue')
-
-hueSlider.value = 180
-hueValue.value = hueSlider.value
 
 function applyTheme() {
   const backgroundColor = isDark ? '#222' : '#eee'
