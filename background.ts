@@ -1,3 +1,5 @@
+/* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
+
 let timerInterval: any,
   startTime = 0,
   elapsedSeconds = 0,
