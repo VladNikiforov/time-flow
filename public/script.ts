@@ -49,6 +49,8 @@ function generateSampleData() {
 }
 generateSampleData()
 
+const today = toLocalISODate(new Date())
+
 let isDark = true
 let uiHue = 180
 
@@ -109,7 +111,6 @@ function updateChart() {
 }
 
 function updateDailyStats(dateRange: any, filledData: any) {
-  const today = toLocalISODate(new Date())
   const simulatedElement = [{ index: dateRange.indexOf(today) }]
   handleChartClick(simulatedElement, dateRange, filledData)
 }
@@ -132,7 +133,6 @@ function navigateStats(direction: number) {
   if (currentStatIndex < 0) currentStatIndex = dateRange.length - 1
   if (currentStatIndex >= dateRange.length) currentStatIndex = 0
 
-  const today = toLocalISODate(new Date())
   const currentIndex = (dateRange.indexOf(today) + currentStatIndex) % dateRange.length
 
   dayDateElement.textContent = formatDate(dateRange[currentIndex])
@@ -161,7 +161,7 @@ function generateDateRange(startDate: Date) {
       date.setDate(startDate.getDate() + i)
       dateRange.push(toLocalISODate(date))
     }
-  } else if (viewRange === 'Month') {
+  } else {
     const daysInMonth = getDaysInMonth(startDate)
     for (let i = 0; i < daysInMonth; i++) {
       const date = new Date(startDate.getFullYear(), startDate.getMonth(), i + 1)
@@ -182,14 +182,14 @@ function fillMissingDates(data: RawData, dateRange: any) {
   return filledData
 }
 
-function toLocalISODate(date: any) {
+function toLocalISODate(date: Date) {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
 
-function formatDate(date: any) {
+function formatDate(date: string) {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   const [year, month, day] = date.split('-')
   return `${parseInt(day)} ${months[parseInt(month) - 1]} ${year}`
@@ -345,7 +345,7 @@ function aggregateEntries(entries: any) {
     return acc
   }, {})
 
-  return Object.fromEntries(Object.entries(aggregatedData).sort((a: any, b: any) => b[1] - a[1]))
+  return Object.fromEntries(Object.entries(aggregatedData).sort((a: any[], b: any[]) => b[1] - a[1]))
 }
 
 function processAggregatedData(aggregatedData: any) {
