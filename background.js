@@ -1,9 +1,9 @@
 /* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
 
-let timerInterval: any,
+let timerInterval,
   startTime = 0,
   elapsedSeconds = 0,
-  currentTabId: any,
+  currentTabId,
   currentTabUrl = ''
 
 const STORE_NAME = 'BrowsingData'
@@ -12,7 +12,7 @@ function openDatabase() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('BrowsingDataDB', 1)
 
-    request.onupgradeneeded = (event: any) => {
+    request.onupgradeneeded = (event) => {
       const db = event.target.result
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         const store = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true })
@@ -21,13 +21,13 @@ function openDatabase() {
       }
     }
 
-    request.onsuccess = (event: any) => resolve(event.target.result)
+    request.onsuccess = (event) => resolve(event.target.result)
     request.onerror = (event) => reject(request.error)
   })
 }
 
-async function getData(date: any) {
-  const db: any = await openDatabase()
+async function getData(date) {
+  const db = await openDatabase()
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readonly')
     const store = transaction.objectStore(STORE_NAME)
@@ -40,9 +40,9 @@ async function getData(date: any) {
   })
 }
 
-async function saveData(data: any) {
-  const db: any = await openDatabase()
-  return new Promise((resolve: any, reject) => {
+async function saveData(data) {
+  const db = await openDatabase()
+  return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite')
     const store = transaction.objectStore(STORE_NAME)
     const request = store.put(data)
@@ -65,7 +65,7 @@ function calculateElapsedTime() {
   }
 }
 
-function getDomain(url: any) {
+function getDomain(url) {
   try {
     return new URL(url).origin
   } catch (e) {
@@ -74,7 +74,7 @@ function getDomain(url: any) {
   }
 }
 
-async function startTimer(tabId: any) {
+async function startTimer(tabId) {
   clearInterval(timerInterval)
   calculateElapsedTime()
 
@@ -103,10 +103,10 @@ async function stopTimer() {
   const newData = { date: today, url: currentTabUrl, time: elapsedSeconds }
   await saveData(newData)
 
-  const formattedData: any = await getData(today)
-  const result: any = {}
+  const formattedData = await getData(today)
+  const result = {}
 
-  formattedData.forEach((entry: any) => {
+  formattedData.forEach((entry) => {
     const { date, url, time } = entry
     if (!result[date]) {
       result[date] = []

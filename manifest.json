@@ -2,7 +2,6 @@
   "name": "TimeFlow",
   "description": "View your web usage with this simple to use Firefox add-on",
   "version": "1.0",
-  "license": "MIT",
   "manifest_version": 2,
   "permissions": [
     "storage",
@@ -10,7 +9,7 @@
   ],
   "background": {
     "scripts": [
-      "dist/background.js"
+      "background.js"
     ],
     "persistent": true
   },
