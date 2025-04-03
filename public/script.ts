@@ -1,3 +1,9 @@
+interface Window {
+  Chart: any
+  chartInstance: any
+  detailChartInstance: any
+}
+
 type WebsiteData = {
   website: string
   time: number
@@ -8,8 +14,8 @@ type RawData = {
 }
 
 const rawData: RawData = {}
-browser.runtime.onMessage.addListener(getData)
-function getData(message: any) {
+browser.runtime.onMessage.addListener(receiveData)
+function receiveData(message: any) {
   if (message.action !== 'sendData') {
     console.error('Error receiving data from background.js:', rawData)
   }
@@ -117,7 +123,7 @@ let currentStatIndex = 0
 const dayDateElement = document.getElementById('dayDate') as HTMLElement
 
 function navigateStats(direction: number) {
-  const dateRange = generateDateRange(currentStartDate)
+  const dateRange: string[] = generateDateRange(currentStartDate)
   const filledData = fillMissingDates(rawData, dateRange)
 
   currentStatIndex += direction
@@ -146,7 +152,7 @@ function navigateChart(direction: number) {
 }
 
 function generateDateRange(startDate: Date) {
-  let dateRange = []
+  let dateRange: string[] = []
   if (viewRange === 'Week') {
     for (let i = 0; i < 7; i++) {
       const date = new Date(startDate)

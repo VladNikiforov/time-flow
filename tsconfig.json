@@ -12,7 +12,7 @@
         "sourceMap": true
     },
     "include": [
-        "public/src/**/*.ts"
+        "public/script.ts", "background.ts"
     ],
     "exclude": [
         "node_modules"
