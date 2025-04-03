@@ -30,8 +30,9 @@ function generateSampleData() {
     const date = new Date(year, month, day)
     const isoDate = toLocalISODate(date)
 
+    const websites = ['chatgpt', 'chess', 'github', 'google', 'youtube', 'skool', 'chat.deepseek']
     rawData[isoDate] = Array.from({ length: Math.floor(Math.random() * 5) + 1 }, () => ({
-      website: `example${Math.floor(Math.random() * 10)}.com`,
+      website: `https://${websites[Math.floor(Math.random() * websites.length)]}.com`,
       time: Math.floor(Math.random() * 3600) + 60,
     }))
   }
@@ -164,8 +165,10 @@ function generateDateRange(startDate: Date) {
 
 function fillMissingDates(data: RawData, dateRange: any) {
   let filledData: any = {}
-  dateRange.forEach((date: number) => {
-    const validEntries = (data[date] || []).filter((entry) => entry.website && !entry.website.startsWith('moz-extension://') && entry.time !== 0)
+  dateRange.forEach((date: string) => {
+    const validEntries = (data[date] || []).filter(
+      (entry) => entry.website && typeof entry.website === 'string' && !entry.website.startsWith('moz-extension://') && entry.time !== 0
+    )
     filledData[date] = validEntries.length > 0 ? validEntries : [{ time: 0 }]
   })
   return filledData
@@ -321,21 +324,20 @@ function destroyPreviousChart() {
 
 function aggregateEntries(entries: any) {
   const aggregatedData = entries.reduce((acc: any, entry: any) => {
-    if (!entry.website || entry.website.startsWith('moz-extension://') || (viewMode === 'time' && entry.time === 0)) {
+    if (
+      !entry.website ||
+      typeof entry.website !== 'string' ||
+      entry.website === 'null' ||
+      entry.website.startsWith('moz-extension://') ||
+      (viewMode === 'time' && entry.time === 0)
+    ) {
       return acc
     }
     acc[entry.website] = (acc[entry.website] || 0) + (viewMode === 'time' ? entry.time : 1)
     return acc
   }, {})
 
-  const sortedAggregatedData = Object.entries(aggregatedData)
-    .sort((a: any, b: any) => b[1] - a[1])
-    .reduce((acc: any, [website, value]) => {
-      acc[website] = value
-      return acc
-    }, {})
-
-  return sortedAggregatedData
+  return Object.fromEntries(Object.entries(aggregatedData).sort((a: any, b: any) => b[1] - a[1]))
 }
 
 function processAggregatedData(aggregatedData: any) {
@@ -489,17 +491,15 @@ function updateHue() {
   updateChart()
 }
 
-hueSlider.addEventListener('input', () => {
-  hueValue.value = hueSlider.value
-  uiHue = hueValue.value
+function handleHueChange(event: any) {
+  uiHue = parseInt(event.target.value)
+  hueSlider.value = uiHue
+  hueValue.value = uiHue
   updateHue()
-})
+}
 
-hueValue.addEventListener('input', () => {
-  hueSlider.value = hueValue.value
-  uiHue = hueSlider.value
-  updateHue()
-})
+hueSlider.addEventListener('input', handleHueChange)
+hueValue.addEventListener('input', handleHueChange)
 
 hueSlider.addEventListener('mousedown', () => (popup.style.visibility = 'hidden'))
 hueSlider.addEventListener('mouseup', () => (popup.style.visibility = 'visible'))

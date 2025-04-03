@@ -5,6 +5,10 @@
   --text-color: #fff;
 }
 
+::selection {
+  background-color: var(--special-color-light);
+}
+
 body {
   margin-top: 0;
   font-family: sans-serif;
