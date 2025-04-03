@@ -1,5 +1,8 @@
 /* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
 
+const isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.id
+const browserAPI = isFirefox ? browser : chrome
+
 let timerInterval,
   startTime = 0,
   elapsedSeconds = 0,
@@ -81,7 +84,7 @@ async function startTimer(tabId) {
   currentTabId = tabId
 
   try {
-    const tab = await browser.tabs.get(tabId)
+    const tab = await browserAPI.tabs.get(tabId)
     currentTabUrl = getDomain(tab.url) || ''
     console.log(`Started timer on: ${currentTabUrl}`)
   } catch (error) {
@@ -114,7 +117,7 @@ async function stopTimer() {
     result[date].push({ website: url, time })
   })
 
-  browser.runtime.sendMessage({
+  browserAPI.runtime.sendMessage({
     action: 'sendData',
     data: result,
   })
@@ -127,12 +130,12 @@ async function stopTimer() {
 }
 
 // Listeners
-browser.tabs.onActivated.addListener((activeInfo) => {
+browserAPI.tabs.onActivated.addListener((activeInfo) => {
   stopTimer()
   startTimer(activeInfo.tabId)
 })
 
-browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+browserAPI.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (tabId === currentTabId && changeInfo.status === 'complete') {
     console.log(`Tab updated: ${tab.url}`)
     stopTimer()
@@ -140,8 +143,8 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 })
 
-browser.windows.onFocusChanged.addListener((windowId) => {
-  if (windowId === browser.windows.WINDOW_ID_NONE) {
+browserAPI.windows.onFocusChanged.addListener((windowId) => {
+  if (windowId === browserAPI.windows.WINDOW_ID_NONE) {
     stopTimer()
   }
 })

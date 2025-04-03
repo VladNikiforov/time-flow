@@ -1,5 +1,8 @@
 /* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
 
+const isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.id
+const browserAPI = isFirefox ? browser : chrome
+
 interface Window {
   Chart: any
   chartInstance: any
@@ -16,7 +19,7 @@ type RawData = {
 }
 
 const rawData: RawData = {}
-browser.runtime.onMessage.addListener(receiveData)
+browserAPI.runtime.onMessage.addListener(receiveData)
 function receiveData(message: any) {
   if (message.action !== 'sendData') {
     console.error('Error receiving data from background.js:', rawData)

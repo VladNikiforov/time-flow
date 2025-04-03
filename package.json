@@ -1,10 +1,15 @@
 {
   "private": true,
+  "scripts": {
+    "build:chrome": "node build.mjs chrome",
+    "build:firefox": "node build.mjs firefox"
+  },
   "devDependencies": {
     "@types/firefox-webext-browser": "^120.0.4",
     "typescript": "^5.8.2"
   },
   "dependencies": {
-    "@types/chart.js": "^2.9.41"
+    "@types/chart.js": "^2.9.41",
+    "@types/chrome": "^0.0.313"
   }
 }
