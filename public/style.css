@@ -88,9 +88,22 @@ progress {
   background-color: var(--progress-bar-background);
   height: 1rem;
   border-radius: 1rem;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
-progress::-webkit-progress-value,
+progress::-webkit-progress-bar {
+  background-color: var(--progress-bar-background);
+}
+
+progress::-webkit-progress-value {
+  background-color: var(--progress-bar-fill);
+}
+
+progress::-webkit-progress-container {
+  background-color: var(--progress-bar-background);
+}
+
 progress::-moz-progress-bar {
   background-color: var(--progress-bar-fill);
 }

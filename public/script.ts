@@ -1,13 +1,9 @@
+import Chart from 'chart.js/auto'
+
 /* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
 
 const isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.id
 const browserAPI = isFirefox ? browser : chrome
-
-interface Window {
-  Chart: any
-  chartInstance: any
-  detailChartInstance: any
-}
 
 type WebsiteData = {
   website: string
@@ -368,7 +364,7 @@ function createDetailChart(canvas: HTMLCanvasElement, websites: any, values: any
   const backgroundColors = websites.map((_: any, index: number) => colorAlgorithm('dark', index))
   const borderColors = websites.map((_: any, index: number) => colorAlgorithm('light', index))
 
-  const chartConfig = {
+  window.detailChartInstance = new Chart(canvas, {
     type: 'doughnut',
     data: {
       labels: websites,
@@ -394,9 +390,7 @@ function createDetailChart(canvas: HTMLCanvasElement, websites: any, values: any
         },
       },
     },
-  }
-
-  window.detailChartInstance = new Chart(canvas, chartConfig)
+  })
 }
 
 const maxItems = 3
