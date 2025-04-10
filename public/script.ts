@@ -144,7 +144,7 @@ function navigateChart(direction: number) {
   if (viewRange === 'Week') {
     const date = currentStartDate.getDate()
     currentStartDate.setDate(date + direction * 7)
-  } else if (viewRange === 'Month') {
+  } else {
     const year = currentStartDate.getFullYear()
     const month = currentStartDate.getMonth() + direction
     currentStartDate = new Date(year, month, 1)
@@ -431,6 +431,7 @@ function createProgressEntry(website: string, value: number, percentage: number,
   }
 
   const labelText = document.createElement('a')
+  labelText.classList.add('labelText')
   labelText.target = '_blank'
   labelText.href = website
   labelText.textContent = formatKey(website)
@@ -443,7 +444,8 @@ function createProgressEntry(website: string, value: number, percentage: number,
   progressBar.style.setProperty('--progress-bar-fill', colorAlgorithm('light', index))
   entryContainer.appendChild(progressBar)
 
-  const valueText = document.createElement('span')
+  const valueText = document.createElement('div')
+  valueText.classList.add('valueText')
   valueText.style.textAlign = 'center'
   valueText.textContent = `${formatValue(value)} (${percentage}%)`
   entryContainer.appendChild(valueText)

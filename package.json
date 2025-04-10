@@ -1,8 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "build:chrome": "webpack --mode development --env browser=chrome",
-    "build:firefox": "webpack --mode development --env browser=firefox",
+    "dev:chrome": "webpack --mode development --env browser=chrome",
+    "dev:firefox": "webpack --mode development --env browser=firefox",
     "start": "webpack serve --mode development --open"
   },
   "devDependencies": {
