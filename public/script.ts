@@ -72,6 +72,8 @@ viewModeElement.addEventListener('change', () => {
   updateChart()
 })
 
+const unwantedPrefixes = ['moz-extension://', 'about:', 'chrome://', 'chrome-extension://']
+
 let currentStartDate: any = null
 function getStartDate() {
   const now = new Date()
@@ -171,13 +173,16 @@ function generateDateRange(startDate: Date) {
 }
 
 function fillMissingDates(data: RawData, dateRange: any) {
-  let filledData: any = {}
+  const filledData: any = {}
+
   dateRange.forEach((date: string) => {
     const validEntries = (data[date] || []).filter(
-      (entry) => entry.website && typeof entry.website === 'string' && !entry.website.startsWith('moz-extension://') && entry.time !== 0
+      (entry) =>
+        entry.website && typeof entry.website === 'string' && !unwantedPrefixes.some((prefix) => entry.website.startsWith(prefix)) && entry.time !== 0
     )
     filledData[date] = validEntries.length > 0 ? validEntries : [{ time: 0 }]
   })
+
   return filledData
 }
 
@@ -231,13 +236,15 @@ function getValues(dates: any, data: any) {
 
     if (viewMode === 'time') {
       return data[date].reduce((sum: number, entry: any) => {
-        if (!entry.website || entry.website.startsWith('moz-extension://') || entry.time === 0) {
+        if (!entry.website || unwantedPrefixes.some((prefix) => entry.website.startsWith(prefix)) || entry.time === 0) {
           return sum
         }
         return sum + entry.time
       }, 0)
     } else {
-      return data[date].filter((entry: any) => entry.website && !entry.website.startsWith('moz-extension://') && entry.time !== 0).length
+      return data[date].filter(
+        (entry: any) => entry.website && !unwantedPrefixes.some((prefix) => entry.website.startsWith(prefix)) && entry.time !== 0
+      ).length
     }
   })
 }
@@ -335,11 +342,12 @@ function aggregateEntries(entries: any) {
       !entry.website ||
       typeof entry.website !== 'string' ||
       entry.website === 'null' ||
-      entry.website.startsWith('moz-extension://') ||
+      unwantedPrefixes.some((prefix) => entry.website.startsWith(prefix)) ||
       (viewMode === 'time' && entry.time === 0)
     ) {
       return acc
     }
+
     acc[entry.website] = (acc[entry.website] || 0) + (viewMode === 'time' ? entry.time : 1)
     return acc
   }, {})
