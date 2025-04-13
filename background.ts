@@ -3,20 +3,20 @@
 const isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.id
 const browserAPI = isFirefox ? browser : chrome
 
-let timerInterval,
-  startTime = 0,
-  elapsedSeconds = 0,
-  currentTabId,
-  currentTabUrl = ''
+let timerInterval: ReturnType<typeof setInterval>
+let startTime = 0
+let elapsedSeconds = 0
+let currentTabId: number | null = null
+let currentTabUrl = ''
 
 const STORE_NAME = 'BrowsingData'
 
-function openDatabase() {
+function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('BrowsingDataDB', 1)
 
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result
+    request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
+      const db = (event.target as IDBOpenDBRequest).result
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         const store = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true })
         store.createIndex('date', 'date', { unique: false })
@@ -24,26 +24,36 @@ function openDatabase() {
       }
     }
 
-    request.onsuccess = (event) => resolve(event.target.result)
-    request.onerror = (event) => reject(request.error)
+    request.onsuccess = (event: Event) => {
+      const db = (event.target as IDBOpenDBRequest).result
+      resolve(db)
+    }
+
+    request.onerror = () => reject(request.error)
   })
 }
 
-async function getData(date) {
+interface BrowsingDataEntry {
+  id?: number
+  date: string
+  url: string
+  time: number
+}
+
+async function getData(date: string): Promise<BrowsingDataEntry[]> {
   const db = await openDatabase()
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readonly')
     const store = transaction.objectStore(STORE_NAME)
     const index = store.index('date')
-
     const request = index.getAll(date)
 
-    request.onsuccess = () => resolve(request.result || [])
+    request.onsuccess = () => resolve(request.result as BrowsingDataEntry[])
     request.onerror = () => reject(request.error)
   })
 }
 
-async function saveData(data) {
+async function saveData(data: BrowsingDataEntry): Promise<void> {
   const db = await openDatabase()
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite')
@@ -55,12 +65,12 @@ async function saveData(data) {
   })
 }
 
-function getTodayDate() {
+function getTodayDate(): string {
   const today = new Date()
   return today.toISOString().split('T')[0]
 }
 
-function calculateElapsedTime() {
+function calculateElapsedTime(): void {
   if (startTime) {
     const now = Date.now()
     elapsedSeconds += Math.floor((now - startTime) / 1000)
@@ -68,7 +78,7 @@ function calculateElapsedTime() {
   }
 }
 
-function getDomain(url) {
+function getDomain(url: string): string {
   try {
     return new URL(url).origin
   } catch (e) {
@@ -77,7 +87,7 @@ function getDomain(url) {
   }
 }
 
-async function startTimer(tabId) {
+async function startTimer(tabId: number): Promise<void> {
   clearInterval(timerInterval)
   calculateElapsedTime()
 
@@ -85,7 +95,7 @@ async function startTimer(tabId) {
 
   try {
     const tab = await browserAPI.tabs.get(tabId)
-    currentTabUrl = getDomain(tab.url) || ''
+    currentTabUrl = getDomain(tab.url || '') || ''
     console.log(`Started timer on: ${currentTabUrl}`)
   } catch (error) {
     console.error('Failed to get tab:', error)
@@ -96,31 +106,30 @@ async function startTimer(tabId) {
   timerInterval = setInterval(calculateElapsedTime, 1000)
 }
 
-async function stopTimer() {
+async function stopTimer(): Promise<void> {
   if (!currentTabId || !currentTabUrl) return
   calculateElapsedTime()
 
   const today = getTodayDate()
   console.log(`URL: ${currentTabUrl}, Total Time: ${elapsedSeconds} seconds`)
 
-  const newData = { date: today, url: currentTabUrl, time: elapsedSeconds }
+  const newData: BrowsingDataEntry = { date: today, url: currentTabUrl, time: elapsedSeconds }
   await saveData(newData)
 
   const formattedData = await getData(today)
-  const result = {}
+  const result: Record<string, { website: string; time: number }[]> = {}
 
   formattedData.forEach((entry) => {
     const { date, url, time } = entry
-    if (!result[date]) {
-      result[date] = []
-    }
+    if (!result[date]) result[date] = []
     result[date].push({ website: url, time })
   })
 
-  browserAPI.runtime.sendMessage({
+  ;(browserAPI as typeof browser).runtime.sendMessage({
     action: 'sendData',
     data: result,
   })
+  
 
   clearInterval(timerInterval)
   elapsedSeconds = 0
@@ -130,7 +139,7 @@ async function stopTimer() {
 }
 
 // Listeners
-browserAPI.tabs.onActivated.addListener((activeInfo) => {
+browserAPI.tabs.onActivated.addListener((activeInfo: chrome.tabs.TabActiveInfo) => {
   stopTimer()
   startTimer(activeInfo.tabId)
 })
@@ -143,7 +152,7 @@ browserAPI.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 })
 
-browserAPI.windows.onFocusChanged.addListener((windowId) => {
+browserAPI.windows.onFocusChanged.addListener((windowId: number) => {
   if (windowId === browserAPI.windows.WINDOW_ID_NONE) {
     stopTimer()
   }

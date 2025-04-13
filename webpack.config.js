@@ -9,19 +9,16 @@ module.exports = (env) => {
   return {
     mode: 'development',
     entry: {
-      background: './background.js',
+      background: './background.ts',
       popup: './popup/popup.js',
       script: './public/script.ts',
     },
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: (pathData) => {
-        if (pathData.chunk.name === 'popup') {
-          return 'popup/popup.js'
-        }
-        if (pathData.chunk.name === 'script') {
-          return 'public/script.js'
-        }
+        if (pathData.chunk.name === 'popup') return 'popup/popup.js'
+        if (pathData.chunk.name === 'script') return 'public/script.js'
+        if (pathData.chunk.name === 'background') return 'background.js'
         return '[name].js'
       },
     },
