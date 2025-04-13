@@ -158,6 +158,7 @@ progress::-moz-progress-bar {
   width: 1.5rem;
   height: 1.5rem;
   margin-bottom: -0.5rem;
+  transition: transform 0.5s ease;
 }
 
 #hueSlider {

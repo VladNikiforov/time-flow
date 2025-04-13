@@ -472,12 +472,12 @@ const hueValue: any = document.getElementById('hueValue')
 function applyTheme() {
   const backgroundColor = isDark ? '#222' : '#eee'
   const textColor = isDark ? '#fff' : '#000'
-  const themeIconSrc = isDark ? 'light' : 'dark'
+  const rotateValue = isDark ? '0' : '180'
   const filterValue = `invert(${+isDark})`
 
   document.documentElement.style.setProperty('--background-color', backgroundColor)
   document.documentElement.style.setProperty('--text-color', textColor)
-  themeIcon.src = `assets/theme/${themeIconSrc}-icon.svg`
+  themeIcon.style.transform = `rotate(${rotateValue}deg)`
   themeIcon.style.filter = filterValue
   settingsIcon.style.filter = filterValue
 
