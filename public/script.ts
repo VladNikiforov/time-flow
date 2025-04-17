@@ -5,6 +5,21 @@ import Chart from 'chart.js/auto'
 const isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.id
 const browserAPI = isFirefox ? browser : chrome
 
+let isDark = true
+let uiHue = 180
+
+function getFromStorage(key: string) {
+  browserAPI.storage.local.get([key], (result) => {
+    if (!result[key]) {
+      console.log('No data found for key:', key)
+    }
+    if (key === 'isDark') isDark = result[key]
+    if (key === 'uiHue') uiHue = result[key]
+
+    console.log('Data retrieved:', key, result[key])
+  })
+}
+
 type WebsiteData = {
   website: string
   time: number
@@ -18,12 +33,14 @@ const rawData: RawData = {}
 browserAPI.runtime.onMessage.addListener(receiveData)
 function receiveData(message: any) {
   if (message.action !== 'sendData') {
-    console.error('Error receiving data from background.js:', rawData)
+    console.error('Error receiving data from background.js:', message)
   }
 
   Object.assign(rawData, message.data)
   console.log('Received data from background.js:', rawData)
   getStartDate()
+  getFromStorage('uiHue')
+  getFromStorage('isDark')
 }
 
 // Note that this is only sample data
@@ -50,8 +67,6 @@ generateSampleData()
 
 const today = toLocalISODate(new Date())
 
-let isDark = true
-let uiHue = 180
 
 const viewRangeElement = document.getElementById('viewRange') as HTMLSelectElement
 const viewModeElement = document.getElementById('viewMode') as HTMLSelectElement
@@ -178,7 +193,10 @@ function fillMissingDates(data: RawData, dateRange: any) {
   dateRange.forEach((date: string) => {
     const validEntries = (data[date] || []).filter(
       (entry) =>
-        entry.website && typeof entry.website === 'string' && !unwantedPrefixes.some((prefix) => entry.website.startsWith(prefix)) && entry.time !== 0
+        entry.website &&
+        typeof entry.website === 'string' &&
+        !unwantedPrefixes.some((prefix) => entry.website.startsWith(prefix)) &&
+        entry.time !== 0
     )
     filledData[date] = validEntries.length > 0 ? validEntries : [{ time: 0 }]
   })
@@ -243,7 +261,8 @@ function getValues(dates: any, data: any) {
       }, 0)
     } else {
       return data[date].filter(
-        (entry: any) => entry.website && !unwantedPrefixes.some((prefix) => entry.website.startsWith(prefix)) && entry.time !== 0
+        (entry: any) =>
+          entry.website && !unwantedPrefixes.some((prefix) => entry.website.startsWith(prefix)) && entry.time !== 0
       ).length
     }
   })
@@ -469,6 +488,12 @@ const themeIcon = document.getElementById('themeIcon') as HTMLImageElement
 const hueSlider: any = document.getElementById('hueSlider')
 const hueValue: any = document.getElementById('hueValue')
 
+function saveToStorage(key: any, value: any) {
+  browserAPI.storage.local.set({ [key]: value }, () => {
+    console.log('Data saved:', key, value)
+  })
+}
+
 function applyTheme() {
   const backgroundColor = isDark ? '#222' : '#eee'
   const textColor = isDark ? '#fff' : '#000'
@@ -487,6 +512,7 @@ function applyTheme() {
 themeIcon.addEventListener('click', () => {
   isDark = !isDark
   applyTheme()
+  saveToStorage('isDark', isDark)
 })
 
 type Action = 'open' | 'close'
@@ -511,6 +537,7 @@ function handleHueChange(event: any) {
   hueSlider.value = uiHue
   hueValue.value = uiHue
   updateHue()
+  saveToStorage('uiHue', uiHue)
 }
 
 hueSlider.addEventListener('input', handleHueChange)
