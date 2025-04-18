@@ -5,32 +5,34 @@ import Chart from 'chart.js/auto'
 const isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.id
 const browserAPI = isFirefox ? browser : chrome
 
-let isDark = true
-let uiHue = 180
-saveToStorage('isDark', isDark)
-saveToStorage('uiHue', uiHue)
+let isDark: boolean
+let uiHue: number 
+
+browserAPI.storage.local.get(['isDark', 'uiHue'], (result) => {
+  if (result.isDark === undefined) browserAPI.storage.local.set({ isDark: true })
+  if (result.uiHue === undefined) browserAPI.storage.local.set({ uiHue: 180 })
+})
 
 function getFromStorage(key: string) {
   browserAPI.storage.local.get([key], (result) => {
-    console.log(!result[key] ? 'No data found for key:' : 'Data retrieved:', key, result[key])
+    if (!result[key]) console.log('No data found for key:', key)
+    else console.log('Data retrieved:', key, result[key])
 
     switch (key) {
-      case 'isDark': {
+      case 'isDark':
         isDark = result[key]
         applyTheme()
         break
-      }
-      case 'uiHue': {
+      case 'uiHue':
         uiHue = result[key]
         updateHue()
+        hueSlider.value = uiHue
+        hueValue.value = uiHue
         break
-      }
     }
   })
-
-  hueSlider.value = uiHue
-  hueValue.value = uiHue
 }
+
 
 type WebsiteData = {
   website: string
