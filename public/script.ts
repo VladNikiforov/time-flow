@@ -6,7 +6,7 @@ const isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.r
 const browserAPI = isFirefox ? browser : chrome
 
 let isDark: boolean
-let uiHue: number 
+let uiHue: number
 
 browserAPI.storage.local.get(['isDark', 'uiHue'], (result) => {
   if (result.isDark === undefined) browserAPI.storage.local.set({ isDark: true })
@@ -33,7 +33,6 @@ function getFromStorage(key: string) {
   })
 }
 
-
 type WebsiteData = {
   website: string
   time: number
@@ -57,6 +56,7 @@ function receiveData(message: any) {
   getFromStorage('isDark')
 }
 
+/*
 // Note that this is only sample data
 function generateSampleData() {
   const now = new Date()
@@ -78,6 +78,7 @@ function generateSampleData() {
   console.log('Generated mock rawData:', rawData)
 }
 generateSampleData()
+*/
 
 const today = toLocalISODate(new Date())
 

@@ -1,9 +1,10 @@
 {
   "private": true,
   "scripts": {
-    "dev:chrome": "webpack --mode development --env browser=chrome",
     "dev:firefox": "webpack --mode development --env browser=firefox",
-    "start": "webpack serve --mode development --open"
+    "dev:chrome": "webpack --mode development --env browser=chrome",
+    "build:firefox": "webpack --mode production --env browser=firefox",
+    "build:chrome": "webpack --mode production --env browser=chrome"
   },
   "devDependencies": {
     "@types/chart.js": "^2.9.41",

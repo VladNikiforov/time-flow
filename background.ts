@@ -124,7 +124,7 @@ async function stopTimer(): Promise<void> {
     if (!result[date]) result[date] = []
     result[date].push({ website: url, time })
   })
-  
+
   ;(browserAPI as typeof browser).runtime.sendMessage({
     action: 'sendData',
     data: result,
