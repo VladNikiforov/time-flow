@@ -10,7 +10,7 @@ module.exports = (env) => {
     mode: 'development',
     entry: {
       background: './background.ts',
-      popup: './popup/popup.js',
+      popup: './popup/popup.ts',
       script: './public/script.ts',
     },
     output: {

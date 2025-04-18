@@ -7,6 +7,8 @@ const browserAPI = isFirefox ? browser : chrome
 
 let isDark = true
 let uiHue = 180
+saveToStorage('isDark', isDark)
+saveToStorage('uiHue', uiHue)
 
 function getFromStorage(key: string) {
   browserAPI.storage.local.get([key], (result) => {
