@@ -1,8 +1,9 @@
 # TimeFlow
-View your web usage with this minimalistic *Firefox extension*
+View your web activity with this productivity focused browser extension
 
 Goals:
-1. **Privacy**
-2. **Open-Source**
-3. **Free**
-4. **Lightweight**
++ **Privacy** - your data is fully locally stored
++ **Open-Source** - nice
++ **Free** - free forever, no ads whatsoever
++ **Minimalistic** - only the good stuff, no bloatware
++ **Customizable** - change colors and stuff
