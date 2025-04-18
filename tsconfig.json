@@ -12,7 +12,7 @@
         "sourceMap": true
     },
     "include": [
-        "public/script.ts", "public/global.d.ts", "background.ts"
+        "public/script.ts", "global/global.d.ts", "background.ts"
     ],
     "exclude": [
         "node_modules"

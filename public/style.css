@@ -1,21 +1,5 @@
-/* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
-
-:root {
-  --special-color-dark: hsla(180, 48%, 52%, 0.2);
-  --special-color-light: hsl(180, 48%, 52%);
-  --background-color: #222;
-  --text-color: #fff;
-}
-
 ::selection {
   background-color: var(--special-color-light);
-}
-
-body {
-  margin-top: 0;
-  font-family: sans-serif;
-  background-color: var(--background-color);
-  color: var(--text-color);
 }
 
 h1 {
@@ -30,22 +14,6 @@ nav {
   top: 0;
   display: flex;
   justify-content: space-between;
-}
-
-button,
-select {
-  background-color: var(--special-color-dark);
-  color: var(--text-color);
-  border: 1px solid var(--special-color-light);
-  padding: 8px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-button:hover,
-select:hover {
-  background-color: var(--special-color-light);
 }
 
 select {

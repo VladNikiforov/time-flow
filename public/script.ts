@@ -10,14 +10,24 @@ let uiHue = 180
 
 function getFromStorage(key: string) {
   browserAPI.storage.local.get([key], (result) => {
-    if (!result[key]) {
-      console.log('No data found for key:', key)
-    }
-    if (key === 'isDark') isDark = result[key]
-    if (key === 'uiHue') uiHue = result[key]
+    console.log(!result[key] ? 'No data found for key:' : 'Data retrieved:', key, result[key])
 
-    console.log('Data retrieved:', key, result[key])
+    switch (key) {
+      case 'isDark': {
+        isDark = result[key]
+        applyTheme()
+        break
+      }
+      case 'uiHue': {
+        uiHue = result[key]
+        updateHue()
+        break
+      }
+    }
   })
+
+  hueSlider.value = uiHue
+  hueValue.value = uiHue
 }
 
 type WebsiteData = {
@@ -66,7 +76,6 @@ function generateSampleData() {
 generateSampleData()
 
 const today = toLocalISODate(new Date())
-
 
 const viewRangeElement = document.getElementById('viewRange') as HTMLSelectElement
 const viewModeElement = document.getElementById('viewMode') as HTMLSelectElement

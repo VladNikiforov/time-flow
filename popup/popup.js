@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     browser.storage.local.get([key]).then((result) => {
       const value = result[key]
       console.log(!value ? 'No data found for key:' : 'Data retrieved:', key, value)
-      callback(key, value)
+      callback(value)
     })
   }
 
@@ -26,10 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return color === 'dark' ? `hsla(${colorFormula}, 0.2)` : `hsl(${colorFormula})`
     }
 
-    if (pageButton) {
-      pageButton.style.backgroundColor = colorAlgorithm('dark')
-      pageButton.style.borderColor = colorAlgorithm('light')
-    }
+    pageButton.style.backgroundColor = colorAlgorithm('dark')
+    pageButton.style.borderColor = colorAlgorithm('light')
   }
 
   function isDarkLogic(value) {

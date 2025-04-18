@@ -57,6 +57,10 @@ module.exports = (env) => {
             from: 'favicon.png',
             to: 'favicon.png',
           },
+          {
+            from: 'global',
+            to: 'global',
+          },
         ],
       }),
     ],
