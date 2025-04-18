@@ -1,20 +1,13 @@
 {
-    "compilerOptions": {
-        "target": "ES6",
-        "module": "ESNext",
-        "lib": [
-            "ES2019",
-            "DOM"
-        ],
-        "strict": true,
-        "moduleResolution": "node",
-        "outDir": "dist",
-        "sourceMap": true
-    },
-    "include": [
-        "public/script.ts", "global/global.d.ts", "background.ts", "popup/popup.ts"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "ESNext",
+    "lib": ["ES2019", "DOM"],
+    "strict": true,
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "sourceMap": true
+  },
+  "include": ["public/script.ts", "global/global.d.ts", "background.ts", "popup/popup.ts"],
+  "exclude": ["node_modules"]
 }

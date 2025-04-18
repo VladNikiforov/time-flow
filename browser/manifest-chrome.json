@@ -3,10 +3,7 @@
   "description": "View your web usage with this minimal Chrome extension",
   "version": "1.0",
   "manifest_version": 3,
-  "permissions": [
-    "storage",
-    "tabs"
-  ],
+  "permissions": ["storage", "tabs"],
   "background": {
     "service_worker": "background.js"
   },
@@ -16,12 +13,8 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "public/script.js"
-      ]
+      "matches": ["<all_urls>"],
+      "js": ["public/script.js"]
     }
   ]
 }

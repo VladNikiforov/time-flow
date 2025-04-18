@@ -3,14 +3,9 @@
   "description": "View your web usage with this minimal Firefox extension",
   "version": "1.0",
   "manifest_version": 2,
-  "permissions": [
-    "storage",
-    "tabs"
-  ],
+  "permissions": ["storage", "tabs"],
   "background": {
-    "scripts": [
-      "background.js"
-    ],
+    "scripts": ["background.js"],
     "persistent": true
   },
   "browser_action": {
@@ -19,12 +14,8 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "public/script.js"
-      ]
+      "matches": ["<all_urls>"],
+      "js": ["public/script.js"]
     }
   ],
   "content_security_policy": "script-src 'self' https://cdn.jsdelivr.net; object-src 'self';"

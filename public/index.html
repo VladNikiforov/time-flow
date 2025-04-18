@@ -1,85 +1,83 @@
 <!-- MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file -->
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TimeFlow</title>
     <link rel="stylesheet" href="../global/global.css" />
     <link rel="stylesheet" href="style.css" />
-</head>
+  </head>
 
-<body>
+  <body>
     <nav>
-        <h1>TimeFlow - Dashboard</h1>
+      <h1>TimeFlow - Dashboard</h1>
 
-        <div id="rightNav">
-            <select id="viewMode">
-                <option value="time" selected>time</option>
-                <option value="sessions">sessions</option>
-            </select>
-            <!-- Settings SVG by Solar Icons https://www.svgrepo.com/svg/523734/settings -->
-            <img id="settingsIcon" src="assets/settings-icon.svg" />
-        </div>
+      <div id="rightNav">
+        <select id="viewMode">
+          <option value="time" selected>time</option>
+          <option value="sessions">sessions</option>
+        </select>
+        <!-- Settings SVG by Solar Icons https://www.svgrepo.com/svg/523734/settings -->
+        <img id="settingsIcon" src="assets/settings-icon.svg" />
+      </div>
     </nav>
 
     <main>
-        <div id="dayInfo">
-            <div style="height: 300px; width: 300px; margin-right: 2rem">
-                <div>
-                    <div class="navButtons">
-                        <button id="prevDay">&lt;</button>
-                        <button id="nextDay">&gt;</button>
-                    </div>
-                    <div id="dayDate"></div>
-                </div>
+      <div id="dayInfo">
+        <div style="height: 300px; width: 300px; margin-right: 2rem">
+          <div>
+            <div class="navButtons">
+              <button id="prevDay">&lt;</button>
+              <button id="nextDay">&gt;</button>
+            </div>
+            <div id="dayDate"></div>
+          </div>
 
-                <canvas id="detailChart"></canvas>
-            </div>
-            <div id="dayStats">
-                <div id="dayTotal"></div>
-                <div id="progressContainer"></div>
-            </div>
+          <canvas id="detailChart"></canvas>
+        </div>
+        <div id="dayStats">
+          <div id="dayTotal"></div>
+          <div id="progressContainer"></div>
+        </div>
+      </div>
+
+      <div>
+        <div id="mainChartNav">
+          <div class="navButtons">
+            <button id="prevButton">&lt;</button>
+            <button id="nextButton">&gt;</button>
+          </div>
+          <select id="viewRange">
+            <option value="Week" selected>Week</option>
+            <option value="Month">Month</option>
+          </select>
+          <div id="averageTime"></div>
         </div>
 
-        <div>
-            <div id="mainChartNav">
-                <div class="navButtons">
-                    <button id="prevButton">&lt;</button>
-                    <button id="nextButton">&gt;</button>
-                </div>
-                <select id="viewRange">
-                    <option value="Week" selected>Week</option>
-                    <option value="Month">Month</option>
-                </select>
-                <div id="averageTime"></div>
-            </div>
-
-            <canvas id="mainChart"></canvas>
-        </div>
+        <canvas id="mainChart"></canvas>
+      </div>
     </main>
 
     <aside>
-        <div id="overlay"></div>
-        <div id="popup">
-            <h2>Settings</h2>
-            <h3 id="themeSection">Appearance</h3>
-            <div>
-                <label for="themeIcon">Theme:</label>
-                <!-- Theme SVG by Microsoft https://www.svgrepo.com/svg/310719/dark-theme -->
-                <img id="themeIcon" src="assets/theme-icon.svg" />
-            </div>
-            <div>
-                <label for="hueSlider">Hue:</label>
-                <input type="number" id="hueValue" min="1" max="360" />
-                <input type="range" id="hueSlider" min="1" max="360" />
-            </div>
-
-            <button id="closeButton">Close</button>
+      <div id="overlay"></div>
+      <div id="popup">
+        <h2>Settings</h2>
+        <h3 id="themeSection">Appearance</h3>
+        <div>
+          <label for="themeIcon">Theme:</label>
+          <!-- Theme SVG by Microsoft https://www.svgrepo.com/svg/310719/dark-theme -->
+          <img id="themeIcon" src="assets/theme-icon.svg" />
         </div>
-    </aside>
-</body>
+        <div>
+          <label for="hueSlider">Hue:</label>
+          <input type="number" id="hueValue" min="1" max="360" />
+          <input type="range" id="hueSlider" min="1" max="360" />
+        </div>
 
+        <button id="closeButton">Close</button>
+      </div>
+    </aside>
+  </body>
 </html>

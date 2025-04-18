@@ -4,7 +4,8 @@
     "dev:firefox": "webpack --mode development --env browser=firefox",
     "dev:chrome": "webpack --mode development --env browser=chrome",
     "build:firefox": "webpack --mode production --env browser=firefox",
-    "build:chrome": "webpack --mode production --env browser=chrome"
+    "build:chrome": "webpack --mode production --env browser=chrome",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "@types/chart.js": "^2.9.41",
@@ -16,6 +17,7 @@
     "file-loader": "^6.2.0",
     "html-loader": "^5.1.0",
     "html-webpack-plugin": "^5.6.3",
+    "prettier": "^3.5.3",
     "style-loader": "^4.0.0",
     "ts-loader": "^9.5.2",
     "typescript": "^5.8.2",

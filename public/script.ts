@@ -206,11 +206,7 @@ function fillMissingDates(data: RawData, dateRange: any) {
 
   dateRange.forEach((date: string) => {
     const validEntries = (data[date] || []).filter(
-      (entry) =>
-        entry.website &&
-        typeof entry.website === 'string' &&
-        !unwantedPrefixes.some((prefix) => entry.website.startsWith(prefix)) &&
-        entry.time !== 0
+      (entry) => entry.website && typeof entry.website === 'string' && !unwantedPrefixes.some((prefix) => entry.website.startsWith(prefix)) && entry.time !== 0,
     )
     filledData[date] = validEntries.length > 0 ? validEntries : [{ time: 0 }]
   })
@@ -274,10 +270,7 @@ function getValues(dates: any, data: any) {
         return sum + entry.time
       }, 0)
     } else {
-      return data[date].filter(
-        (entry: any) =>
-          entry.website && !unwantedPrefixes.some((prefix) => entry.website.startsWith(prefix)) && entry.time !== 0
-      ).length
+      return data[date].filter((entry: any) => entry.website && !unwantedPrefixes.some((prefix) => entry.website.startsWith(prefix)) && entry.time !== 0).length
     }
   })
 }
