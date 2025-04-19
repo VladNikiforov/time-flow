@@ -15,21 +15,21 @@ browserAPI.storage.local.get(['isDark', 'uiHue'], (result) => {
 
 function getFromStorage(key: string) {
   browserAPI.storage.local.get([key], (result) => {
-    if (!result[key]) console.log('No data found for key:', key)
-    else console.log('Data retrieved:', key, result[key])
+    console.log(!result[key] ? 'No data found for key:' : 'Data retrieved:', key, result[key])
 
     switch (key) {
       case 'isDark':
         isDark = result[key]
-        applyTheme()
+        updateTheme()
         break
       case 'uiHue':
         uiHue = result[key]
         updateHue()
-        hueSlider.value = uiHue
-        hueValue.value = uiHue
         break
     }
+
+    hueSlider.value = uiHue
+    hueValue.value = uiHue
   })
 }
 
@@ -51,7 +51,9 @@ function receiveData(message: any) {
 
   Object.assign(rawData, message.data)
   console.log('Received data from background.js:', rawData)
+
   getStartDate()
+
   getFromStorage('uiHue')
   getFromStorage('isDark')
 }
@@ -501,15 +503,13 @@ function saveToStorage(key: any, value: any) {
   })
 }
 
-function applyTheme() {
-  const backgroundColor = isDark ? '#222' : '#eee'
-  const textColor = isDark ? '#fff' : '#000'
-  const rotateValue = isDark ? '0' : '180'
+function updateTheme() {
+  const themeConfig = isDark ? { backgroundColor: '#222', textColor: '#fff', rotateValue: 0 } : { backgroundColor: '#eee', textColor: '#000', rotateValue: 180 }
   const filterValue = `invert(${+isDark})`
 
-  document.documentElement.style.setProperty('--background-color', backgroundColor)
-  document.documentElement.style.setProperty('--text-color', textColor)
-  themeIcon.style.transform = `rotate(${rotateValue}deg)`
+  document.documentElement.style.setProperty('--background-color', themeConfig.backgroundColor)
+  document.documentElement.style.setProperty('--text-color', themeConfig.textColor)
+  themeIcon.style.transform = `rotate(${themeConfig.rotateValue}deg)`
   themeIcon.style.filter = filterValue
   settingsIcon.style.filter = filterValue
 
@@ -518,7 +518,7 @@ function applyTheme() {
 
 themeIcon.addEventListener('click', () => {
   isDark = !isDark
-  applyTheme()
+  updateTheme()
   saveToStorage('isDark', isDark)
 })
 

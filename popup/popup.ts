@@ -19,10 +19,10 @@ function getFromStorage(key: any, callback: any) {
   })
 }
 
-function uiHueLogic(value: number) {
+function uiHueLogic(uiHue: number) {
   type Theme = 'light' | 'dark'
   function colorAlgorithm(theme: Theme) {
-    const colorFormula = `${value}, 48%, 52%`
+    const colorFormula = `${uiHue}, 48%, 52%`
     return theme === 'dark' ? `hsla(${colorFormula}, 0.2)` : `hsl(${colorFormula})`
   }
 
@@ -30,12 +30,11 @@ function uiHueLogic(value: number) {
   pageButton.style.borderColor = colorAlgorithm('light')
 }
 
-function isDarkLogic(value: boolean) {
-  const backgroundColor = value ? '#222' : '#eee'
-  const textColor = value ? '#fff' : '#000'
+function isDarkLogic(isDark: boolean) {
+  const themeConfig = isDark ? { backgroundColor: '#222', textColor: '#fff' } : { backgroundColor: '#eee', textColor: '#000' }
 
-  document.documentElement.style.setProperty('--background-color', backgroundColor)
-  document.documentElement.style.setProperty('--text-color', textColor)
+  document.documentElement.style.setProperty('--background-color', themeConfig.backgroundColor)
+  document.documentElement.style.setProperty('--text-color', themeConfig.textColor)
 }
 
 function loadPreferences() {
