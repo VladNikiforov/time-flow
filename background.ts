@@ -8,6 +8,7 @@ let startTime = 0
 let elapsedSeconds = 0
 let currentTabId: number | null = null
 let currentTabUrl = ''
+let switchingTabs = false
 
 const STORE_NAME = 'BrowsingData'
 
@@ -95,7 +96,9 @@ async function startTimer(tabId: number): Promise<void> {
 
   try {
     const tab = await browserAPI.tabs.get(tabId)
-    currentTabUrl = getDomain(tab.url || '') || ''
+    const domain = getDomain(tab.url || '')
+    if (!domain.startsWith('http')) return
+    currentTabUrl = domain
     console.log(`Started timer on: ${currentTabUrl}`)
   } catch (error) {
     console.error('Failed to get tab:', error)
@@ -111,7 +114,7 @@ async function stopTimer(): Promise<void> {
   calculateElapsedTime()
 
   const today = getTodayDate()
-  console.log(`URL: ${currentTabUrl}, Total Time: ${elapsedSeconds} seconds`)
+  console.log(`Stopping timer for ${currentTabUrl} with ${elapsedSeconds}s`)
 
   const newData: BrowsingDataEntry = { date: today, url: currentTabUrl, time: elapsedSeconds }
   await saveData(newData)
@@ -136,17 +139,26 @@ async function stopTimer(): Promise<void> {
   currentTabUrl = ''
 }
 
-// Listeners
+async function safeSwitch(tabId: number) {
+  if (switchingTabs) return
+  switchingTabs = true
+
+  await stopTimer()
+  await startTimer(tabId)
+
+  switchingTabs = false
+}
+
 browserAPI.tabs.onActivated.addListener((activeInfo: chrome.tabs.TabActiveInfo) => {
-  stopTimer()
-  startTimer(activeInfo.tabId)
+  safeSwitch(activeInfo.tabId)
 })
 
 browserAPI.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (tabId === currentTabId && changeInfo.status === 'complete') {
-    console.log(`Tab updated: ${tab.url}`)
-    stopTimer()
-    startTimer(tabId)
+  if (tabId === currentTabId && changeInfo.status === 'complete' && tab.url) {
+    const newUrl = getDomain(tab.url)
+    if (newUrl && newUrl !== currentTabUrl && newUrl.startsWith('http')) {
+      safeSwitch(tabId)
+    }
   }
 })
 
