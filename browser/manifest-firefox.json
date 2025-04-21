@@ -1,6 +1,6 @@
 {
   "name": "TimeFlow",
-  "description": "View your web usage with this minimal Firefox extension",
+  "description": "View your time spent on the web with this minimalistic browser extension",
   "version": "1.0",
   "manifest_version": 2,
   "permissions": ["storage", "tabs"],
