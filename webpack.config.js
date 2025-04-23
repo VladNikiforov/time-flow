@@ -44,7 +44,10 @@ module.exports = (env) => {
       new CopyWebpackPlugin({
         patterns: [
           { from: 'public/style.css', to: 'public/style.css' },
-          { from: 'public/assets', to: 'public/assets', noErrorOnMissing: false },
+          {
+            from: 'assets',
+            to: 'assets',
+          },
           {
             from: `browser/manifest-${isChrome ? 'chrome' : 'firefox'}.json`,
             to: 'manifest.json',
@@ -53,10 +56,7 @@ module.exports = (env) => {
             from: 'popup/popup.html',
             to: 'popup/popup.html',
           },
-          {
-            from: 'favicon.png',
-            to: 'favicon.png',
-          },
+
           {
             from: 'global',
             to: 'global',
