@@ -48,7 +48,7 @@ module.exports = (env) => {
         patterns: [
           { from: 'src/public/style.css', to: 'public/style.css' },
           { from: 'src/assets', to: 'assets' },
-          { from: `browser/manifest-${isChrome ? 'chrome' : 'firefox'}.json`, to: 'manifest.json' },
+          { from: `src/manifest-config/${isChrome ? 'chrome' : 'firefox'}.json`, to: 'manifest.json' },
           { from: 'src/popup/popup.html', to: 'popup/popup.html' },
           { from: 'src/global', to: 'global' },
         ],
