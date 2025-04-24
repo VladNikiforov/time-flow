@@ -8,6 +8,6 @@
     "outDir": "dist",
     "sourceMap": true
   },
-  "include": ["public/script.ts", "global/global.d.ts", "background.ts", "popup/popup.ts"],
+  "include": ["src/public/script.ts", "src/global/global.d.ts", "src/background.ts", "src/popup/popup.ts"],
   "exclude": ["node_modules"]
 }

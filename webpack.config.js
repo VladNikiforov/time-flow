@@ -9,17 +9,19 @@ module.exports = (env) => {
   return {
     mode: 'development',
     entry: {
-      background: './background.ts',
-      popup: './popup/popup.ts',
-      script: './public/script.ts',
+      background: './src/background.ts',
+      popup: './src/popup/popup.ts',
+      script: './src/public/script.ts',
     },
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: (pathData) => {
-        if (pathData.chunk.name === 'popup') return 'popup/popup.js'
-        if (pathData.chunk.name === 'script') return 'public/script.js'
-        if (pathData.chunk.name === 'background') return 'background.js'
-        return '[name].js'
+        const pathMap = {
+          popup: 'popup/popup.js',
+          script: 'public/script.js',
+          background: 'background.js',
+        }
+        return pathMap[pathData.chunk.name] || '[name].js'
       },
     },
     module: {
@@ -37,30 +39,18 @@ module.exports = (env) => {
     plugins: [
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({
-        template: 'public/index.html',
+        template: './src/public/index.html',
         filename: 'public/index.html',
         inject: 'body',
+        chunks: ['script'],
       }),
       new CopyWebpackPlugin({
         patterns: [
-          { from: 'public/style.css', to: 'public/style.css' },
-          {
-            from: 'assets',
-            to: 'assets',
-          },
-          {
-            from: `browser/manifest-${isChrome ? 'chrome' : 'firefox'}.json`,
-            to: 'manifest.json',
-          },
-          {
-            from: 'popup/popup.html',
-            to: 'popup/popup.html',
-          },
-
-          {
-            from: 'global',
-            to: 'global',
-          },
+          { from: 'src/public/style.css', to: 'public/style.css' },
+          { from: 'src/assets', to: 'assets' },
+          { from: `browser/manifest-${isChrome ? 'chrome' : 'firefox'}.json`, to: 'manifest.json' },
+          { from: 'src/popup/popup.html', to: 'popup/popup.html' },
+          { from: 'src/global', to: 'global' },
         ],
       }),
     ],

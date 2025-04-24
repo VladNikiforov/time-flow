@@ -1,7 +1,7 @@
 {
   "name": "TimeFlow",
   "description": "View your time spent on the web with this minimalistic browser extension",
-  "version": "1.1",
+  "version": "1.0.0",
   "manifest_version": 3,
   "permissions": ["storage", "tabs"],
   "background": {
@@ -20,10 +20,5 @@
     "48": "assets/favicon/48.png",
     "128": "assets/favicon/128.png"
   },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["public/script.js"]
-    }
-  ]
+  "content_security_policy": "script-src 'self'; object-src 'self';"
 }
