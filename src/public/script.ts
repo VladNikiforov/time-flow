@@ -549,6 +549,3 @@ function handleHueChange(event: any) {
 
 hueSlider.addEventListener('input', handleHueChange)
 hueValue.addEventListener('input', handleHueChange)
-
-hueSlider.addEventListener('mousedown', () => (popup.style.visibility = 'hidden'))
-hueSlider.addEventListener('mouseup', () => (popup.style.visibility = 'visible'))
