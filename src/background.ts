@@ -56,12 +56,29 @@ async function getData(date: string): Promise<BrowsingDataEntry[]> {
 
 async function saveData(data: BrowsingDataEntry): Promise<void> {
   const db = await openDatabase()
+
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite')
     const store = transaction.objectStore(STORE_NAME)
-    const request = store.put(data)
 
-    request.onsuccess = () => resolve()
+    const index = store.index('date')
+    const request = index.getAll(data.date)
+
+    request.onsuccess = () => {
+      const existing = (request.result as BrowsingDataEntry[]).find((entry) => entry.url === data.url)
+
+      if (existing) {
+        existing.time += data.time
+        const updateRequest = store.put(existing)
+        updateRequest.onsuccess = () => resolve()
+        updateRequest.onerror = () => reject(updateRequest.error)
+      } else {
+        const addRequest = store.add(data)
+        addRequest.onsuccess = () => resolve()
+        addRequest.onerror = () => reject(addRequest.error)
+      }
+    }
+
     request.onerror = () => reject(request.error)
   })
 }
