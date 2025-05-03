@@ -10,77 +10,10 @@ let currentTabId: number | null = null
 let currentTabUrl = ''
 let switchingTabs = false
 
-const STORE_NAME = 'BrowsingData'
-
-function openDatabase(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open('BrowsingDataDB', 1)
-
-    request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
-      const db = (event.target as IDBOpenDBRequest).result
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        const store = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true })
-        store.createIndex('date', 'date', { unique: false })
-        store.createIndex('url', 'url', { unique: false })
-      }
-    }
-
-    request.onsuccess = (event: Event) => {
-      const db = (event.target as IDBOpenDBRequest).result
-      resolve(db)
-    }
-
-    request.onerror = () => reject(request.error)
-  })
-}
-
 interface BrowsingDataEntry {
-  id?: number
   date: string
   url: string
   time: number
-}
-
-async function getData(date: string): Promise<BrowsingDataEntry[]> {
-  const db = await openDatabase()
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, 'readonly')
-    const store = transaction.objectStore(STORE_NAME)
-    const index = store.index('date')
-    const request = index.getAll(date)
-
-    request.onsuccess = () => resolve(request.result as BrowsingDataEntry[])
-    request.onerror = () => reject(request.error)
-  })
-}
-
-async function saveData(data: BrowsingDataEntry): Promise<void> {
-  const db = await openDatabase()
-
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, 'readwrite')
-    const store = transaction.objectStore(STORE_NAME)
-
-    const index = store.index('date')
-    const request = index.getAll(data.date)
-
-    request.onsuccess = () => {
-      const existing = (request.result as BrowsingDataEntry[]).find((entry) => entry.url === data.url)
-
-      if (existing) {
-        existing.time += data.time
-        const updateRequest = store.put(existing)
-        updateRequest.onsuccess = () => resolve()
-        updateRequest.onerror = () => reject(updateRequest.error)
-      } else {
-        const addRequest = store.add(data)
-        addRequest.onsuccess = () => resolve()
-        addRequest.onerror = () => reject(addRequest.error)
-      }
-    }
-
-    request.onerror = () => reject(request.error)
-  })
 }
 
 function getTodayDate(): string {
@@ -105,6 +38,24 @@ function getDomain(url: string): string {
   }
 }
 
+async function getData(date: string): Promise<BrowsingDataEntry[]> {
+  return new Promise((resolve) => {
+    browserAPI.storage.local.get([date], (result) => {
+      resolve(result[date] || [])
+    })
+  })
+}
+
+async function saveData(data: BrowsingDataEntry): Promise<void> {
+  const existingData = await getData(data.date)
+
+  existingData.push(data)
+
+  return new Promise((resolve) => {
+    browserAPI.storage.local.set({ [data.date]: existingData }, () => resolve())
+  })
+}
+
 async function startTimer(tabId: number): Promise<void> {
   clearInterval(timerInterval)
   calculateElapsedTime()
@@ -126,29 +77,41 @@ async function startTimer(tabId: number): Promise<void> {
   timerInterval = setInterval(calculateElapsedTime, 1000)
 }
 
+const unwantedPrefixes = ['moz-extension://', 'about:', 'chrome://', 'chrome-extension://']
+
 async function stopTimer(): Promise<void> {
   if (!currentTabId || !currentTabUrl) return
   calculateElapsedTime()
 
   const today = getTodayDate()
-  console.log(`Stopping timer for ${currentTabUrl} with ${elapsedSeconds}s`)
+  const time = elapsedSeconds
+  const url = currentTabUrl
 
-  const newData: BrowsingDataEntry = { date: today, url: currentTabUrl, time: elapsedSeconds }
+  if (time <= 0 || !url || unwantedPrefixes.some((prefix) => url.startsWith(prefix))) {
+    console.log(`Ignoring timer for invalid URL or time: ${url} (${time}s)`)
+    resetTimerState()
+    return
+  }
+
+  console.log(`Stopping timer for ${url} with ${time}s`)
+
+  const newData: BrowsingDataEntry = { date: today, url, time }
   await saveData(newData)
 
   const formattedData = await getData(today)
-  const result: Record<string, { website: string; time: number }[]> = {}
+  const filteredData = formattedData.filter((entry) => entry.time > 0 && entry.url && !unwantedPrefixes.some((prefix) => entry.url.startsWith(prefix)))
 
-  formattedData.forEach((entry) => {
-    const { date, url, time } = entry
-    if (!result[date]) result[date] = []
-    result[date].push({ website: url, time })
-  })
+  const result: Record<string, { website: string; time: number }[]> = {}
+  result[today] = filteredData.map(({ url, time }) => ({ website: url, time }))
   ;(browserAPI as typeof browser).runtime.sendMessage({
     action: 'sendData',
     data: result,
   })
 
+  resetTimerState()
+}
+
+function resetTimerState() {
   clearInterval(timerInterval)
   elapsedSeconds = 0
   startTime = 0

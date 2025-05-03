@@ -103,8 +103,6 @@ viewModeElement.addEventListener('change', () => {
   updateChart()
 })
 
-const unwantedPrefixes = ['moz-extension://', 'about:', 'chrome://', 'chrome-extension://']
-
 let currentStartDate: any = null
 function getStartDate() {
   const now = new Date()
@@ -203,14 +201,12 @@ function generateDateRange(startDate: Date) {
   return dateRange
 }
 
-function fillMissingDates(data: RawData, dateRange: any) {
+function fillMissingDates(data: RawData, dateRange: string[]) {
   const filledData: any = {}
 
   dateRange.forEach((date: string) => {
-    const validEntries = (data[date] || []).filter(
-      (entry) => entry.website && typeof entry.website === 'string' && !unwantedPrefixes.some((prefix) => entry.website.startsWith(prefix)) && entry.time !== 0,
-    )
-    filledData[date] = validEntries.length > 0 ? validEntries : [{ time: 0 }]
+    const entries = data[date] || []
+    filledData[date] = entries.length > 0 ? entries : []
   })
 
   return filledData
@@ -265,14 +261,9 @@ function getValues(dates: any, data: any) {
     if (!data[date]) return 0
 
     if (viewMode === 'time') {
-      return data[date].reduce((sum: number, entry: any) => {
-        if (!entry.website || unwantedPrefixes.some((prefix) => entry.website.startsWith(prefix)) || entry.time === 0) {
-          return sum
-        }
-        return sum + entry.time
-      }, 0)
+      return data[date].reduce((sum: number, entry: any) => sum + (entry.time || 0), 0)
     } else {
-      return data[date].filter((entry: any) => entry.website && !unwantedPrefixes.some((prefix) => entry.website.startsWith(prefix)) && entry.time !== 0).length
+      return data[date].length
     }
   })
 }
@@ -366,17 +357,10 @@ function destroyPreviousChart() {
 
 function aggregateEntries(entries: any) {
   const aggregatedData = entries.reduce((acc: any, entry: any) => {
-    if (
-      !entry.website ||
-      typeof entry.website !== 'string' ||
-      entry.website === 'null' ||
-      unwantedPrefixes.some((prefix) => entry.website.startsWith(prefix)) ||
-      (viewMode === 'time' && entry.time === 0)
-    ) {
-      return acc
-    }
+    const key = entry.website || 'unknown'
+    const value = viewMode === 'time' ? entry.time || 0 : 1
 
-    acc[entry.website] = (acc[entry.website] || 0) + (viewMode === 'time' ? entry.time : 1)
+    acc[key] = (acc[key] || 0) + value
     return acc
   }, {})
 
