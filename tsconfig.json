@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES6",
+    "target": "ESNext",
     "module": "ESNext",
     "lib": ["ES2019", "DOM"],
     "strict": true,
@@ -8,6 +8,6 @@
     "outDir": "dist",
     "sourceMap": true
   },
-  "include": ["src/public/script.ts", "src/global/global.d.ts", "src/background.ts", "src/popup/popup.ts"],
+  "include": ["vite.config.ts", "src/**/*.ts"],
   "exclude": ["node_modules"]
 }

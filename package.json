@@ -1,28 +1,21 @@
 {
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev:firefox": "webpack --mode development --env browser=firefox",
-    "dev:chrome": "webpack --mode development --env browser=chrome",
-    "build:firefox": "webpack --mode production --env browser=firefox",
-    "build:chrome": "webpack --mode production --env browser=chrome",
+    "dev:chrome": "BROWSER=chrome vite",
+    "dev:firefox": "BROWSER=firefox vite",
+    "build:chrome": "BROWSER=chrome vite build",
+    "build:firefox": "BROWSER=firefox vite build",
     "format": "prettier --write ."
   },
   "devDependencies": {
     "@types/chart.js": "^2.9.41",
     "@types/chrome": "^0.0.313",
     "@types/firefox-webext-browser": "^120.0.4",
-    "clean-webpack-plugin": "^4.0.0",
-    "copy-webpack-plugin": "^13.0.0",
-    "css-loader": "^7.1.2",
-    "file-loader": "^6.2.0",
-    "html-loader": "^5.1.0",
-    "html-webpack-plugin": "^5.6.3",
     "prettier": "^3.5.3",
-    "style-loader": "^4.0.0",
-    "ts-loader": "^9.5.2",
     "typescript": "^5.8.2",
-    "webpack": "^5.98.0",
-    "webpack-cli": "^6.0.1"
+    "vite": "^6.3.4",
+    "vite-plugin-static-copy": "^2.3.1"
   },
   "dependencies": {
     "chart.js": "^4.4.8"
