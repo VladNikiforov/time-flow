@@ -2,10 +2,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev:chrome": "BROWSER=chrome vite",
-    "dev:firefox": "BROWSER=firefox vite",
-    "build:chrome": "BROWSER=chrome vite build",
-    "build:firefox": "BROWSER=firefox vite build",
+    "dev:chrome": "BROWSER=chrome vite build --watch --mode development",
+    "dev:firefox": "BROWSER=firefox vite build --watch --mode development",
+    "build:chrome": "BROWSER=chrome vite build --mode production",
+    "build:firefox": "BROWSER=firefox vite build --mode production",
     "format": "prettier --write ."
   },
   "devDependencies": {
