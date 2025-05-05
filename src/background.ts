@@ -98,17 +98,30 @@ async function stopTimer(): Promise<void> {
   const newData: BrowsingDataEntry = { date: today, url, time }
   await saveData(newData)
 
-  const formattedData = await getData(today)
-  const filteredData = formattedData.filter((entry) => entry.time > 0 && entry.url && !unwantedPrefixes.some((prefix) => entry.url.startsWith(prefix)))
-
-  const result: Record<string, { website: string; time: number }[]> = {}
-  result[today] = filteredData.map(({ url, time }) => ({ website: url, time }))
-  ;(browserAPI as typeof browser).runtime.sendMessage({
-    action: 'sendData',
-    data: result,
-  })
+  await sendAllStoredData()
 
   resetTimerState()
+}
+
+async function sendAllStoredData(): Promise<void> {
+  browserAPI.storage.local.get(null, (allData) => {
+    const result: Record<string, { website: string; time: number }[]> = {}
+
+    for (const [date, entries] of Object.entries(allData)) {
+      if (!Array.isArray(entries)) continue
+
+      const filtered = entries.filter((entry: BrowsingDataEntry) => entry.time > 0 && entry.url && !unwantedPrefixes.some((prefix) => entry.url.startsWith(prefix)))
+
+      if (filtered.length > 0) {
+        result[date] = filtered.map(({ url, time }) => ({ website: url, time }))
+      }
+    }
+
+    ;(browserAPI as typeof browser).runtime.sendMessage({
+      action: 'sendData',
+      data: result,
+    })
+  })
 }
 
 function resetTimerState() {

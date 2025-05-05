@@ -40,6 +40,9 @@ const staticCopyPlugin = () => {
         rename: 'style.css',
       },
     ],
+    watch: {
+      reloadPageOnChange: true,
+    },
   })
 }
 
