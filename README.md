@@ -1,7 +1,9 @@
 # TimeFlow
 
-![Downloads](https://img.shields.io/amo/dl/timeflow.svg?style=flat)
-![Rating](https://img.shields.io/amo/rating/timeflow.svg?style=flat)
+![License](https://img.shields.io/github/license/VladNikiforov/time-flow)
+![Latest](https://img.shields.io/github/v/release/VladNikiforov/time-flow)
+![Firefox rating](https://img.shields.io/amo/rating/timeflow.svg?style=flat)
+![Firefox downloads](https://img.shields.io/amo/users/timeflow.svg?style=flat)
 
 View your web activity with this minimalistic, productivity focused browser extension
 
