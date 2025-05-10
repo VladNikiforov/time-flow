@@ -3,9 +3,7 @@
 const isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.id
 const browserAPI = isFirefox ? browser : chrome
 
-let timerInterval: ReturnType<typeof setInterval>
 let startTime = 0
-let elapsedSeconds = 0
 let currentTabId: number | null = null
 let currentTabUrl = ''
 let switchingTabs = false
@@ -19,14 +17,6 @@ interface BrowsingDataEntry {
 function getTodayDate(): string {
   const today = new Date()
   return today.toISOString().split('T')[0]
-}
-
-function calculateElapsedTime(): void {
-  if (startTime) {
-    const now = Date.now()
-    elapsedSeconds += Math.floor((now - startTime) / 1000)
-    startTime = now
-  }
 }
 
 function getDomain(url: string): string {
@@ -48,7 +38,6 @@ async function getData(date: string): Promise<BrowsingDataEntry[]> {
 
 async function saveData(data: BrowsingDataEntry): Promise<void> {
   const existingData = await getData(data.date)
-
   existingData.push(data)
 
   return new Promise((resolve) => {
@@ -57,9 +46,6 @@ async function saveData(data: BrowsingDataEntry): Promise<void> {
 }
 
 async function startTimer(tabId: number): Promise<void> {
-  clearInterval(timerInterval)
-  calculateElapsedTime()
-
   currentTabId = tabId
 
   try {
@@ -67,35 +53,35 @@ async function startTimer(tabId: number): Promise<void> {
     const domain = getDomain(tab.url || '')
     if (!domain.startsWith('http')) return
     currentTabUrl = domain
-    console.log(`Started timer on: ${currentTabUrl}`)
+    console.log(`Started tracking: ${currentTabUrl}`)
   } catch (error) {
     console.error('Failed to get tab:', error)
     return
   }
 
   startTime = Date.now()
-  timerInterval = setInterval(calculateElapsedTime, 1000)
 }
 
 const unwantedPrefixes = ['moz-extension://', 'about:', 'chrome://', 'chrome-extension://']
 
 async function stopTimer(): Promise<void> {
-  if (!currentTabId || !currentTabUrl) return
-  calculateElapsedTime()
+  if (!currentTabId || !currentTabUrl || !startTime) return
+
+  const endTime = Date.now()
+  const elapsedSeconds = Math.floor((endTime - startTime) / 1000)
 
   const today = getTodayDate()
-  const time = elapsedSeconds
   const url = currentTabUrl
 
-  if (time <= 0 || !url || unwantedPrefixes.some((prefix) => url.startsWith(prefix))) {
-    console.log(`Ignoring timer for invalid URL or time: ${url} (${time}s)`)
+  if (elapsedSeconds <= 0 || !url || unwantedPrefixes.some((prefix) => url.startsWith(prefix))) {
+    console.log(`Ignoring tracking for invalid URL or time: ${url} (${elapsedSeconds}s)`)
     resetTimerState()
     return
   }
 
-  console.log(`Stopping timer for ${url} with ${time}s`)
+  console.log(`Stopped tracking ${url} after ${elapsedSeconds}s`)
 
-  const newData: BrowsingDataEntry = { date: today, url, time }
+  const newData: BrowsingDataEntry = { date: today, url, time: elapsedSeconds }
   await saveData(newData)
 
   await sendAllStoredData()
@@ -125,8 +111,6 @@ async function sendAllStoredData(): Promise<void> {
 }
 
 function resetTimerState() {
-  clearInterval(timerInterval)
-  elapsedSeconds = 0
   startTime = 0
   currentTabId = null
   currentTabUrl = ''
