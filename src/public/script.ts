@@ -533,3 +533,16 @@ function handleHueChange(event: any) {
 
 hueSlider.addEventListener('input', handleHueChange)
 hueValue.addEventListener('input', handleHueChange)
+
+const exportDataButton = document.getElementById('exportData') as HTMLButtonElement
+exportDataButton.addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(rawData, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `TimeFlow Export ${today}.json`
+  a.click()
+
+  URL.revokeObjectURL(url)
+})
