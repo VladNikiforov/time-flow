@@ -12,7 +12,7 @@ pageButton.addEventListener('click', () => {
 })
 
 function getFromStorage(key: any, callback: any) {
-  browser.storage.local.get([key]).then((result) => {
+  browserAPI.storage.local.get([key]).then((result) => {
     const value = result[key]
     console.log(key === undefined ? 'No data found for key:' : 'Data retrieved:', key, value)
     callback(value)
