@@ -100,14 +100,19 @@ progress::-moz-progress-bar {
   border-radius: 0.5rem;
   width: 50vw;
   height: 50vh;
-  padding: 2rem;
+  padding: 1rem;
   z-index: 2;
+  overflow: scroll;
 }
 
 .settingSection {
   font-weight: bold;
-  margin-left: 0.5rem;
-  display: inline;
+  margin-left: 1rem;
+}
+
+.sectionContent {
+  padding-left: 1rem;
+  border-left: 3px solid var(--special-color-dark);
 }
 
 #settingsIcon,
@@ -188,8 +193,7 @@ progress::-moz-progress-bar {
 }
 
 #popup div {
-  margin-left: 1rem;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 
 .labelText,
