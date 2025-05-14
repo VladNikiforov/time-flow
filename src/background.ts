@@ -2,8 +2,9 @@
 
 import { today } from './public/scripts/date-utils'
 
+type BrowserAPI = typeof browser | typeof chrome
 const isFirefox = typeof browser !== 'undefined' && browser.runtime?.id
-export const browserAPI = isFirefox ? browser : chrome
+export const browserAPI: BrowserAPI = isFirefox ? browser : chrome
 
 let startTime = 0
 let currentTabId: number | null = null
@@ -16,10 +17,10 @@ interface BrowsingDataEntry {
   time: number
 }
 
-function getDomain(url: string): string {
+function getDomain(url: string) {
   try {
     return new URL(url).origin
-  } catch (e) {
+  } catch {
     console.error('Invalid URL:', url)
     return ''
   }
