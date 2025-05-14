@@ -1,7 +1,9 @@
 /* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
 
-const isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.id
-const browserAPI = isFirefox ? browser : chrome
+import { today } from './public/scripts/date-utils'
+
+const isFirefox = typeof browser !== 'undefined' && browser.runtime?.id
+export const browserAPI = isFirefox ? browser : chrome
 
 let startTime = 0
 let currentTabId: number | null = null
@@ -12,11 +14,6 @@ interface BrowsingDataEntry {
   date: string
   url: string
   time: number
-}
-
-function getTodayDate(): string {
-  const today = new Date()
-  return today.toISOString().split('T')[0]
 }
 
 function getDomain(url: string): string {
@@ -70,7 +67,6 @@ async function stopTimer(): Promise<void> {
   const endTime = Date.now()
   const elapsedSeconds = Math.floor((endTime - startTime) / 1000)
 
-  const today = getTodayDate()
   const url = currentTabUrl
 
   if (elapsedSeconds <= 0 || !url || unwantedPrefixes.some((prefix) => url.startsWith(prefix))) {

@@ -18,6 +18,7 @@ const staticCopyPlugin = () => {
       { src: 'src/popup/popup.html', dest: 'popup', rename: 'popup.html' },
       { src: 'src/public/index.html', dest: 'public', rename: 'index.html' },
       { src: 'src/public/style.css', dest: 'public', rename: 'style.css' },
+      { src: 'src/public/scripts/**/*', dest: 'public/scripts' },
     ],
     watch: {
       reloadPageOnChange: true,

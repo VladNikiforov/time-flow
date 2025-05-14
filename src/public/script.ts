@@ -1,9 +1,8 @@
-import Chart from 'chart.js/auto'
-
 /* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
 
-const isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.id
-const browserAPI = isFirefox ? browser : chrome
+import Chart from 'chart.js/auto'
+import { browserAPI } from '../background.js'
+import { toLocalISODate, today, getDaysInMonth, getStartOfMonth, getStartOfWeek } from './scripts/date-utils.js'
 
 let isDark: boolean
 let uiHue: number
@@ -82,8 +81,6 @@ function generateSampleData() {
 generateSampleData()
 */
 
-const today = toLocalISODate(new Date())
-
 const viewRangeElement = document.getElementById('viewRange') as HTMLSelectElement
 const viewModeElement = document.getElementById('viewMode') as HTMLSelectElement
 
@@ -108,23 +105,6 @@ function getStartDate() {
   const now = new Date()
   currentStartDate = (viewRange === 'Week' ? getStartOfWeek : getStartOfMonth)(now)
   updateChart()
-}
-
-function getStartOfWeek(date: Date) {
-  const day = date.getDay()
-  const difference = date.getDate() - (day === 0 ? 6 : day - 1)
-  const startOfWeek = new Date(date)
-  startOfWeek.setDate(difference)
-  startOfWeek.setHours(0, 0, 0, 0)
-  return startOfWeek
-}
-
-function getStartOfMonth(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), 1)
-}
-
-function getDaysInMonth(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
 }
 
 const prevButton = document.getElementById('prevButton') as HTMLButtonElement
@@ -210,13 +190,6 @@ function fillMissingDates(data: RawData, dateRange: string[]) {
   })
 
   return filledData
-}
-
-function toLocalISODate(date: Date) {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
 }
 
 function formatDate(date: string) {

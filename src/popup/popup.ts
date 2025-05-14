@@ -1,7 +1,6 @@
 /* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
 
-window.isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.id
-window.browserAPI = isFirefox ? browser : chrome
+import { browserAPI } from '../background.js'
 
 const pageButton = document.getElementById('main-page') as HTMLButtonElement
 
