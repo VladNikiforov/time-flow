@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
+import react from '@vitejs/plugin-react'
 
 const isChrome = process.env.BROWSER === 'chrome'
 
@@ -37,6 +38,7 @@ export default defineConfig(({ mode }): any => {
           background: resolve(__dirname, 'src/background.ts'),
           script: resolve(__dirname, 'src/public/script.ts'),
           popup: resolve(__dirname, 'src/popup/popup.ts'),
+          'daily-info': resolve(__dirname, 'src/public/my-app/my-app.jsx'),
         },
         output: {
           entryFileNames: (chunk: any) => {
@@ -44,6 +46,7 @@ export default defineConfig(({ mode }): any => {
               background: 'background.js',
               script: 'public/script.js',
               popup: 'popup/popup.js',
+              'daily-info': 'public/my-app.js',
             }
             return map[chunk.name]
           },
@@ -57,6 +60,6 @@ export default defineConfig(({ mode }): any => {
       minify: !isDev,
       watch: isDev,
     },
-    plugins: [staticCopyPlugin()],
+    plugins: [staticCopyPlugin(), react()],
   }
 })

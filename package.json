@@ -12,12 +12,15 @@
     "@types/chart.js": "^2.9.41",
     "@types/chrome": "^0.0.313",
     "@types/firefox-webext-browser": "^120.0.4",
+    "@vitejs/plugin-react": "^4.4.1",
     "prettier": "^3.5.3",
     "typescript": "^5.8.2",
     "vite": "^6.3.4",
     "vite-plugin-static-copy": "^2.3.1"
   },
   "dependencies": {
-    "chart.js": "^4.4.8"
+    "chart.js": "^4.4.8",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   }
 }
