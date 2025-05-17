@@ -4,6 +4,7 @@ import Chart from 'chart.js/auto'
 import { browserAPI } from '../background.js'
 import { toLocalISODate, today, getDaysInMonth, getStartOfMonth, getStartOfWeek, formatDate, formatKey } from './scripts/utils.js'
 import { loadTheme, getFromStorage, toggleTheme, handleHueChange, getIsDark, colorAlgorithm } from './scripts/theme.js'
+import { getViewRange, getViewMode } from './scripts/ui.js'
 
 loadTheme()
 
@@ -56,29 +57,10 @@ function generateSampleData() {
 generateSampleData()
 */
 
-const viewRangeElement = document.getElementById('viewRange') as HTMLSelectElement
-const viewModeElement = document.getElementById('viewMode') as HTMLSelectElement
-
-type ViewRange = 'Week' | 'Month'
-let viewRange: ViewRange = viewRangeElement.value as ViewRange
-
-type ViewMode = 'time' | 'sessions'
-let viewMode: ViewMode = viewModeElement.value as ViewMode
-
-viewRangeElement.addEventListener('change', () => {
-  viewRange = viewRangeElement.value as ViewRange
-  getStartDate()
-})
-
-viewModeElement.addEventListener('change', () => {
-  viewMode = viewModeElement.value as ViewMode
-  updateChart()
-})
-
 let currentStartDate: any = null
-function getStartDate() {
+export function getStartDate() {
   const now = new Date()
-  currentStartDate = (viewRange === 'Week' ? getStartOfWeek : getStartOfMonth)(now)
+  currentStartDate = (getViewRange() === 'Week' ? getStartOfWeek : getStartOfMonth)(now)
   updateChart()
 }
 
@@ -126,8 +108,8 @@ function navigateStats(direction: number) {
   handleChartClick([simulatedElement], dateRange, filledData)
 }
 
-function navigateChart(direction: number) {
-  if (viewRange === 'Week') {
+export function navigateChart(direction: number) {
+  if (getViewRange() === 'Week') {
     const date = currentStartDate.getDate()
     currentStartDate.setDate(date + direction * 7)
   } else {
@@ -138,9 +120,9 @@ function navigateChart(direction: number) {
   updateChart()
 }
 
-function generateDateRange(startDate: Date) {
+export function generateDateRange(startDate: Date) {
   let dateRange: string[] = []
-  if (viewRange === 'Week') {
+  if (getViewRange() === 'Week') {
     for (let i = 0; i < 7; i++) {
       const date = new Date(startDate)
       date.setDate(startDate.getDate() + i)
@@ -168,13 +150,13 @@ function fillMissingDates(data: RawData, dateRange: string[]) {
 }
 
 function formatValue(value: number) {
-  if (viewMode === 'time') {
+  if (getViewMode() === 'time') {
     const h = Math.floor(value / 3600)
     const m = Math.floor((value % 3600) / 60)
     const s = value % 60
 
     return h ? `${h}h${m ? ` ${m}m` : ''}${s ? ` ${s}s` : ''}` : m ? `${m}m${s ? ` ${s}s` : ''}` : `${s}s`
-  } else if (viewMode === 'sessions') {
+  } else if (getViewMode() === 'sessions') {
     return `${value} session${value === 1 ? '' : 's'}`
   }
 }
@@ -194,7 +176,7 @@ function getValues(dates: any, data: any) {
   return dates.map((date: any) => {
     if (!data[date]) return 0
 
-    if (viewMode === 'time') {
+    if (getViewMode() === 'time') {
       return data[date].reduce((sum: number, entry: any) => sum + (entry.time || 0), 0)
     } else {
       return data[date].length
@@ -205,7 +187,7 @@ function getValues(dates: any, data: any) {
 function updateAverage(values: any) {
   const averageValue = Math.round(values.reduce((sum: number, time: number) => sum + time, 0) / values.length)
   const averageElement = document.getElementById('averageTime') as HTMLDivElement
-  averageElement.textContent = `${viewRange} Average: ${formatValue(averageValue)}`
+  averageElement.textContent = `${getViewRange()} Average: ${formatValue(averageValue)}`
 }
 
 function createMainChart(canvas: any, dates: any, values: any, data: any) {
@@ -261,7 +243,7 @@ function createMainChart(canvas: any, dates: any, values: any, data: any) {
 function formatLabels(dates: any) {
   return dates.map((date: any) => {
     const d = new Date(date)
-    return viewRange === 'Week' ? `${d.toLocaleDateString('en-US', { weekday: 'short' })} ${d.getDate()}` : d.getDate()
+    return getViewRange() === 'Week' ? `${d.toLocaleDateString('en-US', { weekday: 'short' })} ${d.getDate()}` : d.getDate()
   })
 }
 
@@ -292,7 +274,7 @@ function destroyPreviousChart() {
 function aggregateEntries(entries: any) {
   const aggregatedData = entries.reduce((acc: any, entry: any) => {
     const key = entry.website || 'unknown'
-    const value = viewMode === 'time' ? entry.time || 0 : 1
+    const value = getViewMode() === 'time' ? entry.time || 0 : 1
 
     acc[key] = (acc[key] || 0) + value
     return acc

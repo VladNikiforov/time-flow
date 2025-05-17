@@ -37,4 +37,3 @@ export function formatKey(key: string) {
     .split('/')[0]
   return key.length > 24 ? key.slice(0, 24) + '...' : key
 }
-
