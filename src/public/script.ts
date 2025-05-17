@@ -2,35 +2,10 @@
 
 import Chart from 'chart.js/auto'
 import { browserAPI } from '../background.js'
-import { toLocalISODate, today, getDaysInMonth, getStartOfMonth, getStartOfWeek } from './scripts/date-utils.js'
+import { toLocalISODate, today, getDaysInMonth, getStartOfMonth, getStartOfWeek, formatDate, formatKey } from './scripts/utils.js'
+import { loadTheme, getFromStorage, toggleTheme, handleHueChange, getIsDark, colorAlgorithm } from './scripts/theme.js'
 
-let isDark: boolean
-let uiHue: number
-
-browserAPI.storage.local.get(['isDark', 'uiHue'], (result) => {
-  if (result.isDark === undefined) browserAPI.storage.local.set({ isDark: true })
-  if (result.uiHue === undefined) browserAPI.storage.local.set({ uiHue: 180 })
-})
-
-function getFromStorage(key: string) {
-  browserAPI.storage.local.get([key], (result) => {
-    console.log(!result[key] ? 'No data found for key:' : 'Data retrieved:', key, result[key])
-
-    switch (key) {
-      case 'isDark':
-        isDark = result[key]
-        updateTheme()
-        break
-      case 'uiHue':
-        uiHue = result[key]
-        updateHue()
-        break
-    }
-
-    hueSlider.value = uiHue
-    hueValue.value = uiHue
-  })
-}
+loadTheme()
 
 type WebsiteData = {
   website: string
@@ -41,7 +16,7 @@ type RawData = {
   [date: string]: WebsiteData[]
 }
 
-const rawData: RawData = {}
+export const rawData: RawData = {}
 browserAPI.runtime.onMessage.addListener(receiveData)
 function receiveData(message: any) {
   if (message.action !== 'sendData') {
@@ -113,7 +88,7 @@ const nextButton = document.getElementById('nextButton') as HTMLButtonElement
 prevButton.addEventListener('click', () => navigateChart(-1))
 nextButton.addEventListener('click', () => navigateChart(1))
 
-function updateChart() {
+export function updateChart() {
   const dateRange = generateDateRange(currentStartDate)
   const filledData = fillMissingDates(rawData, dateRange)
   renderMainChart(filledData)
@@ -192,20 +167,6 @@ function fillMissingDates(data: RawData, dateRange: string[]) {
   return filledData
 }
 
-function formatDate(date: string) {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  const [year, month, day] = date.split('-')
-  return `${parseInt(day)} ${months[parseInt(month) - 1]} ${year}`
-}
-
-function formatKey(key: string) {
-  key = key
-    .replace(/^https?:\/\//, '')
-    .replace(/^www\./, '')
-    .split('/')[0]
-  return key.length > 24 ? key.slice(0, 24) + '...' : key
-}
-
 function formatValue(value: number) {
   if (viewMode === 'time') {
     const h = Math.floor(value / 3600)
@@ -263,17 +224,17 @@ function createMainChart(canvas: any, dates: any, values: any, data: any) {
     scales: {
       x: {
         ticks: {
-          color: isDark ? '#fff' : '#000',
+          color: getIsDark() ? '#fff' : '#000',
         },
-        grid: { color: isDark ? '#ffffff1a' : '#0000001a' },
+        grid: { color: getIsDark() ? '#ffffff1a' : '#0000001a' },
       },
       y: {
         beginAtZero: true,
         ticks: {
-          callback: (value: any) => formatValue(value),
-          color: isDark ? '#fff' : '#000',
+          callback: (value: number) => formatValue(value),
+          color: getIsDark() ? '#fff' : '#000',
         },
-        grid: { color: isDark ? '#ffffff1a' : '#0000001a' },
+        grid: { color: getIsDark() ? '#ffffff1a' : '#0000001a' },
       },
     },
     onClick: (_: null, elements: any) => handleChartClick(elements, dates, data),
@@ -345,12 +306,6 @@ function processAggregatedData(aggregatedData: any) {
   const values = Object.values(aggregatedData)
   const totalSpentTime = values.reduce((sum: any, value) => sum + value, 0)
   return { websites, values, totalSpentTime }
-}
-
-function colorAlgorithm(color: 'dark' | 'light', index = 0) {
-  const hue = (uiHue + index * 20) % 360
-  const colorFormula = `${hue}, 48%, 52%`
-  return color === 'dark' ? `hsla(${colorFormula}, 0.2)` : `hsl(${colorFormula})`
 }
 
 function createDetailChart(canvas: HTMLCanvasElement, websites: any, values: any) {
@@ -446,38 +401,15 @@ function createProgressEntry(website: string, value: number, percentage: number,
   return entryContainer
 }
 
-const settingsIcon = document.getElementById('settingsIcon') as HTMLImageElement
-const overlay = document.getElementById('overlay') as HTMLDivElement
-const popup = document.getElementById('popup') as HTMLDivElement
+export const settingsIcon = document.getElementById('settingsIcon') as HTMLImageElement
+export const overlay = document.getElementById('overlay') as HTMLDivElement
+export const popup = document.getElementById('popup') as HTMLDivElement
 const closeButton = document.getElementById('closeButton') as HTMLButtonElement
-const themeIcon = document.getElementById('themeIcon') as HTMLImageElement
-const hueSlider: any = document.getElementById('hueSlider')
-const hueValue: any = document.getElementById('hueValue')
+export const themeIcon = document.getElementById('themeIcon') as HTMLImageElement
+export const hueSlider: any = document.getElementById('hueSlider')
+export const hueValue: any = document.getElementById('hueValue')
 
-function saveToStorage(key: any, value: any) {
-  browserAPI.storage.local.set({ [key]: value }, () => {
-    console.log('Data saved:', key, value)
-  })
-}
-
-function updateTheme() {
-  const themeConfig = isDark ? { backgroundColor: '#222', textColor: '#fff', rotateValue: 0 } : { backgroundColor: '#eee', textColor: '#000', rotateValue: 180 }
-  const filterValue = `invert(${+isDark})`
-
-  document.documentElement.style.setProperty('--background-color', themeConfig.backgroundColor)
-  document.documentElement.style.setProperty('--text-color', themeConfig.textColor)
-  themeIcon.style.transform = `rotate(${themeConfig.rotateValue}deg)`
-  themeIcon.style.filter = filterValue
-  settingsIcon.style.filter = filterValue
-
-  updateChart()
-}
-
-themeIcon.addEventListener('click', () => {
-  isDark = !isDark
-  updateTheme()
-  saveToStorage('isDark', isDark)
-})
+themeIcon.addEventListener('click', toggleTheme)
 
 type Action = 'open' | 'close'
 function togglePopup(action: Action) {
@@ -489,20 +421,6 @@ function togglePopup(action: Action) {
 settingsIcon.addEventListener('click', () => togglePopup('open'))
 closeButton.addEventListener('click', () => togglePopup('close'))
 overlay.addEventListener('click', () => togglePopup('close'))
-
-function updateHue() {
-  document.documentElement.style.setProperty('--special-color-dark', colorAlgorithm('dark'))
-  document.documentElement.style.setProperty('--special-color-light', colorAlgorithm('light'))
-  updateChart()
-}
-
-function handleHueChange(event: any) {
-  uiHue = parseInt(event.target.value)
-  hueSlider.value = uiHue
-  hueValue.value = uiHue
-  updateHue()
-  saveToStorage('uiHue', uiHue)
-}
 
 hueSlider.addEventListener('input', handleHueChange)
 hueValue.addEventListener('input', handleHueChange)

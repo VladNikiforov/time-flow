@@ -23,3 +23,18 @@ export function getStartOfMonth(date: Date) {
 export function getDaysInMonth(date: Date) {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
 }
+
+export function formatDate(date: string) {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const [year, month, day] = date.split('-')
+  return `${parseInt(day)} ${months[parseInt(month) - 1]} ${year}`
+}
+
+export function formatKey(key: string) {
+  key = key
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .split('/')[0]
+  return key.length > 24 ? key.slice(0, 24) + '...' : key
+}
+

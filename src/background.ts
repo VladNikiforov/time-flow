@@ -1,6 +1,6 @@
 /* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
 
-import { today } from './public/scripts/date-utils'
+import { today } from './public/scripts/utils'
 
 type BrowserAPI = typeof browser | typeof chrome
 const isFirefox = typeof browser !== 'undefined' && browser.runtime?.id
