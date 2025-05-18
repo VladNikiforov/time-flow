@@ -38,7 +38,7 @@ export default defineConfig(({ mode }): any => {
           background: resolve(__dirname, 'src/background.ts'),
           script: resolve(__dirname, 'src/public/script.ts'),
           popup: resolve(__dirname, 'src/popup/popup.ts'),
-          'daily-info': resolve(__dirname, 'src/public/my-app/my-app.jsx'),
+          'daily-info': resolve(__dirname, 'src/public/MyApp.tsx'),
         },
         output: {
           entryFileNames: (chunk: any) => {
