@@ -1,12 +1,37 @@
+import Chart from 'chart.js/auto'
+
 /* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
 
-import Chart from 'chart.js/auto'
-import { browserAPI } from '../background.js'
-import { toLocalISODate, today, getDaysInMonth, getStartOfMonth, getStartOfWeek, formatDate, formatKey } from './scripts/utils.js'
-import { loadTheme, getFromStorage, toggleTheme, handleHueChange, getIsDark, colorAlgorithm } from './scripts/theme.js'
-import { getViewRange, getViewMode } from './scripts/ui.js'
+const isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.id
+const browserAPI = isFirefox ? browser : chrome
 
-loadTheme()
+let isDark: boolean
+let uiHue: number
+
+browserAPI.storage.local.get(['isDark', 'uiHue'], (result) => {
+  if (result.isDark === undefined) browserAPI.storage.local.set({ isDark: true })
+  if (result.uiHue === undefined) browserAPI.storage.local.set({ uiHue: 180 })
+})
+
+function getFromStorage(key: string) {
+  browserAPI.storage.local.get([key], (result) => {
+    console.log(!result[key] ? 'No data found for key:' : 'Data retrieved:', key, result[key])
+
+    switch (key) {
+      case 'isDark':
+        isDark = result[key]
+        updateTheme()
+        break
+      case 'uiHue':
+        uiHue = result[key]
+        updateHue()
+        break
+    }
+
+    hueSlider.value = uiHue
+    hueValue.value = uiHue
+  })
+}
 
 type WebsiteData = {
   website: string
@@ -17,7 +42,7 @@ type RawData = {
   [date: string]: WebsiteData[]
 }
 
-export const rawData: RawData = {}
+const rawData: RawData = {}
 browserAPI.runtime.onMessage.addListener(receiveData)
 function receiveData(message: any) {
   if (message.action !== 'sendData') {
@@ -57,11 +82,49 @@ function generateSampleData() {
 generateSampleData()
 */
 
-let currentStartDate: any = null
-export function getStartDate() {
-  const now = new Date()
-  currentStartDate = (getViewRange() === 'Week' ? getStartOfWeek : getStartOfMonth)(now)
+const today = toLocalISODate(new Date())
+
+const viewRangeElement = document.getElementById('viewRange') as HTMLSelectElement
+const viewModeElement = document.getElementById('viewMode') as HTMLSelectElement
+
+type ViewRange = 'Week' | 'Month'
+let viewRange: ViewRange = viewRangeElement.value as ViewRange
+
+type ViewMode = 'time' | 'sessions'
+let viewMode: ViewMode = viewModeElement.value as ViewMode
+
+viewRangeElement.addEventListener('change', () => {
+  viewRange = viewRangeElement.value as ViewRange
+  getStartDate()
+})
+
+viewModeElement.addEventListener('change', () => {
+  viewMode = viewModeElement.value as ViewMode
   updateChart()
+})
+
+let currentStartDate: any = null
+function getStartDate() {
+  const now = new Date()
+  currentStartDate = (viewRange === 'Week' ? getStartOfWeek : getStartOfMonth)(now)
+  updateChart()
+}
+
+function getStartOfWeek(date: Date) {
+  const day = date.getDay()
+  const difference = date.getDate() - (day === 0 ? 6 : day - 1)
+  const startOfWeek = new Date(date)
+  startOfWeek.setDate(difference)
+  startOfWeek.setHours(0, 0, 0, 0)
+  return startOfWeek
+}
+
+function getStartOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1)
+}
+
+function getDaysInMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
 }
 
 const prevButton = document.getElementById('prevButton') as HTMLButtonElement
@@ -70,7 +133,7 @@ const nextButton = document.getElementById('nextButton') as HTMLButtonElement
 prevButton.addEventListener('click', () => navigateChart(-1))
 nextButton.addEventListener('click', () => navigateChart(1))
 
-export function updateChart() {
+function updateChart() {
   const dateRange = generateDateRange(currentStartDate)
   const filledData = fillMissingDates(rawData, dateRange)
   renderMainChart(filledData)
@@ -108,8 +171,8 @@ function navigateStats(direction: number) {
   handleChartClick([simulatedElement], dateRange, filledData)
 }
 
-export function navigateChart(direction: number) {
-  if (getViewRange() === 'Week') {
+function navigateChart(direction: number) {
+  if (viewRange === 'Week') {
     const date = currentStartDate.getDate()
     currentStartDate.setDate(date + direction * 7)
   } else {
@@ -120,9 +183,9 @@ export function navigateChart(direction: number) {
   updateChart()
 }
 
-export function generateDateRange(startDate: Date) {
+function generateDateRange(startDate: Date) {
   let dateRange: string[] = []
-  if (getViewRange() === 'Week') {
+  if (viewRange === 'Week') {
     for (let i = 0; i < 7; i++) {
       const date = new Date(startDate)
       date.setDate(startDate.getDate() + i)
@@ -149,14 +212,35 @@ function fillMissingDates(data: RawData, dateRange: string[]) {
   return filledData
 }
 
+function toLocalISODate(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function formatDate(date: string) {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const [year, month, day] = date.split('-')
+  return `${parseInt(day)} ${months[parseInt(month) - 1]} ${year}`
+}
+
+function formatKey(key: string) {
+  key = key
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .split('/')[0]
+  return key.length > 24 ? key.slice(0, 24) + '...' : key
+}
+
 function formatValue(value: number) {
-  if (getViewMode() === 'time') {
+  if (viewMode === 'time') {
     const h = Math.floor(value / 3600)
     const m = Math.floor((value % 3600) / 60)
     const s = value % 60
 
     return h ? `${h}h${m ? ` ${m}m` : ''}${s ? ` ${s}s` : ''}` : m ? `${m}m${s ? ` ${s}s` : ''}` : `${s}s`
-  } else if (getViewMode() === 'sessions') {
+  } else if (viewMode === 'sessions') {
     return `${value} session${value === 1 ? '' : 's'}`
   }
 }
@@ -176,7 +260,7 @@ function getValues(dates: any, data: any) {
   return dates.map((date: any) => {
     if (!data[date]) return 0
 
-    if (getViewMode() === 'time') {
+    if (viewMode === 'time') {
       return data[date].reduce((sum: number, entry: any) => sum + (entry.time || 0), 0)
     } else {
       return data[date].length
@@ -187,7 +271,7 @@ function getValues(dates: any, data: any) {
 function updateAverage(values: any) {
   const averageValue = Math.round(values.reduce((sum: number, time: number) => sum + time, 0) / values.length)
   const averageElement = document.getElementById('averageTime') as HTMLDivElement
-  averageElement.textContent = `${getViewRange()} Average: ${formatValue(averageValue)}`
+  averageElement.textContent = `${viewRange} Average: ${formatValue(averageValue)}`
 }
 
 function createMainChart(canvas: any, dates: any, values: any, data: any) {
@@ -206,17 +290,17 @@ function createMainChart(canvas: any, dates: any, values: any, data: any) {
     scales: {
       x: {
         ticks: {
-          color: getIsDark() ? '#fff' : '#000',
+          color: isDark ? '#fff' : '#000',
         },
-        grid: { color: getIsDark() ? '#ffffff1a' : '#0000001a' },
+        grid: { color: isDark ? '#ffffff1a' : '#0000001a' },
       },
       y: {
         beginAtZero: true,
         ticks: {
-          callback: (value: number) => formatValue(value),
-          color: getIsDark() ? '#fff' : '#000',
+          callback: (value: any) => formatValue(value),
+          color: isDark ? '#fff' : '#000',
         },
-        grid: { color: getIsDark() ? '#ffffff1a' : '#0000001a' },
+        grid: { color: isDark ? '#ffffff1a' : '#0000001a' },
       },
     },
     onClick: (_: null, elements: any) => handleChartClick(elements, dates, data),
@@ -243,7 +327,7 @@ function createMainChart(canvas: any, dates: any, values: any, data: any) {
 function formatLabels(dates: any) {
   return dates.map((date: any) => {
     const d = new Date(date)
-    return getViewRange() === 'Week' ? `${d.toLocaleDateString('en-US', { weekday: 'short' })} ${d.getDate()}` : d.getDate()
+    return viewRange === 'Week' ? `${d.toLocaleDateString('en-US', { weekday: 'short' })} ${d.getDate()}` : d.getDate()
   })
 }
 
@@ -274,7 +358,7 @@ function destroyPreviousChart() {
 function aggregateEntries(entries: any) {
   const aggregatedData = entries.reduce((acc: any, entry: any) => {
     const key = entry.website || 'unknown'
-    const value = getViewMode() === 'time' ? entry.time || 0 : 1
+    const value = viewMode === 'time' ? entry.time || 0 : 1
 
     acc[key] = (acc[key] || 0) + value
     return acc
@@ -288,6 +372,12 @@ function processAggregatedData(aggregatedData: any) {
   const values = Object.values(aggregatedData)
   const totalSpentTime = values.reduce((sum: any, value) => sum + value, 0)
   return { websites, values, totalSpentTime }
+}
+
+function colorAlgorithm(color: 'dark' | 'light', index = 0) {
+  const hue = (uiHue + index * 20) % 360
+  const colorFormula = `${hue}, 48%, 52%`
+  return color === 'dark' ? `hsla(${colorFormula}, 0.2)` : `hsl(${colorFormula})`
 }
 
 function createDetailChart(canvas: HTMLCanvasElement, websites: any, values: any) {
@@ -383,15 +473,38 @@ function createProgressEntry(website: string, value: number, percentage: number,
   return entryContainer
 }
 
-export const settingsIcon = document.getElementById('settingsIcon') as HTMLImageElement
-export const overlay = document.getElementById('overlay') as HTMLDivElement
-export const popup = document.getElementById('popup') as HTMLDivElement
+const settingsIcon = document.getElementById('settingsIcon') as HTMLImageElement
+const overlay = document.getElementById('overlay') as HTMLDivElement
+const popup = document.getElementById('popup') as HTMLDivElement
 const closeButton = document.getElementById('closeButton') as HTMLButtonElement
-export const themeIcon = document.getElementById('themeIcon') as HTMLImageElement
-export const hueSlider: any = document.getElementById('hueSlider')
-export const hueValue: any = document.getElementById('hueValue')
+const themeIcon = document.getElementById('themeIcon') as HTMLImageElement
+const hueSlider: any = document.getElementById('hueSlider')
+const hueValue: any = document.getElementById('hueValue')
 
-themeIcon.addEventListener('click', toggleTheme)
+function saveToStorage(key: any, value: any) {
+  browserAPI.storage.local.set({ [key]: value }, () => {
+    console.log('Data saved:', key, value)
+  })
+}
+
+function updateTheme() {
+  const themeConfig = isDark ? { backgroundColor: '#222', textColor: '#fff', rotateValue: 0 } : { backgroundColor: '#eee', textColor: '#000', rotateValue: 180 }
+  const filterValue = `invert(${+isDark})`
+
+  document.documentElement.style.setProperty('--background-color', themeConfig.backgroundColor)
+  document.documentElement.style.setProperty('--text-color', themeConfig.textColor)
+  themeIcon.style.transform = `rotate(${themeConfig.rotateValue}deg)`
+  themeIcon.style.filter = filterValue
+  settingsIcon.style.filter = filterValue
+
+  updateChart()
+}
+
+themeIcon.addEventListener('click', () => {
+  isDark = !isDark
+  updateTheme()
+  saveToStorage('isDark', isDark)
+})
 
 type Action = 'open' | 'close'
 function togglePopup(action: Action) {
@@ -403,6 +516,20 @@ function togglePopup(action: Action) {
 settingsIcon.addEventListener('click', () => togglePopup('open'))
 closeButton.addEventListener('click', () => togglePopup('close'))
 overlay.addEventListener('click', () => togglePopup('close'))
+
+function updateHue() {
+  document.documentElement.style.setProperty('--special-color-dark', colorAlgorithm('dark'))
+  document.documentElement.style.setProperty('--special-color-light', colorAlgorithm('light'))
+  updateChart()
+}
+
+function handleHueChange(event: any) {
+  uiHue = parseInt(event.target.value)
+  hueSlider.value = uiHue
+  hueValue.value = uiHue
+  updateHue()
+  saveToStorage('uiHue', uiHue)
+}
 
 hueSlider.addEventListener('input', handleHueChange)
 hueValue.addEventListener('input', handleHueChange)
