@@ -1,9 +1,7 @@
-import Chart from 'chart.js/auto'
-
 /* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
 
-const isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.id
-const browserAPI = isFirefox ? browser : chrome
+import Chart from 'chart.js/auto'
+import { browserAPI } from '../background'
 
 let isDark: boolean
 let uiHue: number
