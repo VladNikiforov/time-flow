@@ -1,10 +1,17 @@
 /* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
 
-import { today } from './public/scripts/utils'
-
 type BrowserAPI = typeof browser | typeof chrome
 const isFirefox = typeof browser !== 'undefined' && browser.runtime?.id
 export const browserAPI: BrowserAPI = isFirefox ? browser : chrome
+
+export function toLocalISODate(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+export const today = toLocalISODate(new Date())
 
 let startTime = 0
 let currentTabId: number | null = null

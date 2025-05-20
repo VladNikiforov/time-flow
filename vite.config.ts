@@ -36,17 +36,15 @@ export default defineConfig(({ mode }): any => {
       rollupOptions: {
         input: {
           background: resolve(__dirname, 'src/background.ts'),
-          script: resolve(__dirname, 'src/public/script.ts'),
           popup: resolve(__dirname, 'src/popup/popup.ts'),
-          'daily-info': resolve(__dirname, 'src/public/MyApp.tsx'),
+          myapp: resolve(__dirname, 'src/public/scripts/MyApp.tsx'),
         },
         output: {
           entryFileNames: (chunk: any) => {
             const map: any = {
               background: 'background.js',
-              script: 'public/script.js',
               popup: 'popup/popup.js',
-              'daily-info': 'public/my-app.js',
+              myapp: 'public/my-app.js',
             }
             return map[chunk.name]
           },
