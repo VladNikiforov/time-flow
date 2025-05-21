@@ -1,5 +1,5 @@
 {
-  "name": "TimeFlow",
+  "name": "TimeFlow - Web Usage Time Tracker",
   "description": "View your time spent on the web with this minimalistic browser extension",
   "version": "1.2.0",
   "manifest_version": 3,

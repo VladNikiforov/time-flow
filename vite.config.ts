@@ -19,7 +19,6 @@ const staticCopyPlugin = () => {
       { src: 'src/popup/popup.html', dest: 'popup', rename: 'popup.html' },
       { src: 'src/public/index.html', dest: 'public', rename: 'index.html' },
       { src: 'src/public/style.css', dest: 'public', rename: 'style.css' },
-      { src: 'src/public/scripts/**/*', dest: 'public/scripts' },
     ],
     watch: {
       reloadPageOnChange: true,
@@ -37,14 +36,18 @@ export default defineConfig(({ mode }): any => {
         input: {
           background: resolve(__dirname, 'src/background.ts'),
           popup: resolve(__dirname, 'src/popup/popup.ts'),
-          myapp: resolve(__dirname, 'src/public/scripts/MyApp.tsx'),
+          utils: resolve(__dirname, 'src/public/utils.ts'),
+          myapp: resolve(__dirname, 'src/public/MyApp.tsx'),
+          settings: resolve(__dirname, 'src/public/Settings.tsx'),
         },
         output: {
           entryFileNames: (chunk: any) => {
             const map: any = {
               background: 'background.js',
               popup: 'popup/popup.js',
+              utils: 'public/utils.js',
               myapp: 'public/my-app.js',
+              settings: 'public/settings.js',
             }
             return map[chunk.name]
           },

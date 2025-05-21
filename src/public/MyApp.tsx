@@ -3,38 +3,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import Chart from 'chart.js/auto'
-import { browserAPI, toLocalISODate, today } from '../../background'
-
-function getStartOfWeek(date: Date) {
-  const day = date.getDay()
-  const difference = date.getDate() - (day === 0 ? 6 : day - 1)
-  const startOfWeek = new Date(date)
-  startOfWeek.setDate(difference)
-  startOfWeek.setHours(0, 0, 0, 0)
-  return startOfWeek
-}
-
-function getStartOfMonth(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), 1)
-}
-
-function getDaysInMonth(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
-}
-
-function formatDate(date: string) {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  const [year, month, day] = date.split('-')
-  return `${parseInt(day)} ${months[parseInt(month) - 1]} ${year}`
-}
-
-function formatKey(key: string) {
-  key = key
-    .replace(/^https?:\/\//, '')
-    .replace(/^www\./, '')
-    .split('/')[0]
-  return key.length > 24 ? key.slice(0, 24) + '...' : key
-}
+import { browserAPI, toLocalISODate, today } from '../background'
+import { getStartOfWeek, getDaysInMonth, getStartOfMonth, formatDate, formatKey } from './utils'
+import Settings from './Settings'
 
 type WebsiteData = { website: string; time: number }
 type RawData = { [date: string]: WebsiteData[] }
@@ -428,46 +399,6 @@ export default function MyApp(): any {
     )
   }
 
-  function Settings() {
-    return (
-      <aside>
-        <div id="overlay" style={{ display: popupOpen ? 'block' : 'none' }} onClick={() => setPopupOpen(false)}></div>
-        <div id="popup" style={{ display: popupOpen ? 'block' : 'none' }}>
-          <h2>Settings</h2>
-
-          <div className="settingSection">
-            <h3>Appearance</h3>
-            <div className="sectionContent">
-              <div>
-                <label htmlFor="themeIcon">Theme:</label>
-                <img id="themeIcon" src="../assets/theme-icon.svg" alt="Theme Icon" ref={themeIconRef} onClick={handleThemeClick} style={{ cursor: 'pointer' }} />
-              </div>
-              <div>
-                <label htmlFor="hueSlider">Hue:</label>
-                <input type="number" id="hueValue" min={1} max={360} value={hueInput} onChange={handleHueChange} />
-                <input type="range" id="hueSlider" min={1} max={360} value={hueInput} onChange={handleHueChange} />
-              </div>
-            </div>
-          </div>
-
-          <div className="settingSection">
-            <h3>Data</h3>
-            <div className="sectionContent">
-              <label htmlFor="exportData">JSON:</label>
-              <button id="exportData" onClick={handleExport}>
-                export
-              </button>
-            </div>
-          </div>
-
-          <button id="closeButton" onClick={() => setPopupOpen(false)}>
-            Close
-          </button>
-        </div>
-      </aside>
-    )
-  }
-
   return (
     <>
       <Navigation />
@@ -517,7 +448,15 @@ export default function MyApp(): any {
         </div>
       </main>
 
-      <Settings />
+      <Settings
+        popupOpen={popupOpen}
+        setPopupOpen={setPopupOpen}
+        themeIconRef={themeIconRef}
+        handleThemeClick={handleThemeClick}
+        hueInput={hueInput}
+        handleHueChange={handleHueChange}
+        handleExport={handleExport}
+      />
     </>
   )
 }
