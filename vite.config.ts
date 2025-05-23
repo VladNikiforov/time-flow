@@ -16,7 +16,7 @@ const staticCopyPlugin = () => {
         rename: 'manifest.json',
       },
       { src: 'src/global.css', dest: './' },
-      { src: 'src/popup/popup.html', dest: 'popup'},
+      { src: 'src/popup/popup.html', dest: 'popup' },
       { src: 'src/public/index.html', dest: 'public' },
       { src: 'src/public/style.css', dest: 'public' },
     ],

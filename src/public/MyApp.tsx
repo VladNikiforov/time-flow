@@ -55,17 +55,13 @@ export default function MyApp(): any {
         setHueInput(result.uiHue)
       }
     })
-    browserAPI.runtime.onMessage.addListener(receiveData)
+
+    browserAPI.runtime.onMessage.addListener((message: any) => {
+      setRawData((prev: RawData) => ({ ...prev, ...message.data }))
+    })
+    ;(browserAPI as typeof browser).runtime.sendMessage({ action: 'requestAllData' })
     // eslint-disable-next-line
   }, [])
-
-  function receiveData(message: any) {
-    if (message.action !== 'sendData') {
-      console.error('Error receiving data from background.js:', message)
-      return
-    }
-    setRawData((prev: RawData) => ({ ...prev, ...message.data }))
-  }
 
   function saveToStorage(key: string, value: any) {
     browserAPI.storage.local.set({ [key]: value })

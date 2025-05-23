@@ -114,6 +114,11 @@ async function sendAllStoredData(): Promise<void> {
   })
 }
 
+browserAPI.runtime.onMessage.addListener((message) => {
+  if (message.action !== 'requestAllData') return
+  sendAllStoredData()
+})
+
 function resetTimerState() {
   startTime = 0
   currentTabId = null
