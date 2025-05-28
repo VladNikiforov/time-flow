@@ -4,6 +4,25 @@ type BrowserAPI = typeof browser | typeof chrome
 const isFirefox = typeof browser !== 'undefined' && browser.runtime?.id
 export const browserAPI: BrowserAPI = isFirefox ? browser : chrome
 
+let isPaused = false
+
+browserAPI.storage.local.get(['isPaused'], (result) => {
+  isPaused = !!result.isPaused
+})
+
+browserAPI.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message.action === 'setPause') {
+    isPaused = message.value
+    browserAPI.storage.local.set({ isPaused })
+    sendResponse({ isPaused })
+    return true
+  }
+  if (message.action === 'getPause') {
+    sendResponse({ isPaused })
+    return true
+  }
+})
+
 export function toLocalISODate(date: Date) {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -51,6 +70,7 @@ async function saveData(data: BrowsingDataEntry): Promise<void> {
 }
 
 async function startTimer(tabId: number): Promise<void> {
+  if (isPaused) return
   currentTabId = tabId
 
   try {
@@ -70,7 +90,7 @@ async function startTimer(tabId: number): Promise<void> {
 const unwantedPrefixes = ['moz-extension://', 'about:', 'chrome://', 'chrome-extension://']
 
 async function stopTimer(): Promise<void> {
-  if (!currentTabId || !currentTabUrl || !startTime) return
+  if (!currentTabId || !currentTabUrl || !startTime || isPaused) return
 
   const endTime = Date.now()
   const elapsedSeconds = Math.floor((endTime - startTime) / 1000)

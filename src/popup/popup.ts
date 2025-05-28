@@ -43,3 +43,26 @@ function loadPreferences() {
 
 loadPreferences()
 document.addEventListener('DOMContentLoaded', loadPreferences)
+
+const pauseBtn = document.getElementById('pause') as HTMLImageElement
+
+function updatePauseBtn(paused: boolean) {
+  pauseBtn.src = `../assets/${paused ? 'resume' : 'pause'}.svg`
+}
+
+function getPauseState() {
+  ;(browserAPI as typeof browser).runtime.sendMessage({ action: 'getPause' } as any, (response: any) => {
+    updatePauseBtn(response?.isPaused)
+  })
+}
+
+pauseBtn.addEventListener('click', () => {
+  ;(browserAPI as typeof browser).runtime.sendMessage({ action: 'getPause' } as any, (response: any) => {
+    const newPause = !response?.isPaused
+    ;(browserAPI as typeof browser).runtime.sendMessage({ action: 'setPause', value: newPause } as any, () => {
+      updatePauseBtn(newPause)
+    })
+  })
+})
+
+getPauseState()
