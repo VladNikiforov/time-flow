@@ -401,23 +401,20 @@ export default function MyApp(): any {
 
       <main>
         <div id="dayInfo">
-          <div style={{ height: 300, width: 300, marginRight: '2rem' }}>
-            <div>
-              <div className="navButtons">
-                <button id="prevDay" onClick={handlePrevDay}>
-                  &lt;
-                </button>
-                <button id="nextDay" onClick={handleNextDay}>
-                  &gt;
-                </button>
-              </div>
-              <div id="dayDate">{formatDate(detailDate)}</div>
+          <div className="dayNavDate">
+            <div className="navButtons">
+              <button id="prevDay" onClick={handlePrevDay}>
+                &lt;
+              </button>
+              <button id="nextDay" onClick={handleNextDay}>
+                &gt;
+              </button>
             </div>
-            <canvas id="detailChart" ref={detailChartRef}></canvas>
+            <div id="dayDate">{formatDate(detailDate)}</div>
           </div>
-
-          <div id="dayStats">
-            <div id="dayTotal">{formatValue(totalSpentTime)}</div>
+          <div id="dayTotal">{formatValue(totalSpentTime)}</div>
+          <canvas id="detailChart" ref={detailChartRef}></canvas>
+          <div className="dayProgress">
             <ProgressContainer />
           </div>
         </div>
