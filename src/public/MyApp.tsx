@@ -60,7 +60,6 @@ export default function MyApp(): any {
       setRawData((prev: RawData) => ({ ...prev, ...message.data }))
     })
     ;(browserAPI as typeof browser).runtime.sendMessage({ action: 'requestAllData' })
-    // eslint-disable-next-line
   }, [])
 
   function saveToStorage(key: string, value: any) {
@@ -107,9 +106,9 @@ export default function MyApp(): any {
 
   function formatValue(value: number) {
     if (viewMode === 'time') {
-      const h = Math.floor(value / 3600)
-      const m = Math.floor((value % 3600) / 60)
-      const s = value % 60
+      const h = Math.floor(value / 3600),
+        m = Math.floor((value % 3600) / 60),
+        s = value % 60
       return h ? `${h}h${m ? ` ${m}m` : ''}${s ? ` ${s}s` : ''}` : m ? `${m}m${s ? ` ${s}s` : ''}` : `${s}s`
     } else if (viewMode === 'sessions') {
       return `${value} session${value === 1 ? '' : 's'}`
@@ -128,14 +127,12 @@ export default function MyApp(): any {
     setDateRange(dr)
     setFilledData(fillMissingDates(rawData, dr))
     setSelectedDayIndex(dr.indexOf(today))
-    // eslint-disable-next-line
   }, [rawData, viewRange, currentStartDate])
 
   useEffect(() => {
     const values = getValues(dateRange, filledData)
     setMainChartValues(values)
     setAverageValue(values.length ? Math.round(values.reduce((sum, t) => sum + t, 0) / values.length) : 0)
-    // eslint-disable-next-line
   }, [dateRange, filledData, viewMode])
 
   useEffect(() => {
@@ -190,17 +187,15 @@ export default function MyApp(): any {
         },
       },
     })
-    // eslint-disable-next-line
   }, [mainChartValues, dateRange, isDark, uiHue, viewRange, viewMode])
 
   useEffect(() => {
     if (!dateRange.length) return
-    let idx = selectedDayIndex
-    if (idx < 0 || idx >= dateRange.length) idx = 0
-    const date = dateRange[idx]
+    let index = selectedDayIndex
+    if (index < 0 || index >= dateRange.length) index = 0
+    const date = dateRange[index]
     setDetailDate(date)
     setDetailEntries(filledData[date] || [])
-    // eslint-disable-next-line
   }, [selectedDayIndex, dateRange, filledData])
 
   useEffect(() => {
@@ -252,7 +247,6 @@ export default function MyApp(): any {
         },
       },
     })
-    // eslint-disable-next-line
   }, [detailEntries, viewMode, uiHue])
 
   useEffect(() => {
@@ -267,7 +261,6 @@ export default function MyApp(): any {
     if (settingsIconRef.current) {
       settingsIconRef.current.style.filter = `invert(${+isDark})`
     }
-    // eslint-disable-next-line
   }, [isDark, uiHue])
 
   function handleViewRangeChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -348,6 +341,35 @@ export default function MyApp(): any {
 
   const [showAllProgress, setShowAllProgress] = useState(false)
   const maxItems = 3
+
+  const [prevAverageValue, setPrevAverageValue] = useState<number | null>(null)
+  const [percentChange, setPercentChange] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!dateRange.length) {
+      setPrevAverageValue(null)
+      setPercentChange(null)
+      return
+    }
+
+    let prevStartDate: Date
+    if (viewRange === 'Week') {
+      prevStartDate = new Date(currentStartDate)
+      prevStartDate.setDate(prevStartDate.getDate() - 7)
+    } else {
+      prevStartDate = new Date(currentStartDate.getFullYear(), currentStartDate.getMonth() - 1, 1)
+    }
+    const prevRange = generateDateRange(prevStartDate, viewRange)
+    const prevFilled = fillMissingDates(rawData, prevRange)
+    const prevValues = getValues(prevRange, prevFilled)
+    const prevAvg = prevValues.length ? Math.round(prevValues.reduce((sum, t) => sum + t, 0) / prevValues.length) : 0
+    setPrevAverageValue(prevAvg)
+    if (prevAvg === 0) {
+      setPercentChange(null)
+    } else {
+      setPercentChange(Math.round(((averageValue - prevAvg) / prevAvg) * 100))
+    }
+  }, [rawData, viewRange, currentStartDate, averageValue])
 
   function ProgressContainer() {
     return (
@@ -435,6 +457,16 @@ export default function MyApp(): any {
             </select>
             <div id="averageTime">
               {viewRange} Average: {formatValue(averageValue)}
+              {prevAverageValue !== null && prevAverageValue !== 0 && percentChange !== null && (
+                <span
+                  style={{
+                    marginLeft: '0.5em',
+                    color: percentChange > 0 ? '#bf4c4a' : percentChange < 0 ? '#4abf4a' : '#808080',
+                  }}
+                >
+                  {percentChange === 0 ? `Same as last ${viewRange.toLowerCase()}` : `${percentChange > 0 ? '↑' : '↓'} ${Math.abs(percentChange)}% than last ${viewRange.toLowerCase()}`}
+                </span>
+              )}
             </div>
           </div>
           <canvas id="mainChart" ref={mainChartRef}></canvas>
