@@ -436,9 +436,7 @@ export default function MyApp(): any {
           </div>
           <div id="dayTotal">{formatValue(totalSpentTime)}</div>
           <canvas id="detailChart" ref={detailChartRef}></canvas>
-          <div className="dayProgress">
-            <ProgressContainer />
-          </div>
+          <ProgressContainer />
         </div>
 
         <div>
