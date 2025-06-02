@@ -11,8 +11,8 @@ const staticCopyPlugin = () => {
       { src: 'src/assets/favicon/**/*', dest: 'assets/favicon' },
       { src: ['src/assets/*.png', 'src/assets/*.svg'], dest: 'assets' },
       {
-        src: resolve(__dirname, `src/manifest/${isChrome ? 'chrome.json' : 'firefox.json'}`),
-        dest: './',
+        src: `src/manifest/${isChrome ? 'chrome.json' : 'firefox.json'}`,
+        dest: '.',
         rename: 'manifest.json',
       },
       { src: 'src/global.css', dest: './' },
