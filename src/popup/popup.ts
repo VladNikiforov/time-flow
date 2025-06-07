@@ -3,6 +3,7 @@
 import { browserAPI } from '../background.js'
 
 const pageButton = document.getElementById('main-page') as HTMLButtonElement
+const pauseBtn = document.getElementById('pause') as HTMLImageElement
 
 pageButton.addEventListener('click', () => {
   const addonPageURL = browserAPI.runtime.getURL('public/index.html')
@@ -34,17 +35,13 @@ function isDarkLogic(isDark: boolean) {
 
   document.documentElement.style.setProperty('--background-color', themeConfig.backgroundColor)
   document.documentElement.style.setProperty('--text-color', themeConfig.textColor)
+  pauseBtn.style.filter = `invert(${+isDark})`
 }
 
-function loadPreferences() {
+document.addEventListener('DOMContentLoaded', (() => {
   getFromStorage('uiHue', uiHueLogic)
   getFromStorage('isDark', isDarkLogic)
-}
-
-loadPreferences()
-document.addEventListener('DOMContentLoaded', loadPreferences)
-
-const pauseBtn = document.getElementById('pause') as HTMLImageElement
+}))
 
 function updatePauseBtn(paused: boolean) {
   pauseBtn.src = `../assets/${paused ? 'resume' : 'pause'}.svg`

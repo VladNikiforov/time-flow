@@ -1,7 +1,8 @@
 import { defineConfig } from 'vite'
-import { resolve } from 'path'
+import { resolve, join } from 'path'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import react from '@vitejs/plugin-react'
+import * as fs from 'fs'
 
 const isChrome = process.env.BROWSER === 'chrome'
 
@@ -26,8 +27,23 @@ const staticCopyPlugin = () => {
   })
 }
 
+function getTsxEntries(dir: string, outPrefix: string) {
+  const absDir = resolve(__dirname, dir)
+  if (!fs.existsSync(absDir)) return {}
+  const files = fs.readdirSync(absDir)
+  return files
+    .filter(f => f.endsWith('.tsx'))
+    .reduce((acc, file) => {
+      const name = file.replace(/\.tsx$/, '')
+      acc[`${outPrefix}${name}`] = join(absDir, file)
+      return acc
+    }, {} as Record<string, string>)
+}
+
 export default defineConfig(({ mode }): any => {
   const isDev = mode === 'development'
+
+  const componentEntries = getTsxEntries('src/public/components', 'public/components/')
 
   return {
     build: {
@@ -38,10 +54,16 @@ export default defineConfig(({ mode }): any => {
           popup: resolve(__dirname, 'src/popup/popup.ts'),
           utils: resolve(__dirname, 'src/public/utils.ts'),
           myapp: resolve(__dirname, 'src/public/MyApp.tsx'),
-          settings: resolve(__dirname, 'src/public/Settings.tsx'),
+          ...componentEntries,
         },
         output: {
           entryFileNames: (chunk: any) => {
+            if (chunk.name.startsWith('public/components/')) {
+              return `public/components/${chunk.name.replace(/^public\/components\//, '').replace(/\.tsx?$/, '').replace(/([A-Z])/g, '-$1').toLowerCase()}.js`
+            }
+            if (chunk.name.startsWith('public/')) {
+              return `public/${chunk.name.replace(/^public\//, '').replace(/\.tsx?$/, '').replace(/([A-Z])/g, '-$1').toLowerCase()}.js`
+            }
             const map: any = {
               background: 'background.js',
               popup: 'popup/popup.js',

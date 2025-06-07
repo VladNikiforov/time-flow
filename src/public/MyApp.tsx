@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client'
 import Chart from 'chart.js/auto'
 import { browserAPI, toLocalISODate, today } from '../background'
 import { getStartOfWeek, getDaysInMonth, getStartOfMonth, formatDate, formatKey } from './utils'
-import Settings from './Settings'
+import Settings from './components/Settings'
 
 type WebsiteData = { website: string; time: number }
 type RawData = { [date: string]: WebsiteData[] }
