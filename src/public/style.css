@@ -242,3 +242,37 @@ progress::-moz-progress-bar {
 #timeTrend {
   margin-left: 1rem;
 }
+
+.select {
+  display: inline-flex;
+  border: 1px solid var(--special-color-light);
+  border-radius: 8px;
+  overflow: hidden;
+  font-family: sans-serif;
+  margin-right: 1rem;
+}
+
+.select input[type='radio'] {
+  display: none;
+}
+
+.select label {
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  flex: 1;
+  text-align: center;
+  background: var(--special-color-dark);
+  color: var(--text-color);
+  transition: background 0.2s;
+  user-select: none;
+}
+
+.select label + input + label {
+  border-left: 1px solid var(--special-color-light);
+}
+
+.select input:checked + label {
+  background: var(--special-color-light);
+  color: var(--text-color);
+}

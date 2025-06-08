@@ -16,10 +16,12 @@
       <h1>TimeFlow - Dashboard</h1>
 
       <div id="rightNav">
-        <select id="viewMode">
-          <option value="time" selected>time</option>
-          <option value="sessions">sessions</option>
-        </select>
+        <div class="select">
+          <input type="radio" name="viewMode" id="time" value="time" checked />
+          <label for="time">time</label>
+          <input type="radio" name="viewMode" id="sessions" value="sessions" />
+          <label for="sessions">sessions</label>
+        </div>
         <!-- Settings SVG by Solar Icons https://www.svgrepo.com/svg/523734/settings -->
         <img id="settingsIcon" src="../assets/settings-icon.svg" />
       </div>
@@ -50,10 +52,12 @@
             <button id="prevButton">&lt;</button>
             <button id="nextButton">&gt;</button>
           </div>
-          <select id="viewRange">
-            <option value="Week" selected>Week</option>
-            <option value="Month">Month</option>
-          </select>
+          <div class="select">
+            <input type="radio" name="viewRange" id="week" value="Week" checked />
+            <label for="week">Week</label>
+            <input type="radio" name="viewRange" id="month" value="Month" />
+            <label for="month">Month</label>
+          </div>
           <span id="averageTime"></span>
           <span id="timeTrend"></span>
         </div>
@@ -85,11 +89,12 @@
         <div class="settingSection">
           <h3>Data</h3>
           <div class="sectionContent">
-            <label for="dataFormat">Format:</label>
-            <select id="dataFormat">
-              <option value="json" selected>JSON</option>
-              <option value="csv">CSV</option>
-            </select>
+            <div class="select">
+              <input type="radio" name="dataMode" id="json" value="json" checked />
+              <label for="json">JSON</label>
+              <input type="radio" name="dataMode" id="csv" value="csv" />
+              <label for="csv">CSV</label>
+            </div>
             <button id="exportData">export</button>
             <button id="importData">import</button>
           </div>

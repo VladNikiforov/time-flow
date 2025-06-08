@@ -88,23 +88,27 @@ function generateSampleData() {
 generateSampleData()
 */
 
-const viewRangeElement = document.getElementById('viewRange') as HTMLSelectElement
-const viewModeElement = document.getElementById('viewMode') as HTMLSelectElement
+const viewRangeElement = document.querySelectorAll('input[name="viewRange"]') as any
+const viewModeElement = document.querySelectorAll('input[name="viewMode"]') as any
 
 type ViewRange = 'Week' | 'Month'
-let viewRange: ViewRange = viewRangeElement.value as ViewRange
+let viewRange: ViewRange = 'Week' as ViewRange
 
 type ViewMode = 'time' | 'sessions'
-let viewMode: ViewMode = viewModeElement.value as ViewMode
+let viewMode: ViewMode = 'time' as ViewMode
 
-viewRangeElement.addEventListener('change', () => {
-  viewRange = viewRangeElement.value as ViewRange
-  getStartDate()
+viewRangeElement.forEach((radio: any) => {
+  radio.addEventListener('change', () => {
+    viewRange = radio.value as ViewRange
+    getStartDate()
+  })
 })
 
-viewModeElement.addEventListener('change', () => {
-  viewMode = viewModeElement.value as ViewMode
-  updateChart()
+viewModeElement.forEach((radio: any) => {
+  radio.addEventListener('change', () => {
+    viewMode = radio.value as ViewMode
+    updateChart()
+  })
 })
 
 let currentStartDate: any = null
@@ -561,9 +565,17 @@ function handleHueChange(event: any) {
 hueSlider.addEventListener('input', handleHueChange)
 hueValue.addEventListener('input', handleHueChange)
 
-const dataFormatSelect = document.getElementById('dataFormat') as HTMLSelectElement
+const dataFormatSelect = document.querySelectorAll('input[name="dataMode"]') as any
 const exportDataButton = document.getElementById('exportData') as HTMLButtonElement
 const importDataButton = document.getElementById('importData') as HTMLButtonElement
+
+let dataMode: any = 'json'
+
+dataFormatSelect.forEach((radio: any) => {
+  radio.addEventListener('change', () => {
+    dataMode = radio.value as any
+  })
+})
 
 const importFileInput = document.createElement('input')
 importFileInput.type = 'file'
@@ -572,8 +584,7 @@ importFileInput.style.display = 'none'
 document.body.appendChild(importFileInput)
 
 exportDataButton.addEventListener('click', () => {
-  const format = dataFormatSelect.value
-  if (format === 'json') {
+  if (dataMode === 'json') {
     const blob = new Blob([JSON.stringify(rawData, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -581,14 +592,14 @@ exportDataButton.addEventListener('click', () => {
     a.download = `TimeFlow Export ${today}.json`
     a.click()
     URL.revokeObjectURL(url)
-  } else if (format === 'csv') {
+  } else if (dataMode === 'csv') {
     const rows = [['date', 'website', 'time']]
     for (const date in rawData) {
       for (const entry of rawData[date]) {
         rows.push([date, entry.website, entry.time.toString()])
       }
     }
-    const csvContent = rows.map(r => r.map(v => `"${(v ?? '').toString().replace(/"/g, '""')}"`).join(',')).join('\n')
+    const csvContent = rows.map((r) => r.map((v) => `"${(v ?? '').toString().replace(/"/g, '""')}"`).join(',')).join('\n')
     const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -607,26 +618,24 @@ importFileInput.addEventListener('change', (event: any) => {
   const reader = new FileReader()
   reader.onload = (e: any) => {
     try {
-      Object.keys(rawData).forEach(key => delete rawData[key])
+      Object.keys(rawData).forEach((key) => delete rawData[key])
       if (format === 'json') {
         const importedData = JSON.parse(e.target.result)
         Object.assign(rawData, importedData)
-        updateChart()
-        alert('Data imported successfully!')
       } else if (format === 'csv') {
         const text = e.target.result as string
         const lines = text.trim().split('\n')
         const header = lines.shift()
         if (!header || !header.toLowerCase().includes('date')) throw new Error('Invalid CSV header')
         for (const line of lines) {
-          const [date, website, time] = line.split(',').map(s => s.replace(/^"|"$/g, '').replace(/""/g, '"'))
+          const [date, website, time] = line.split(',').map((s) => s.replace(/^"|"$/g, '').replace(/""/g, '"'))
           if (!date || !website || isNaN(Number(time))) continue
           if (!rawData[date]) rawData[date] = []
           rawData[date].push({ website, time: Number(time) })
         }
-        updateChart()
-        alert('CSV data imported successfully!')
       }
+      updateChart()
+      alert('Data imported successfully!')
     } catch (err) {
       alert('Failed to import data')
     }
