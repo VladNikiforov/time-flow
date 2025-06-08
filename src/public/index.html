@@ -7,11 +7,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TimeFlow</title>
     <link rel="icon" type="image/png" href="../assets/favicon/16.png" />
-    <link rel="stylesheet" href="../global/global.css" />
+    <link rel="stylesheet" href="../global.css" />
     <link rel="stylesheet" href="style.css" />
   </head>
 
   <body>
+    <div id="root"></div>
+
     <nav>
       <h1>TimeFlow - Dashboard</h1>
 
@@ -65,22 +67,35 @@
       <div id="overlay"></div>
       <div id="popup">
         <h2>Settings</h2>
-        <h3 id="themeSection">Appearance</h3>
-        <div>
-          <label for="themeIcon">Theme:</label>
-          <!-- Theme SVG by Microsoft https://www.svgrepo.com/svg/310719/dark-theme -->
-          <img id="themeIcon" src="../assets/theme-icon.svg" />
+        <div class="settingSection">
+          <h3>Appearance</h3>
+          <div class="sectionContent">
+            <div>
+              <label for="themeIcon">Theme:</label>
+              <!-- Theme SVG by Microsoft https://www.svgrepo.com/svg/310719/dark-theme -->
+              <img id="themeIcon" src="../assets/theme-icon.svg" />
+            </div>
+            <div>
+              <label for="hueSlider">Hue:</label>
+              <input type="number" id="hueValue" min="1" max="360" />
+              <input type="range" id="hueSlider" min="1" max="360" />
+            </div>
+          </div>
         </div>
-        <div>
-          <label for="hueSlider">Hue:</label>
-          <input type="number" id="hueValue" min="1" max="360" />
-          <input type="range" id="hueSlider" min="1" max="360" />
+
+        <div class="settingSection">
+          <h3>Data</h3>
+          <div class="sectionContent">
+            <label for="exportData">JSON:</label>
+            <button id="exportData">export</button>
+          </div>
         </div>
 
         <button id="closeButton">Close</button>
       </div>
     </aside>
 
+    <script src="my-app.js" type="module"></script>
     <script src="script.js" type="module"></script>
   </body>
 </html>

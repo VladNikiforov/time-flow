@@ -2,16 +2,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev:chrome": "BROWSER=chrome vite build --watch --mode development",
-    "dev:firefox": "BROWSER=firefox vite build --watch --mode development",
-    "build:chrome": "BROWSER=chrome vite build --mode production",
-    "build:firefox": "BROWSER=firefox vite build --mode production",
+    "dev:chrome": "cross-env BROWSER=chrome vite build --watch --mode development",
+    "dev:firefox": "cross-env BROWSER=firefox vite build --watch --mode development",
+    "build:chrome": "cross-env BROWSER=chrome vite build --mode production",
+    "build:firefox": "cross-env BROWSER=firefox vite build --mode production",
     "format": "prettier --write ."
   },
   "devDependencies": {
     "@types/chart.js": "^2.9.41",
     "@types/chrome": "^0.0.313",
     "@types/firefox-webext-browser": "^120.0.4",
+    "cross-env": "^7.0.3",
     "prettier": "^3.5.3",
     "typescript": "^5.8.2",
     "vite": "^6.3.4",

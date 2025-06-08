@@ -9,15 +9,15 @@ const staticCopyPlugin = () => {
     targets: [
       { src: 'src/assets/favicon/**/*', dest: 'assets/favicon' },
       { src: ['src/assets/*.png', 'src/assets/*.svg'], dest: 'assets' },
-      { src: 'src/global/*', dest: 'global' },
       {
-        src: resolve(__dirname, `src/manifest/${isChrome ? 'chrome.json' : 'firefox.json'}`),
-        dest: './',
+        src: `src/manifest/${isChrome ? 'chrome.json' : 'firefox.json'}`,
+        dest: '.',
         rename: 'manifest.json',
       },
       { src: 'src/popup/popup.html', dest: 'popup', rename: 'popup.html' },
       { src: 'src/public/index.html', dest: 'public', rename: 'index.html' },
       { src: 'src/public/style.css', dest: 'public', rename: 'style.css' },
+      { src: 'src/global.css', dest: '.' },
     ],
     watch: {
       reloadPageOnChange: true,

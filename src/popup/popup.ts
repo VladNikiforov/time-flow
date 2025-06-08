@@ -1,9 +1,9 @@
 /* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
 
-window.isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.id
-window.browserAPI = isFirefox ? browser : chrome
+import { browserAPI } from '../background.js'
 
 const pageButton = document.getElementById('main-page') as HTMLButtonElement
+const pauseBtn = document.getElementById('pause') as HTMLImageElement
 
 pageButton.addEventListener('click', () => {
   const addonPageURL = browserAPI.runtime.getURL('public/index.html')
@@ -12,7 +12,7 @@ pageButton.addEventListener('click', () => {
 })
 
 function getFromStorage(key: any, callback: any) {
-  browser.storage.local.get([key]).then((result) => {
+  browserAPI.storage.local.get([key]).then((result) => {
     const value = result[key]
     console.log(key === undefined ? 'No data found for key:' : 'Data retrieved:', key, value)
     callback(value)
@@ -35,12 +35,31 @@ function isDarkLogic(isDark: boolean) {
 
   document.documentElement.style.setProperty('--background-color', themeConfig.backgroundColor)
   document.documentElement.style.setProperty('--text-color', themeConfig.textColor)
+  pauseBtn.style.filter = `invert(${+isDark})`
 }
 
-function loadPreferences() {
+document.addEventListener('DOMContentLoaded', (() => {
   getFromStorage('uiHue', uiHueLogic)
   getFromStorage('isDark', isDarkLogic)
+}))
+
+function updatePauseBtn(paused: boolean) {
+  pauseBtn.src = `../assets/${paused ? 'resume' : 'pause'}.svg`
 }
 
-loadPreferences()
-document.addEventListener('DOMContentLoaded', loadPreferences)
+function getPauseState() {
+  ;(browserAPI as typeof browser).runtime.sendMessage({ action: 'getPause' } as any, (response: any) => {
+    updatePauseBtn(response?.isPaused)
+  })
+}
+
+pauseBtn.addEventListener('click', () => {
+  ;(browserAPI as typeof browser).runtime.sendMessage({ action: 'getPause' } as any, (response: any) => {
+    const newPause = !response?.isPaused
+    ;(browserAPI as typeof browser).runtime.sendMessage({ action: 'setPause', value: newPause } as any, () => {
+      updatePauseBtn(newPause)
+    })
+  })
+})
+
+getPauseState()

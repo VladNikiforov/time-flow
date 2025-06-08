@@ -1,9 +1,17 @@
-import Chart from 'chart.js/auto'
-
 /* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
 
-const isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.id
-const browserAPI = isFirefox ? browser : chrome
+declare global {
+  interface Window {
+    Chart: any
+    chartInstance: any
+    detailChartInstance: any
+    isFirefox: any
+    browserAPI: any
+  }
+}
+
+import Chart from 'chart.js/auto'
+import { browserAPI } from '../background'
 
 let isDark: boolean
 let uiHue: number
@@ -533,3 +541,16 @@ function handleHueChange(event: any) {
 
 hueSlider.addEventListener('input', handleHueChange)
 hueValue.addEventListener('input', handleHueChange)
+
+const exportDataButton = document.getElementById('exportData') as HTMLButtonElement
+exportDataButton.addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(rawData, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `TimeFlow Export ${today}.json`
+  a.click()
+
+  URL.revokeObjectURL(url)
+})

@@ -1,3 +1,5 @@
+/* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
+
 ::selection {
   background-color: var(--special-color-light);
 }
@@ -40,7 +42,8 @@ a:hover {
   border-radius: 0.5rem;
   padding: 1rem;
   overflow-y: auto;
-  height: 300px;
+  height: 50vh;
+  flex: 1;
 }
 
 .gridDisplay {
@@ -100,14 +103,19 @@ progress::-moz-progress-bar {
   border-radius: 0.5rem;
   width: 50vw;
   height: 50vh;
-  padding: 2rem;
+  padding: 1rem;
   z-index: 2;
+  overflow: scroll;
 }
 
-#themeSection {
+.settingSection {
   font-weight: bold;
-  margin-left: 0.5rem;
-  display: inline;
+  margin-left: 1rem;
+}
+
+.sectionContent {
+  padding-left: 1rem;
+  border-left: 3px solid var(--special-color-dark);
 }
 
 #settingsIcon,
@@ -145,7 +153,10 @@ progress::-moz-progress-bar {
 }
 
 #dayInfo {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  gap: 0 1rem;
 }
 
 .hidden {
@@ -172,10 +183,16 @@ progress::-moz-progress-bar {
 #dayTotal {
   font-size: 2rem;
   text-align: center;
+  justify-content: space-between;
 }
 
 #dayStats {
-  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 50vh;
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 .navButtons {
@@ -188,8 +205,7 @@ progress::-moz-progress-bar {
 }
 
 #popup div {
-  margin-left: 1rem;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 
 .labelText,
@@ -217,4 +233,9 @@ progress::-moz-progress-bar {
   border: 2px solid #333;
   cursor: pointer;
   transition: background-color 0.3s ease;
+}
+
+#detailChart {
+  max-width: 50vh;
+  max-height: 50vh;
 }
