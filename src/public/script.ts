@@ -64,6 +64,7 @@ function receiveData(message: any) {
   getFromStorage('isDark')
 }
 
+/*
 // Note that this is only sample data
 function generateSampleData() {
   const now = new Date()
@@ -85,6 +86,7 @@ function generateSampleData() {
   console.log('Generated mock rawData:', rawData)
 }
 generateSampleData()
+*/
 
 const viewRangeElement = document.getElementById('viewRange') as HTMLSelectElement
 const viewModeElement = document.getElementById('viewMode') as HTMLSelectElement
@@ -559,15 +561,75 @@ function handleHueChange(event: any) {
 hueSlider.addEventListener('input', handleHueChange)
 hueValue.addEventListener('input', handleHueChange)
 
+const dataFormatSelect = document.getElementById('dataFormat') as HTMLSelectElement
 const exportDataButton = document.getElementById('exportData') as HTMLButtonElement
+const importDataButton = document.getElementById('importData') as HTMLButtonElement
+
+const importFileInput = document.createElement('input')
+importFileInput.type = 'file'
+importFileInput.accept = '.json,application/json,.csv,text/csv'
+importFileInput.style.display = 'none'
+document.body.appendChild(importFileInput)
+
 exportDataButton.addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(rawData, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
+  const format = dataFormatSelect.value
+  if (format === 'json') {
+    const blob = new Blob([JSON.stringify(rawData, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `TimeFlow Export ${today}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  } else if (format === 'csv') {
+    const rows = [['date', 'website', 'time']]
+    for (const date in rawData) {
+      for (const entry of rawData[date]) {
+        rows.push([date, entry.website, entry.time.toString()])
+      }
+    }
+    const csvContent = rows.map(r => r.map(v => `"${(v ?? '').toString().replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `TimeFlow Export ${today}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+})
 
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `TimeFlow Export ${today}.json`
-  a.click()
-
-  URL.revokeObjectURL(url)
+importDataButton.addEventListener('click', () => importFileInput.click())
+importFileInput.addEventListener('change', (event: any) => {
+  const file = event.target.files[0]
+  if (!file) return
+  const format = dataFormatSelect.value
+  const reader = new FileReader()
+  reader.onload = (e: any) => {
+    try {
+      Object.keys(rawData).forEach(key => delete rawData[key])
+      if (format === 'json') {
+        const importedData = JSON.parse(e.target.result)
+        Object.assign(rawData, importedData)
+        updateChart()
+        alert('Data imported successfully!')
+      } else if (format === 'csv') {
+        const text = e.target.result as string
+        const lines = text.trim().split('\n')
+        const header = lines.shift()
+        if (!header || !header.toLowerCase().includes('date')) throw new Error('Invalid CSV header')
+        for (const line of lines) {
+          const [date, website, time] = line.split(',').map(s => s.replace(/^"|"$/g, '').replace(/""/g, '"'))
+          if (!date || !website || isNaN(Number(time))) continue
+          if (!rawData[date]) rawData[date] = []
+          rawData[date].push({ website, time: Number(time) })
+        }
+        updateChart()
+        alert('CSV data imported successfully!')
+      }
+    } catch (err) {
+      alert('Failed to import data')
+    }
+  }
+  reader.readAsText(file)
 })

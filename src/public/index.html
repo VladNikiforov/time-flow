@@ -85,8 +85,13 @@
         <div class="settingSection">
           <h3>Data</h3>
           <div class="sectionContent">
-            <label for="exportData">JSON:</label>
+            <label for="dataFormat">Format:</label>
+            <select id="dataFormat">
+              <option value="json" selected>JSON</option>
+              <option value="csv">CSV</option>
+            </select>
             <button id="exportData">export</button>
+            <button id="importData">import</button>
           </div>
         </div>
 
