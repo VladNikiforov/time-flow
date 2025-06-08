@@ -12,8 +12,6 @@
   </head>
 
   <body>
-    <div id="root"></div>
-
     <nav>
       <h1>TimeFlow - Dashboard</h1>
 
@@ -56,7 +54,8 @@
             <option value="Week" selected>Week</option>
             <option value="Month">Month</option>
           </select>
-          <div id="averageTime"></div>
+          <span id="averageTime"></span>
+          <span id="timeTrend"></span>
         </div>
 
         <canvas id="mainChart"></canvas>
@@ -95,7 +94,6 @@
       </div>
     </aside>
 
-    <script src="my-app.js" type="module"></script>
     <script src="script.js" type="module"></script>
   </body>
 </html>

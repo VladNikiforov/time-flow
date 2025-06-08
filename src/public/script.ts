@@ -5,13 +5,11 @@ declare global {
     Chart: any
     chartInstance: any
     detailChartInstance: any
-    isFirefox: any
-    browserAPI: any
   }
 }
 
 import Chart from 'chart.js/auto'
-import { browserAPI } from '../background'
+import { browserAPI, toLocalISODate, today } from '../background'
 
 let isDark: boolean
 let uiHue: number
@@ -66,7 +64,6 @@ function receiveData(message: any) {
   getFromStorage('isDark')
 }
 
-/*
 // Note that this is only sample data
 function generateSampleData() {
   const now = new Date()
@@ -88,9 +85,6 @@ function generateSampleData() {
   console.log('Generated mock rawData:', rawData)
 }
 generateSampleData()
-*/
-
-const today = toLocalISODate(new Date())
 
 const viewRangeElement = document.getElementById('viewRange') as HTMLSelectElement
 const viewModeElement = document.getElementById('viewMode') as HTMLSelectElement
@@ -220,13 +214,6 @@ function fillMissingDates(data: RawData, dateRange: string[]) {
   return filledData
 }
 
-function toLocalISODate(date: Date) {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
 function formatDate(date: string) {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   const [year, month, day] = date.split('-')
@@ -276,10 +263,40 @@ function getValues(dates: any, data: any) {
   })
 }
 
+function getPreviousPeriodRange(currentStartDate: Date): string[] {
+  let prevStart: Date
+  if (viewRange === 'Week') {
+    prevStart = new Date(currentStartDate)
+    prevStart.setDate(currentStartDate.getDate() - 7)
+    return generateDateRange(prevStart)
+  } else {
+    prevStart = new Date(currentStartDate.getFullYear(), currentStartDate.getMonth() - 1, 1)
+    return generateDateRange(prevStart)
+  }
+}
+
+function getTotal(values: number[]) {
+  return values.reduce((sum, v) => sum + v, 0)
+}
+
 function updateAverage(values: any) {
   const averageValue = Math.round(values.reduce((sum: number, time: number) => sum + time, 0) / values.length)
   const averageElement = document.getElementById('averageTime') as HTMLDivElement
   averageElement.textContent = `${viewRange} Average: ${formatValue(averageValue)}`
+
+  const timeTrendElement = document.getElementById('timeTrend') as HTMLSpanElement
+  const prevRange = getPreviousPeriodRange(currentStartDate)
+  const prevFilled = fillMissingDates(rawData, prevRange)
+  const prevValues = getValues(prevRange, prevFilled)
+  const prevTotal = getTotal(prevValues)
+  const currentTotal = getTotal(values)
+
+  const percent = prevTotal > 0 ? Math.round(((currentTotal - prevTotal) / prevTotal) * 100) : 0
+  const arrow = percent > 0 ? '↑' : percent < 0 ? '↓' : ''
+  const periodText = viewRange === 'Week' ? 'last week' : 'last month'
+
+  timeTrendElement.textContent = `${percent ? 'No change since' : `${arrow} ${Math.abs(percent)}% than`} ${periodText}`
+  timeTrendElement.style.color = `hsl(${percent > 0 ? 1 : percent < 0 ? 120 : 0}, ${percent ? 0 : 48}%, 52%)`
 }
 
 function createMainChart(canvas: any, dates: any, values: any, data: any) {

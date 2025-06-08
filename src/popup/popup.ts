@@ -38,10 +38,10 @@ function isDarkLogic(isDark: boolean) {
   pauseBtn.style.filter = `invert(${+isDark})`
 }
 
-document.addEventListener('DOMContentLoaded', (() => {
+document.addEventListener('DOMContentLoaded', () => {
   getFromStorage('uiHue', uiHueLogic)
   getFromStorage('isDark', isDarkLogic)
-}))
+})
 
 function updatePauseBtn(paused: boolean) {
   pauseBtn.src = `../assets/${paused ? 'resume' : 'pause'}.svg`
