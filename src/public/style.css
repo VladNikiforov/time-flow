@@ -107,6 +107,10 @@ progress::-moz-progress-bar {
   overflow: scroll;
 }
 
+#popup::-webkit-scrollbar {
+  display: none;
+}
+
 .settingSection {
   font-weight: bold;
   margin-left: 1rem;
