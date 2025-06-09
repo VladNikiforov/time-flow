@@ -64,6 +64,8 @@ function receiveData(message: any) {
   getFromStorage('isDark')
 }
 
+;(browserAPI as typeof browser).runtime.sendMessage({ action: 'requestAllData' })
+
 /*
 // Note that this is only sample data
 function generateSampleData() {
@@ -299,10 +301,15 @@ function updateAverage(values: any) {
 
   const percent = prevTotal > 0 ? Math.round(((currentTotal - prevTotal) / prevTotal) * 100) : 0
   const arrow = percent > 0 ? '↑' : percent < 0 ? '↓' : ''
-  const periodText = viewRange === 'Week' ? 'last week' : 'last month'
+  const range = viewRange === 'Week' ? 'last week' : 'last month'
 
-  timeTrendElement.textContent = `${percent ? 'No change since' : `${arrow} ${Math.abs(percent)}% than`} ${periodText}`
-  timeTrendElement.style.color = `hsl(${percent > 0 ? 1 : percent < 0 ? 120 : 0}, ${percent ? 0 : 48}%, 52%)`
+  if (prevTotal === 0 || percent === 0) {
+    timeTrendElement.textContent = `No ${prevTotal === 0 ? 'data for' : 'change since'}  ${range}`
+    timeTrendElement.style.color = '#858585'
+  } else {
+    timeTrendElement.textContent = `${arrow} ${Math.abs(percent)}% than ${range}`
+    timeTrendElement.style.color = `hsl(${percent > 0 ? 1 : 120}, 48%, 52%)`
+  }
 }
 
 function createMainChart(canvas: any, dates: any, values: any, data: any) {
