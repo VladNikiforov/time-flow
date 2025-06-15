@@ -43,6 +43,7 @@ a:hover {
   padding: 1rem;
   height: 50vh;
   flex: 1;
+  overflow: scroll;
 }
 
 .gridDisplay {

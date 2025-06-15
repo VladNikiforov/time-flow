@@ -621,15 +621,14 @@ importDataButton.addEventListener('click', () => importFileInput.click())
 importFileInput.addEventListener('change', (event: any) => {
   const file = event.target.files[0]
   if (!file) return
-  const format = dataFormatSelect.value
   const reader = new FileReader()
   reader.onload = (e: any) => {
     try {
       Object.keys(rawData).forEach((key) => delete rawData[key])
-      if (format === 'json') {
+      if (dataMode === 'json') {
         const importedData = JSON.parse(e.target.result)
         Object.assign(rawData, importedData)
-      } else if (format === 'csv') {
+      } else if (dataMode === 'csv') {
         const text = e.target.result as string
         const lines = text.trim().split('\n')
         const header = lines.shift()
