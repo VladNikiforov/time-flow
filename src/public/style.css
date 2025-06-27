@@ -46,6 +46,10 @@ a:hover {
   overflow: scroll;
 }
 
+#progressContainer::-webkit-scrollbar {
+  display: none;
+}
+
 .gridDisplay {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
