@@ -2,9 +2,9 @@
 
 declare global {
   interface Window {
-    Chart: any
-    chartInstance: any
-    detailChartInstance: any
+    Chart: Chart
+    chartInstance: Chart
+    detailChartInstance: Chart
   }
 }
 
@@ -34,8 +34,8 @@ function getFromStorage(key: string) {
         break
     }
 
-    hueSlider.value = uiHue
-    hueValue.value = uiHue
+    hueSlider.value = uiHue.toString()
+    hueValue.value = uiHue.toString()
   })
 }
 
@@ -94,26 +94,26 @@ const viewRangeElement = document.querySelectorAll('input[name="viewRange"]') as
 const viewModeElement = document.querySelectorAll('input[name="viewMode"]') as any
 
 type ViewRange = 'Week' | 'Month'
-let viewRange: ViewRange = 'Week' as ViewRange
+let viewRange: ViewRange = 'Week'
 
 type ViewMode = 'time' | 'sessions'
-let viewMode: ViewMode = 'time' as ViewMode
+let viewMode: ViewMode = 'time'
 
-viewRangeElement.forEach((radio: any) => {
+viewRangeElement.forEach((radio: HTMLInputElement) => {
   radio.addEventListener('change', () => {
     viewRange = radio.value as ViewRange
     getStartDate()
   })
 })
 
-viewModeElement.forEach((radio: any) => {
+viewModeElement.forEach((radio: HTMLInputElement) => {
   radio.addEventListener('change', () => {
     viewMode = radio.value as ViewMode
     updateChart()
   })
 })
 
-let currentStartDate: any = null
+let currentStartDate: Date
 function getStartDate() {
   const now = new Date()
   currentStartDate = (viewRange === 'Week' ? getStartOfWeek : getStartOfMonth)(now)
@@ -150,7 +150,7 @@ function updateChart() {
   updateDailyStats(dateRange, filledData)
 }
 
-function updateDailyStats(dateRange: any, filledData: any) {
+function updateDailyStats(dateRange: string[], filledData: RawData) {
   const simulatedElement = [{ index: dateRange.indexOf(today) }]
   handleChartClick(simulatedElement, dateRange, filledData)
 }
@@ -212,7 +212,7 @@ function generateDateRange(startDate: Date) {
 }
 
 function fillMissingDates(data: RawData, dateRange: string[]) {
-  const filledData: any = {}
+  const filledData: RawData = {}
 
   dateRange.forEach((date: string) => {
     const entries = data[date] || []
@@ -516,8 +516,8 @@ const overlay = document.getElementById('overlay') as HTMLDivElement
 const popup = document.getElementById('popup') as HTMLDivElement
 const closeButton = document.getElementById('closeButton') as HTMLButtonElement
 const themeIcon = document.getElementById('themeIcon') as HTMLImageElement
-const hueSlider: any = document.getElementById('hueSlider')
-const hueValue: any = document.getElementById('hueValue')
+const hueSlider = document.getElementById('hueSlider') as HTMLInputElement
+const hueValue = document.getElementById('hueValue') as HTMLInputElement
 
 function saveToStorage(key: any, value: any) {
   browserAPI.storage.local.set({ [key]: value }, () => {
@@ -563,8 +563,8 @@ function updateHue() {
 
 function handleHueChange(event: any) {
   uiHue = parseInt(event.target.value)
-  hueSlider.value = uiHue
-  hueValue.value = uiHue
+  hueSlider.value = uiHue.toString()
+  hueValue.value = uiHue.toString()
   updateHue()
   saveToStorage('uiHue', uiHue)
 }
@@ -576,7 +576,8 @@ const dataFormatSelect = document.querySelectorAll('input[name="dataMode"]') as 
 const exportDataButton = document.getElementById('exportData') as HTMLButtonElement
 const importDataButton = document.getElementById('importData') as HTMLButtonElement
 
-let dataMode: any = 'json'
+type DataMode = 'csv' | 'json'
+let dataMode: DataMode = 'json'
 
 dataFormatSelect.forEach((radio: any) => {
   radio.addEventListener('change', () => {
