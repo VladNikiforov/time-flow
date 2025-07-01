@@ -21,7 +21,7 @@ browserAPI.storage.local.get(['isDark', 'uiHue'], (result) => {
 
 function getFromStorage(key: string) {
   browserAPI.storage.local.get([key], (result) => {
-    console.log(!result[key] ? 'No data found for key:' : 'Data retrieved:', key, result[key])
+    console.log(result[key] ? 'Data retrieved:' : 'No data found for key:', key, result[key])
 
     switch (key) {
       case 'isDark':
@@ -90,8 +90,8 @@ function generateSampleData() {
 generateSampleData()
 */
 
-const viewRangeElement = document.querySelectorAll('input[name="viewRange"]') as any
-const viewModeElement = document.querySelectorAll('input[name="viewMode"]') as any
+const viewRangeElement = document.querySelectorAll('input[name="viewRange"]') as NodeListOf<HTMLInputElement>
+const viewModeElement = document.querySelectorAll('input[name="viewMode"]') as NodeListOf<HTMLInputElement>
 
 type ViewRange = 'Week' | 'Month'
 let viewRange: ViewRange = 'Week'
@@ -161,10 +161,9 @@ const nextDay = document.getElementById('nextDay') as HTMLButtonElement
 prevDay.addEventListener('click', () => navigateStats(-1))
 nextDay.addEventListener('click', () => navigateStats(1))
 
-let currentStatIndex = 0
-
 const dayDateElement = document.getElementById('dayDate') as HTMLElement
 
+let currentStatIndex = 0
 function navigateStats(direction: number) {
   const dateRange: string[] = generateDateRange(currentStartDate)
   const filledData = fillMissingDates(rawData, dateRange)
@@ -249,7 +248,7 @@ function formatValue(value: number) {
 }
 
 function renderMainChart(data: RawData) {
-  const mainChartCanvas = document.getElementById('mainChart')
+  const mainChartCanvas = document.getElementById('mainChart') as HTMLCanvasElement
   if (window.chartInstance) window.chartInstance.destroy()
 
   const dates = Object.keys(data)
@@ -259,12 +258,12 @@ function renderMainChart(data: RawData) {
   createMainChart(mainChartCanvas, dates, values, data)
 }
 
-function getValues(dates: any, data: any) {
-  return dates.map((date: any) => {
+function getValues(dates: string[], data: RawData): number[] {
+  return dates.map((date: string) => {
     if (!data[date]) return 0
 
     if (viewMode === 'time') {
-      return data[date].reduce((sum: number, entry: any) => sum + (entry.time || 0), 0)
+      return data[date].reduce((sum: number, entry: WebsiteData) => sum + (entry.time || 0), 0)
     } else {
       return data[date].length
     }
@@ -312,7 +311,8 @@ function updateAverage(values: any) {
   }
 }
 
-function createMainChart(canvas: any, dates: any, values: any, data: any) {
+function createMainChart(canvas: HTMLCanvasElement | null, dates: string[], values: number[], data: RawData) {
+  if (!canvas) return
   const options: any = {
     responsive: true,
     plugins: {
@@ -341,7 +341,7 @@ function createMainChart(canvas: any, dates: any, values: any, data: any) {
         grid: { color: isDark ? '#ffffff1a' : '#0000001a' },
       },
     },
-    onClick: (_: null, elements: any) => handleChartClick(elements, dates, data),
+    onClick: (_: unknown, elements: Array<{ index: number }>) => handleChartClick(elements, dates, data),
   }
 
   window.chartInstance = new Chart(canvas, {
@@ -362,23 +362,24 @@ function createMainChart(canvas: any, dates: any, values: any, data: any) {
   })
 }
 
-function formatLabels(dates: any) {
-  return dates.map((date: any) => {
+function formatLabels(dates: string[]): (string | number)[] {
+  return dates.map((date: string) => {
     const d = new Date(date)
     return viewRange === 'Week' ? `${d.toLocaleDateString('en-US', { weekday: 'short' })} ${d.getDate()}` : d.getDate()
   })
 }
 
-function handleChartClick(elements: any, dates: any, data: any) {
+function handleChartClick(elements: Array<{ index: number }>, dates: string[], data: RawData) {
   if (elements.length == 0) return
   const index = elements[0].index
   const label = dates[index]
-  const detailChartElement: any = document.getElementById('detailChart')
+  const detailChartElement = document.getElementById('detailChart') as HTMLCanvasElement
   renderDetailChart(data[label], detailChartElement.getContext('2d'))
   dayDateElement.textContent = formatDate(label)
 }
 
-function renderDetailChart(entries: any, canvas: any) {
+function renderDetailChart(entries: WebsiteData[], canvas: CanvasRenderingContext2D | null) {
+  if (!canvas) return
   const aggregatedData = aggregateEntries(entries)
   const { websites, values, totalSpentTime } = processAggregatedData(aggregatedData)
 
@@ -393,8 +394,8 @@ function destroyPreviousChart() {
   }
 }
 
-function aggregateEntries(entries: any) {
-  const aggregatedData = entries.reduce((acc: any, entry: any) => {
+function aggregateEntries(entries: WebsiteData[]): Record<string, number> {
+  const aggregatedData = entries.reduce((acc: Record<string, number>, entry: WebsiteData) => {
     const key = entry.website || 'unknown'
     const value = viewMode === 'time' ? entry.time || 0 : 1
 
@@ -402,25 +403,25 @@ function aggregateEntries(entries: any) {
     return acc
   }, {})
 
-  return Object.fromEntries(Object.entries(aggregatedData).sort((a: any[], b: any[]) => b[1] - a[1]))
+  return Object.fromEntries(Object.entries(aggregatedData).sort((a, b) => b[1] - a[1]))
 }
 
-function processAggregatedData(aggregatedData: any) {
+function processAggregatedData(aggregatedData: Record<string, number>) {
   const websites = Object.keys(aggregatedData)
   const values = Object.values(aggregatedData)
-  const totalSpentTime = values.reduce((sum: any, value) => sum + value, 0)
+  const totalSpentTime = values.reduce((sum, value) => sum + value, 0)
   return { websites, values, totalSpentTime }
 }
 
-function colorAlgorithm(color: 'dark' | 'light', index = 0) {
+function colorAlgorithm(color: 'dark' | 'light', index = 0): string {
   const hue = (uiHue + index * 20) % 360
   const colorFormula = `${hue}, 48%, 52%`
   return color === 'dark' ? `hsla(${colorFormula}, 0.2)` : `hsl(${colorFormula})`
 }
 
-function createDetailChart(canvas: HTMLCanvasElement, websites: any, values: any) {
-  const backgroundColors = websites.map((_: any, index: number) => colorAlgorithm('dark', index))
-  const borderColors = websites.map((_: any, index: number) => colorAlgorithm('light', index))
+function createDetailChart(canvas: CanvasRenderingContext2D, websites: string[], values: number[]) {
+  const backgroundColors = websites.map((_, index) => colorAlgorithm('dark', index))
+  const borderColors = websites.map((_, index) => colorAlgorithm('light', index))
 
   window.detailChartInstance = new Chart(canvas, {
     type: 'doughnut',
@@ -452,11 +453,11 @@ function createDetailChart(canvas: HTMLCanvasElement, websites: any, values: any
 }
 
 const maxItems = 3
-function renderProgressBars(websites: any, values: any, totalSpentTime: any) {
-  const progressContainer: any = document.getElementById('progressContainer')
+function renderProgressBars(websites: string[], values: number[], totalSpentTime: number) {
+  const progressContainer = document.getElementById('progressContainer') as HTMLDivElement
   progressContainer.innerHTML = ''
 
-  const entries = websites.map((website: any, index: any) => {
+  const entries = websites.map((website, index) => {
     const percentage = Math.round((values[index] / totalSpentTime) * 100)
     const entryContainer = createProgressEntry(website, values[index], percentage, index)
     progressContainer.appendChild(entryContainer)
@@ -468,7 +469,7 @@ function renderProgressBars(websites: any, values: any, totalSpentTime: any) {
     showMoreButton.textContent = 'Show All'
     showMoreButton.style.marginRight = '1rem'
     showMoreButton.addEventListener('click', () => {
-      entries.slice(maxItems).forEach((entry: any) => {
+      entries.slice(maxItems).forEach((entry) => {
         entry.classList.remove('hidden')
       })
       showMoreButton.style.display = 'none'
@@ -480,7 +481,7 @@ function renderProgressBars(websites: any, values: any, totalSpentTime: any) {
   totalTime.textContent = formatValue(totalSpentTime) as string
 }
 
-function createProgressEntry(website: string, value: number, percentage: number, index: number) {
+function createProgressEntry(website: string, value: number, percentage: number, index: number): HTMLDivElement {
   const entryContainer = document.createElement('div')
   entryContainer.classList.add('gridDisplay')
 
@@ -577,11 +578,11 @@ const exportDataButton = document.getElementById('exportData') as HTMLButtonElem
 const importDataButton = document.getElementById('importData') as HTMLButtonElement
 
 type DataMode = 'csv' | 'json'
-let dataMode: DataMode = 'json'
 
-dataFormatSelect.forEach((radio: any) => {
+let dataMode: DataMode = 'json'
+dataFormatSelect.forEach((radio: HTMLInputElement) => {
   radio.addEventListener('change', () => {
-    dataMode = radio.value as any
+    dataMode = radio.value as DataMode
   })
 })
 
