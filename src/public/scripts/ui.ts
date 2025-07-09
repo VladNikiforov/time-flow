@@ -114,12 +114,12 @@ export function updateAverage(values: any) {
   const arrow = percent > 0 ? '↑' : percent < 0 ? '↓' : ''
   const range = getViewRange() === 'Week' ? 'last week' : 'last month'
 
-  if (prevTotal === 0 || percent === 0) {
-    timeTrendElement.textContent = `No ${prevTotal === 0 ? 'data for' : 'change since'}  ${range}`
-    timeTrendElement.style.color = '#858585'
-  } else {
+  if (prevTotal !== 0 && percent !== 0) {
     timeTrendElement.textContent = `${arrow} ${Math.abs(percent)}% than ${range}`
     timeTrendElement.style.color = `hsl(${percent > 0 ? 1 : 120}, 48%, 52%)`
+  } else {
+    timeTrendElement.textContent = prevTotal !== 0 ? `No change since ${range}` : ''
+    timeTrendElement.style.color = '#858585'
   }
 }
 
@@ -281,12 +281,14 @@ function createProgressEntry(website: string, value: number, percentage: number,
     entryContainer.classList.add('hidden')
   }
 
+  const labelDiv = document.createElement('div')
   const labelText = document.createElement('a')
   labelText.classList.add('labelText')
   labelText.target = '_blank'
   labelText.href = website
   labelText.textContent = formatKey(website)
-  entryContainer.appendChild(labelText)
+  labelDiv.appendChild(labelText)
+  entryContainer.appendChild(labelDiv)
 
   const progressBar = document.createElement('progress')
   progressBar.max = 100
