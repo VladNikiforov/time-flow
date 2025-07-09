@@ -1,5 +1,5 @@
-import { getStartDate } from "./date"
-import { updateChart } from "../main"
+import { getStartDate } from './date'
+import { updateChart } from '../main'
 
 const viewRangeElement = document.querySelectorAll('input[name="viewRange"]') as NodeListOf<HTMLInputElement>
 const viewModeElement = document.querySelectorAll('input[name="viewMode"]') as NodeListOf<HTMLInputElement>

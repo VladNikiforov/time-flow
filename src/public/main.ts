@@ -110,8 +110,6 @@ export function navigateStats(direction: number) {
   handleChartClick([simulatedElement], dateRange, filledData)
 }
 
-
-
 export function generateDateRange(startDate: Date) {
   let dateRange: string[] = []
   if (getViewRange() === 'Week') {
@@ -148,11 +146,17 @@ function formatDate(date: string) {
 }
 
 function formatKey(key: string) {
-  key = key
-    .replace(/^https?:\/\//, '')
-    .replace(/^www\./, '')
-    .split('/')[0]
-  return key.length > 24 ? key.slice(0, 24) + '...' : key
+  try {
+    const url = new URL(key)
+    let domain = url.hostname
+    return domain.length > 24 ? domain.slice(0, 24) + '...' : domain
+  } catch {
+    key = key
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .split('/')[0]
+    return key.length > 24 ? key.slice(0, 24) + '...' : key
+  }
 }
 
 function formatValue(value: number) {
@@ -436,7 +440,6 @@ export const settingsIcon = document.getElementById('settingsIcon') as HTMLImage
 const overlay = document.getElementById('overlay') as HTMLDivElement
 const popup = document.getElementById('popup') as HTMLDivElement
 const closeButton = document.getElementById('closeButton') as HTMLButtonElement
-
 
 type Action = 'open' | 'close'
 function togglePopup(action: Action) {

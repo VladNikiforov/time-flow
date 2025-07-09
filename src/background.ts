@@ -72,9 +72,8 @@ async function startTimer(tabId: number): Promise<void> {
 
   try {
     const tab = await browserAPI.tabs.get(tabId)
-    const domain = getDomain(tab.url || '')
-    if (!domain.startsWith('http')) return
-    currentTabUrl = domain
+    if (!tab.url) return
+    currentTabUrl = tab.url
     console.log(`Started tracking: ${currentTabUrl}`)
   } catch (error) {
     console.error('Failed to get tab:', error)
@@ -158,8 +157,7 @@ browserAPI.tabs.onActivated.addListener((activeInfo: chrome.tabs.TabActiveInfo) 
 
 browserAPI.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (tabId === currentTabId && changeInfo.status === 'complete' && tab.url) {
-    const newUrl = getDomain(tab.url)
-    if (newUrl && newUrl !== currentTabUrl && newUrl.startsWith('http')) {
+    if (tab.url) {
       safeSwitch(tabId)
     }
   }
