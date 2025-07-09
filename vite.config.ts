@@ -34,14 +34,14 @@ export default defineConfig(({ mode }): any => {
       rollupOptions: {
         input: {
           background: resolve(__dirname, 'src/background.ts'),
-          script: resolve(__dirname, 'src/public/script.ts'),
+          main: resolve(__dirname, 'src/public/main.ts'),
           popup: resolve(__dirname, 'src/popup/popup.ts'),
         },
         output: {
           entryFileNames: (chunk: any) => {
             const map: any = {
               background: 'background.js',
-              script: 'public/script.js',
+              main: 'public/main.js',
               popup: 'popup/popup.js',
             }
             return map[chunk.name]

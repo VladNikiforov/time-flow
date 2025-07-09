@@ -45,7 +45,6 @@ function getDomain(url: string) {
   try {
     return new URL(url).origin
   } catch {
-    console.error('Invalid URL:', url)
     return ''
   }
 }
