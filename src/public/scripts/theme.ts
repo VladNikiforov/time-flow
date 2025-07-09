@@ -1,5 +1,6 @@
 import { browserAPI } from '../../background'
-import { updateChart, colorAlgorithm, settingsIcon } from '../main'
+import { updateChart, settingsIcon } from './ui'
+import { colorAlgorithm } from './utils'
 
 let isDark: boolean
 let uiHue: number

@@ -1,5 +1,7 @@
-import { updateChart } from '../main'
-import { getViewMode, getViewRange } from './viewInput'
+import { RawData } from '../main'
+import { getViewRange } from './ui'
+import { toLocalISODate } from '../../background'
+import { updateChart } from './ui'
 
 let currentStartDate: Date
 export function getStartDate() {
@@ -39,4 +41,44 @@ export function navigateChart(direction: number) {
 
 export function getCurrentStartDate() {
   return currentStartDate
+}
+export function generateDateRange(startDate: Date) {
+  let dateRange: string[] = []
+  if (getViewRange() === 'Week') {
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startDate)
+      date.setDate(startDate.getDate() + i)
+      dateRange.push(toLocalISODate(date))
+    }
+  } else {
+    const daysInMonth = getDaysInMonth(startDate)
+    for (let i = 0; i < daysInMonth; i++) {
+      const date = new Date(startDate.getFullYear(), startDate.getMonth(), i + 1)
+      dateRange.push(toLocalISODate(date))
+    }
+  }
+  return dateRange
+}
+
+export function fillMissingDates(data: RawData, dateRange: string[]) {
+  const filledData: RawData = {}
+
+  dateRange.forEach((date: string) => {
+    const entries = data[date] || []
+    filledData[date] = entries.length > 0 ? entries : []
+  })
+
+  return filledData
+}
+
+export function getPreviousPeriodRange(currentStartDate: Date): string[] {
+  let prevStart: Date
+  if (getViewRange() === 'Week') {
+    prevStart = new Date(currentStartDate)
+    prevStart.setDate(currentStartDate.getDate() - 7)
+    return generateDateRange(prevStart)
+  } else {
+    prevStart = new Date(currentStartDate.getFullYear(), currentStartDate.getMonth() - 1, 1)
+    return generateDateRange(prevStart)
+  }
 }
