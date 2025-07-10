@@ -1,5 +1,5 @@
-import { formatDate, formatValue, getValues, getTotal, formatLabels, colorAlgorithm, processAggregatedData, formatKey } from './utils'
-import { getIsDark } from './theme'
+import { formatDate, formatValue, getValues, getTotal, formatLabels, processAggregatedData, formatKey } from './utils'
+import { getUiHue, getIsDark } from './theme'
 import { getStartDate, navigateChart, getCurrentStartDate, generateDateRange, fillMissingDates, getPreviousPeriodRange } from './date'
 import { rawData, WebsiteData, RawData } from '../main'
 import { today } from '../../background'
@@ -11,6 +11,12 @@ declare global {
     chartInstance: Chart
     detailChartInstance: Chart
   }
+}
+
+export function colorAlgorithm(color: 'dark' | 'light', index = 0): string {
+  const hue = (getUiHue() + index * 20) % 360
+  const colorFormula = `${hue}, 48%, 52%`
+  return color === 'dark' ? `hsla(${colorFormula}, 0.2)` : `hsl(${colorFormula})`
 }
 
 const viewRangeElement = document.querySelectorAll('input[name="viewRange"]') as NodeListOf<HTMLInputElement>

@@ -1,6 +1,5 @@
 import { getViewMode, getViewRange } from './ui'
 import { RawData, WebsiteData } from '../main'
-import { getUiHue } from './theme'
 
 export function formatDate(date: string) {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -62,10 +61,4 @@ export function processAggregatedData(aggregatedData: Record<string, number>) {
   const values = Object.values(aggregatedData)
   const totalSpentTime = values.reduce((sum, value) => sum + value, 0)
   return { websites, values, totalSpentTime }
-}
-
-export function colorAlgorithm(color: 'dark' | 'light', index = 0): string {
-  const hue = (getUiHue() + index * 20) % 360
-  const colorFormula = `${hue}, 48%, 52%`
-  return color === 'dark' ? `hsla(${colorFormula}, 0.2)` : `hsl(${colorFormula})`
 }

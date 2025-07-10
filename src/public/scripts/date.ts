@@ -1,7 +1,6 @@
 import { RawData } from '../main'
-import { getViewRange } from './ui'
+import { getViewRange, updateChart } from './ui'
 import { toLocalISODate } from '../../background'
-import { updateChart } from './ui'
 
 let currentStartDate: Date
 export function getStartDate() {
