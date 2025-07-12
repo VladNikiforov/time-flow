@@ -7,6 +7,7 @@ import { getStartDate } from './scripts/date'
 initTheme()
 
 export type WebsiteData = {
+  url: string
   website: string
   time: number
 }
@@ -25,10 +26,10 @@ function receiveData(message: any) {
   Object.assign(rawData, message.data)
   console.log('Received data from background.js:', rawData)
 
-  getStartDate()
-
   getFromStorage('uiHue')
   getFromStorage('isDark')
+
+  getStartDate()
 }
 
 ;(browserAPI as typeof browser).runtime.sendMessage({ action: 'requestAllData' })

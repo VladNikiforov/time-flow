@@ -1,4 +1,4 @@
-import { formatDate, formatValue, getValues, getTotal, formatLabels, processAggregatedData, formatKey } from './utils'
+import { formatDate, formatValue, getValues, getTotal, formatLabels, processAggregatedData, formatKey, getDomain } from './utils'
 import { getUiHue, getIsDark } from './theme'
 import { getStartDate, navigateChart, getCurrentStartDate, generateDateRange, fillMissingDates, getPreviousPeriodRange } from './date'
 import { rawData, WebsiteData, RawData } from '../main'
@@ -189,8 +189,14 @@ export function handleChartClick(elements: Array<{ index: number }>, dates: stri
   dayDateElement.textContent = formatDate(label)
 }
 
+let drillState: { domain?: string } = {}
+let lastEntries: WebsiteData[] = []
+let lastCanvas: CanvasRenderingContext2D | null = null
+
 function renderDetailChart(entries: WebsiteData[], canvas: CanvasRenderingContext2D | null) {
   if (!canvas) return
+  lastEntries = entries
+  lastCanvas = canvas
   const aggregatedData = aggregateEntries(entries)
   const { websites, values, totalSpentTime } = processAggregatedData(aggregatedData)
 
@@ -205,16 +211,38 @@ function destroyPreviousChart() {
   }
 }
 
+const domainToUrlMap: Record<string, string> = {}
 function aggregateEntries(entries: WebsiteData[]): Record<string, number> {
-  const aggregatedData = entries.reduce((acc: Record<string, number>, entry: WebsiteData) => {
-    const key = entry.website || 'unknown'
-    const value = getViewMode() === 'time' ? entry.time || 0 : 1
+  if (drillState.domain) {
+    const filtered = entries.filter((e) => getDomain(e.website || '') === drillState.domain)
+    const pathAgg: Record<string, number> = {}
+    filtered.forEach((entry) => {
+      try {
+        const url = new URL(entry.website || '#')
+        const path = url.pathname || '/'
+        const value = getViewMode() === 'time' ? entry.time || 0 : 1
+        pathAgg[path] = (pathAgg[path] || 0) + value
+        domainToUrlMap[path] = entry.website || ''
+      } catch {
+        pathAgg['/'] = (pathAgg['/'] || 0) + (entry.time || 0)
+        domainToUrlMap['/'] = entry.website || ''
+      }
+    })
+    return Object.fromEntries(Object.entries(pathAgg).sort((a, b) => b[1] - a[1]))
+  } else {
+    const aggregatedData = entries.reduce((acc: Record<string, number>, entry: WebsiteData) => {
+      const rawUrl = entry.website || 'unknown'
+      const key = getDomain(rawUrl)
+      const value = getViewMode() === 'time' ? entry.time || 0 : 1
 
-    acc[key] = (acc[key] || 0) + value
-    return acc
-  }, {})
+      domainToUrlMap[key] = rawUrl
 
-  return Object.fromEntries(Object.entries(aggregatedData).sort((a, b) => b[1] - a[1]))
+      acc[key] = (acc[key] || 0) + value
+      return acc
+    }, {})
+
+    return Object.fromEntries(Object.entries(aggregatedData).sort((a, b) => b[1] - a[1]))
+  }
 }
 
 function createDetailChart(canvas: CanvasRenderingContext2D, websites: string[], values: number[]) {
@@ -255,9 +283,47 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
   const progressContainer = document.getElementById('progressContainer') as HTMLDivElement
   progressContainer.innerHTML = ''
 
+  if (drillState.domain) {
+    const domainLabel = document.createElement('span')
+    domainLabel.id = 'domainLabel'
+    domainLabel.textContent = `${formatKey(drillState.domain)}`
+
+    const backBtn = document.createElement('button')
+    backBtn.id = 'backButton'
+    backBtn.textContent = '← Back'
+
+    backBtn.onclick = () => {
+      drillState = {}
+      renderDetailChart(lastEntries, lastCanvas)
+      const dateRange = generateDateRange(getCurrentStartDate())
+      const filledData = fillMissingDates(rawData, dateRange)
+      renderMainChart(filledData)
+      updateDailyStats(dateRange, filledData)
+    }
+
+    progressContainer.appendChild(backBtn)
+    progressContainer.appendChild(domainLabel)
+  }
+
   const entries = websites.map((website, index) => {
     const percentage = Math.round((values[index] / totalSpentTime) * 100)
     const entryContainer = createProgressEntry(website, values[index], percentage, index)
+    if (!drillState.domain) {
+      entryContainer.style.cursor = 'pointer'
+      entryContainer.onclick = () => {
+        drillState = { domain: website }
+        renderDetailChart(lastEntries, lastCanvas)
+        const dateRange = generateDateRange(getCurrentStartDate())
+        const filteredRawData: RawData = {}
+        for (const date of dateRange) {
+          if (!rawData[date]) continue
+          filteredRawData[date] = rawData[date].filter((entry) => getDomain(entry.website || '') === website)
+        }
+        const filledData = fillMissingDates(filteredRawData, dateRange)
+        renderMainChart(filledData)
+        updateDailyStats(dateRange, filledData)
+      }
+    }
     progressContainer.appendChild(entryContainer)
     return entryContainer
   })
@@ -291,7 +357,7 @@ function createProgressEntry(website: string, value: number, percentage: number,
   const labelText = document.createElement('a')
   labelText.classList.add('labelText')
   labelText.target = '_blank'
-  labelText.href = website
+  labelText.href = domainToUrlMap[website]
   labelText.textContent = formatKey(website)
   labelDiv.appendChild(labelText)
   entryContainer.appendChild(labelDiv)
@@ -394,7 +460,11 @@ importFileInput.addEventListener('change', (event: any) => {
           const [date, website, time] = line.split(',').map((s) => s.replace(/^"|"$/g, '').replace(/""/g, '"'))
           if (!date || !website || isNaN(Number(time))) continue
           if (!rawData[date]) rawData[date] = []
-          rawData[date].push({ website, time: Number(time) })
+          rawData[date].push({
+            website,
+            time: Number(time),
+            url: '',
+          })
         }
       }
       updateChart()

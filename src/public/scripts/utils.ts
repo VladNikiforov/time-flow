@@ -1,5 +1,6 @@
 import { getViewMode, getViewRange } from './ui'
 import { RawData, WebsiteData } from '../main'
+import { parse as parseDomain } from 'tldts'
 
 export function formatDate(date: string) {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -7,18 +8,19 @@ export function formatDate(date: string) {
   return `${parseInt(day)} ${months[parseInt(month) - 1]} ${year}`
 }
 
-export function formatKey(key: string) {
+export function getDomain(url: string): string {
   try {
-    const url = new URL(key)
-    let domain = url.hostname
-    return domain.length > 24 ? domain.slice(0, 24) + '...' : domain
-  } catch {
-    key = key
-      .replace(/^https?:\/\//, '')
-      .replace(/^www\./, '')
-      .split('/')[0]
-    return key.length > 24 ? key.slice(0, 24) + '...' : key
-  }
+    const parsed = parseDomain(url)
+    if (parsed.domain && parsed.publicSuffix) {
+      return parsed.hostname as string
+    }
+  } catch {}
+  return url
+}
+
+export function formatKey(key: string): string {
+  const domain = getDomain(key)
+  return domain.length > 24 ? domain.slice(0, 24) + '...' : domain
 }
 
 export function formatValue(value: number) {

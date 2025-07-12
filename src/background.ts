@@ -41,14 +41,6 @@ interface BrowsingDataEntry {
   time: number
 }
 
-function getDomain(url: string) {
-  try {
-    return new URL(url).origin
-  } catch {
-    return ''
-  }
-}
-
 async function getData(date: string): Promise<BrowsingDataEntry[]> {
   return new Promise((resolve) => {
     browserAPI.storage.local.get([date], (result) => {

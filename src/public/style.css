@@ -59,6 +59,11 @@ a:hover {
   padding: 1rem;
 }
 
+.gridDisplay:hover {
+  background-color: #ffffff1a;
+  transition: background 0.2s;
+}
+
 progress {
   -webkit-appearance: none;
   appearance: none;
@@ -284,4 +289,15 @@ progress::-moz-progress-bar {
 .select input:checked + label {
   background: var(--special-color-light);
   color: var(--text-color);
+}
+
+#backButton {
+  display: inline;
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+}
+
+#domainLabel {
+  font-size: 1.2rem;
+  font-weight: bold;
 }
