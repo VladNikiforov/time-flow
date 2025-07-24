@@ -15,6 +15,15 @@
     <nav>
       <h1>TimeFlow - Dashboard</h1>
 
+      <div class="select">
+        <input type="radio" name="viewRange" id="daily" value="Daily" checked />
+        <label for="daily">Daily</label>
+        <input type="radio" name="viewRange" id="week" value="Week" />
+        <label for="week">Week</label>
+        <input type="radio" name="viewRange" id="month" value="Month" />
+        <label for="month">Month</label>
+      </div>
+
       <div id="rightNav">
         <div class="select">
           <input type="radio" name="viewMode" id="time" value="time" checked />
@@ -46,18 +55,13 @@
         </div>
       </div>
 
-      <div>
+      <div id="mainInfo">
         <div id="mainChartNav">
           <div class="navButtons">
             <button id="prevButton">&lt;</button>
             <button id="nextButton">&gt;</button>
           </div>
-          <div class="select">
-            <input type="radio" name="viewRange" id="week" value="Week" checked />
-            <label for="week">Week</label>
-            <input type="radio" name="viewRange" id="month" value="Month" />
-            <label for="month">Month</label>
-          </div>
+
           <span id="averageTime"></span>
           <span id="timeTrend"></span>
         </div>

@@ -22,7 +22,7 @@ export function colorAlgorithm(color: 'dark' | 'light', index = 0): string {
 const viewRangeElement = document.querySelectorAll('input[name="viewRange"]') as NodeListOf<HTMLInputElement>
 const viewModeElement = document.querySelectorAll('input[name="viewMode"]') as NodeListOf<HTMLInputElement>
 
-type ViewRange = 'Week' | 'Month'
+type ViewRange = 'Daily' | 'Week' | 'Month'
 export let viewRange: ViewRange = 'Week'
 
 type ViewMode = 'time' | 'sessions'
@@ -31,7 +31,20 @@ let viewMode: ViewMode = 'time'
 viewRangeElement.forEach((radio: HTMLInputElement) => {
   radio.addEventListener('change', () => {
     viewRange = radio.value as ViewRange
+    
     getStartDate()
+
+    const dayInfo = document.getElementById('dayInfo') as HTMLDivElement
+    const mainInfo = document.getElementById('mainInfo') as HTMLDivElement
+
+    if (viewRange !== 'Daily') {
+      destroyPreviousChart()
+      dayInfo.style.display = 'none' 
+      mainInfo.style.display = 'block' 
+    } else {
+      dayInfo.style.display = 'grid'
+      mainInfo.style.display = 'none' 
+    }
   })
 })
 
