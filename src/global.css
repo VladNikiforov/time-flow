@@ -1,6 +1,6 @@
 :root {
-  --special-color-dark: hsla(180, 48%, 52%, 0.2);
-  --special-color-light: hsl(180, 48%, 52%);
+  --special-color-dark: hsla(210, 48%, 52%, 0.2);
+  --special-color-light: hsl(210, 48%, 52%);
   --background-color: #222;
   --text-color: #fff;
 }

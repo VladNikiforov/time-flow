@@ -34,26 +34,30 @@ export const mainChart = document.getElementById('mainChart') as HTMLCanvasEleme
 export const dayDate = document.getElementById('dayDate') as HTMLElement
 export const mainChartNav = document.getElementById('mainChartNav') as HTMLDivElement
 
+export function updateUI() {
+  if (getViewRange() === 'Daily') {
+    dayStats.style.display = 'flex'
+    detailChart.style.display = 'block'
+    mainChart.style.display = 'none'
+    mainChartNav.style.display = 'none'
+    dayDate.style.display = 'inline'
+  } else {
+    destroyPreviousChart()
+    dayStats.style.display = 'none'
+    detailChart.style.display = 'none'
+    mainChart.style.display = 'block'
+    mainChartNav.style.display = 'inline'
+    dayDate.style.display = 'none'
+  }
+}
+
 viewRangeElement.forEach((radio: HTMLInputElement) => {
   radio.addEventListener('change', () => {
     viewRange = radio.value as ViewRange
 
     getStartDate()
 
-    if (viewRange === 'Daily') {
-      dayStats.style.display = 'flex'
-      detailChart.style.display = 'block'
-      mainChart.style.display = 'none'
-      mainChartNav.style.display = 'none'
-      dayDate.style.display = 'inline'
-    } else {
-      destroyPreviousChart()
-      dayStats.style.display = 'none'
-      detailChart.style.display = 'none'
-      mainChart.style.display = 'block'
-      mainChartNav.style.display = 'inline'
-      dayDate.style.display = 'none'
-    }
+    updateUI()
     updateChart()
   })
 })
@@ -76,8 +80,8 @@ export function getViewMode(): ViewMode {
 const prevButton = document.getElementById('prevButton') as HTMLButtonElement
 const nextButton = document.getElementById('nextButton') as HTMLButtonElement
 
-prevButton.addEventListener('click', () => (viewRange !== 'Daily' ? navigateChart : navigateStats)(-1))
-nextButton.addEventListener('click', () => (viewRange !== 'Daily' ? navigateChart : navigateStats)(1))
+prevButton.addEventListener('click', () => (getViewRange() === 'Daily' ? navigateStats : navigateChart)(-1))
+nextButton.addEventListener('click', () => (getViewRange() === 'Daily' ? navigateStats : navigateChart)(1))
 
 export function updateChart() {
   const dateRange = generateDateRange(getCurrentStartDate())
@@ -295,7 +299,7 @@ function createDetailChart(canvas: CanvasRenderingContext2D, websites: string[],
   })
 }
 
-const maxItems = 3
+const maxItems = 5
 function renderProgressBars(websites: string[], values: number[], totalSpentTime: number) {
   const progressContainer = document.getElementById('progressContainer') as HTMLDivElement
   progressContainer.innerHTML = ''
@@ -311,11 +315,7 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
 
     backBtn.onclick = () => {
       drillState = {}
-      renderDetailChart(lastEntries, lastCanvas)
-      const dateRange = generateDateRange(getCurrentStartDate())
-      const filledData = fillMissingDates(rawData, dateRange)
-      renderMainChart(filledData)
-      updateDailyStats(dateRange, filledData)
+      updateChart()
     }
 
     progressContainer.appendChild(backBtn)
@@ -330,15 +330,7 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
       entryContainer.onclick = () => {
         drillState = { domain: website }
         renderDetailChart(lastEntries, lastCanvas)
-        const dateRange = generateDateRange(getCurrentStartDate())
-        const filteredRawData: RawData = {}
-        for (const date of dateRange) {
-          if (!rawData[date]) continue
-          filteredRawData[date] = rawData[date].filter((entry) => getDomain(entry.website || '') === website)
-        }
-        const filledData = fillMissingDates(filteredRawData, dateRange)
-        renderMainChart(filledData)
-        updateDailyStats(dateRange, filledData)
+        // Removed main chart and daily stats update for drill-down
       }
     }
     progressContainer.appendChild(entryContainer)

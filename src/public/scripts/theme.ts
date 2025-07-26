@@ -11,7 +11,7 @@ const hueValue = document.getElementById('hueValue') as HTMLInputElement
 export function initTheme() {
   browserAPI.storage.local.get(['isDark', 'uiHue'], (result) => {
     if (result.isDark === undefined) browserAPI.storage.local.set({ isDark: true })
-    if (result.uiHue === undefined) browserAPI.storage.local.set({ uiHue: 180 })
+    if (result.uiHue === undefined) browserAPI.storage.local.set({ uiHue: 210 })
   })
 }
 
