@@ -8,7 +8,7 @@ import Chart from 'chart.js/auto'
 declare global {
   interface Window {
     Chart: Chart
-    chartInstance: Chart
+    mainChartInstance: Chart
     detailChartInstance: Chart
   }
 }
@@ -23,28 +23,38 @@ const viewRangeElement = document.querySelectorAll('input[name="viewRange"]') as
 const viewModeElement = document.querySelectorAll('input[name="viewMode"]') as NodeListOf<HTMLInputElement>
 
 type ViewRange = 'Daily' | 'Week' | 'Month'
-export let viewRange: ViewRange = 'Week'
+export let viewRange: ViewRange = 'Daily'
 
 type ViewMode = 'time' | 'sessions'
 let viewMode: ViewMode = 'time'
 
+export const dayStats = document.getElementById('dayStats') as HTMLDivElement
+export const detailChart = document.getElementById('detailChart') as HTMLCanvasElement
+export const mainChart = document.getElementById('mainChart') as HTMLCanvasElement
+export const dayDate = document.getElementById('dayDate') as HTMLElement
+export const mainChartNav = document.getElementById('mainChartNav') as HTMLDivElement
+
 viewRangeElement.forEach((radio: HTMLInputElement) => {
   radio.addEventListener('change', () => {
     viewRange = radio.value as ViewRange
-    
+
     getStartDate()
 
-    const dayInfo = document.getElementById('dayInfo') as HTMLDivElement
-    const mainInfo = document.getElementById('mainInfo') as HTMLDivElement
-
-    if (viewRange !== 'Daily') {
-      destroyPreviousChart()
-      dayInfo.style.display = 'none' 
-      mainInfo.style.display = 'block' 
+    if (viewRange === 'Daily') {
+      dayStats.style.display = 'flex'
+      detailChart.style.display = 'block'
+      mainChart.style.display = 'none'
+      mainChartNav.style.display = 'none'
+      dayDate.style.display = 'inline'
     } else {
-      dayInfo.style.display = 'grid'
-      mainInfo.style.display = 'none' 
+      destroyPreviousChart()
+      dayStats.style.display = 'none'
+      detailChart.style.display = 'none'
+      mainChart.style.display = 'block'
+      mainChartNav.style.display = 'inline'
+      dayDate.style.display = 'none'
     }
+    updateChart()
   })
 })
 
@@ -66,28 +76,23 @@ export function getViewMode(): ViewMode {
 const prevButton = document.getElementById('prevButton') as HTMLButtonElement
 const nextButton = document.getElementById('nextButton') as HTMLButtonElement
 
-prevButton.addEventListener('click', () => navigateChart(-1))
-nextButton.addEventListener('click', () => navigateChart(1))
+prevButton.addEventListener('click', () => (viewRange !== 'Daily' ? navigateChart : navigateStats)(-1))
+nextButton.addEventListener('click', () => (viewRange !== 'Daily' ? navigateChart : navigateStats)(1))
 
 export function updateChart() {
   const dateRange = generateDateRange(getCurrentStartDate())
   const filledData = fillMissingDates(rawData, dateRange)
-  renderMainChart(filledData)
-  updateDailyStats(dateRange, filledData)
+  if (getViewRange() === 'Daily') {
+    updateDailyStats(dateRange, filledData)
+  } else {
+    renderMainChart(filledData)
+  }
 }
 
 function updateDailyStats(dateRange: string[], filledData: RawData) {
   const simulatedElement = [{ index: dateRange.indexOf(today) }]
   handleChartClick(simulatedElement, dateRange, filledData)
 }
-
-const prevDay = document.getElementById('prevDay') as HTMLButtonElement
-const nextDay = document.getElementById('nextDay') as HTMLButtonElement
-
-prevDay.addEventListener('click', () => navigateStats(-1))
-nextDay.addEventListener('click', () => navigateStats(1))
-
-const dayDateElement = document.getElementById('dayDate') as HTMLElement
 
 let currentStatIndex = 0
 export function navigateStats(direction: number) {
@@ -100,21 +105,20 @@ export function navigateStats(direction: number) {
 
   const currentIndex = (dateRange.indexOf(today) + currentStatIndex) % dateRange.length
 
-  dayDateElement.textContent = formatDate(dateRange[currentIndex])
+  dayDate.textContent = formatDate(dateRange[currentIndex])
 
   const simulatedElement = { index: currentIndex }
   handleChartClick([simulatedElement], dateRange, filledData)
 }
 
 export function renderMainChart(data: RawData) {
-  const mainChartCanvas = document.getElementById('mainChart') as HTMLCanvasElement
-  if (window.chartInstance) window.chartInstance.destroy()
+  if (window.mainChartInstance) window.mainChartInstance.destroy()
 
   const dates = Object.keys(data)
   const values = getValues(dates, data)
 
   updateAverage(values)
-  createMainChart(mainChartCanvas, dates, values, data)
+  createMainChart(mainChart, dates, values, data)
 }
 
 export function updateAverage(values: any) {
@@ -146,6 +150,7 @@ export function createMainChart(canvas: HTMLCanvasElement | null, dates: string[
   if (!canvas) return
   const options: any = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       title: { display: false },
       tooltip: {
@@ -175,7 +180,7 @@ export function createMainChart(canvas: HTMLCanvasElement | null, dates: string[
     onClick: (_: unknown, elements: Array<{ index: number }>) => handleChartClick(elements, dates, data),
   }
 
-  window.chartInstance = new Chart(canvas, {
+  window.mainChartInstance = new Chart(canvas, {
     type: 'bar',
     data: {
       labels: formatLabels(dates),
@@ -197,9 +202,8 @@ export function handleChartClick(elements: Array<{ index: number }>, dates: stri
   if (elements.length == 0) return
   const index = elements[0].index
   const label = dates[index]
-  const detailChartElement = document.getElementById('detailChart') as HTMLCanvasElement
-  renderDetailChart(data[label], detailChartElement.getContext('2d'))
-  dayDateElement.textContent = formatDate(label)
+  renderDetailChart(data[label], detailChart.getContext('2d'))
+  dayDate.textContent = formatDate(label)
 }
 
 let drillState: { domain?: string } = {}
@@ -218,7 +222,7 @@ function renderDetailChart(entries: WebsiteData[], canvas: CanvasRenderingContex
   renderProgressBars(websites, values, totalSpentTime)
 }
 
-function destroyPreviousChart() {
+export function destroyPreviousChart() {
   if (window.detailChartInstance) {
     window.detailChartInstance.destroy()
   }

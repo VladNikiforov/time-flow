@@ -3,6 +3,7 @@
 import { browserAPI } from '../background'
 import { initTheme, getFromStorage } from './scripts/theme'
 import { getStartDate } from './scripts/date'
+import { mainChart, dayDate, mainChartNav, dayStats, detailChart } from './scripts/ui'
 
 initTheme()
 
@@ -30,6 +31,12 @@ function receiveData(message: any) {
   getFromStorage('isDark')
 
   getStartDate()
+
+  dayStats.style.display = 'flex'
+  detailChart.style.display = 'block'
+  mainChart.style.display = 'none'
+  mainChartNav.style.display = 'none'
+  dayDate.style.display = 'inline'
 }
 
 ;(browserAPI as typeof browser).runtime.sendMessage({ action: 'requestAllData' })

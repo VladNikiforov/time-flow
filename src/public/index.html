@@ -37,33 +37,26 @@
     </nav>
 
     <main>
-      <div id="dayInfo">
-        <div style="margin-right: 2rem">
-          <div>
-            <div class="navButtons">
-              <button id="prevDay">&lt;</button>
-              <button id="nextDay">&gt;</button>
-            </div>
-            <div id="dayDate"></div>
-          </div>
+      <div>
+        <span class="navButtons">
+          <button id="prevButton">&lt;</button>
+          <button id="nextButton">&gt;</button>
+        </span>
+        <span>
+          <span id="dayDate"></span>
 
-          <canvas id="detailChart"></canvas>
-        </div>
+          <span id="mainChartNav">
+            <span id="averageTime"></span>
+            <span id="timeTrend"></span>
+          </span>
+        </span>
+      </div>
+
+      <div id="dayInfo">
+        <canvas id="detailChart"></canvas>
         <div id="dayStats">
           <div id="dayTotal"></div>
           <div id="progressContainer"></div>
-        </div>
-      </div>
-
-      <div id="mainInfo">
-        <div id="mainChartNav">
-          <div class="navButtons">
-            <button id="prevButton">&lt;</button>
-            <button id="nextButton">&gt;</button>
-          </div>
-
-          <span id="averageTime"></span>
-          <span id="timeTrend"></span>
         </div>
 
         <canvas id="mainChart"></canvas>

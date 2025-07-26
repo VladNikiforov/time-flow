@@ -6,7 +6,6 @@ let currentStartDate: Date
 export function getStartDate() {
   const now = new Date()
   currentStartDate = (getViewRange() === 'Week' ? getStartOfWeek : getStartOfMonth)(now)
-  updateChart()
 }
 
 function getStartOfWeek(date: Date) {

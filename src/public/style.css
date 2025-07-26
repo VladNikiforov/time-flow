@@ -4,6 +4,21 @@
   background-color: var(--special-color-light);
 }
 
+html,
+body {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 h1 {
   margin: 0;
   font-size: 2rem;
@@ -107,10 +122,11 @@ progress::-moz-progress-bar {
   left: 50%;
   transform: translate(-50%, -50%);
   background: var(--background-color);
+  border: 1px solid var(--special-color-light);
   box-shadow: 0 4px 8px #00000033;
   border-radius: 0.5rem;
   width: 50vw;
-  height: 50vh;
+  height: 80vh;
   padding: 1rem;
   z-index: 2;
   overflow: scroll;
@@ -165,10 +181,28 @@ progress::-moz-progress-bar {
 }
 
 #dayInfo {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: auto auto;
-  gap: 0 1rem;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  margin: 1rem;
+}
+
+#detailChart {
+  height: 100%;
+  flex-shrink: 0;
+  margin-right: 1rem;
+}
+
+#mainChart {
+  flex: 1;
+  height: 100%;
+}
+
+#dayStats {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
 }
 
 .hidden {
@@ -196,15 +230,6 @@ progress::-moz-progress-bar {
   font-size: 2rem;
   text-align: center;
   justify-content: space-between;
-}
-
-#dayStats {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  height: 50vh;
-  gap: 1rem;
-  margin-bottom: 2rem;
 }
 
 .navButtons {
@@ -245,11 +270,6 @@ progress::-moz-progress-bar {
   border: 2px solid #333;
   cursor: pointer;
   transition: background-color 0.3s ease;
-}
-
-#detailChart {
-  width: 50vh;
-  height: 50vh;
 }
 
 #timeTrend {
