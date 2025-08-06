@@ -100,7 +100,7 @@ function updateDailyStats(dateRange: string[], filledData: RawData) {
 
 let currentStatIndex = 0
 export function navigateStats(direction: number) {
-  const dateRange: string[] = generateDateRange(getCurrentStartDate())
+  const dateRange: string[] | undefined = generateDateRange(getCurrentStartDate())
   const filledData = fillMissingDates(rawData, dateRange)
 
   currentStatIndex += direction
@@ -330,7 +330,6 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
       entryContainer.onclick = () => {
         drillState = { domain: website }
         renderDetailChart(lastEntries, lastCanvas)
-        // Removed main chart and daily stats update for drill-down
       }
     }
     progressContainer.appendChild(entryContainer)

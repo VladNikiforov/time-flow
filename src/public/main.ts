@@ -36,29 +36,3 @@ function receiveData(message: any) {
 }
 
 ;(browserAPI as typeof browser).runtime.sendMessage({ action: 'requestAllData' })
-
-/*
-// Note that this is only sample data
-import { toLocalISODate } from './scripts/date'
-
-function generateSampleData() {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = now.getMonth()
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-
-  for (let day = 1; day <= daysInMonth; day++) {
-    const date = new Date(year, month, day)
-    const isoDate = toLocalISODate(date)
-
-    const websites = ['chatgpt', 'chess', 'github', 'google', 'youtube', 'skool', 'chat.deepseek']
-    rawData[isoDate] = Array.from({ length: Math.floor(Math.random() * 5) + 1 }, () => ({
-      website: `https://${websites[Math.floor(Math.random() * websites.length)]}.com`,
-      time: Math.floor(Math.random() * 3600) + 60,
-    }))
-  }
-
-  console.log('Generated mock rawData:', rawData)
-}
-generateSampleData()
-*/
