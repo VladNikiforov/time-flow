@@ -5,12 +5,28 @@
 ![Downloads](https://img.shields.io/amo/dw/timeflow.svg?style=flat)
 ![Rating](https://img.shields.io/amo/rating/timeflow.svg?style=flat)
 
-View your web activity with this minimalistic, productivity focused browser extension
+Focus on what matters by keeping track of your time on the web
 
-## ⭐ Goals
+## ⭐ My goals & purpose of the utility
 
-- **Privacy** - your data is fully locally stored
-- **Transparency** - free and open-source
-- **Customizability** - change appearance as you'd like
+I just want a browser extension that just does its job and nothing more - clean and minimal. No unnecessary crap like ads and subscribtions
 
-> **Note:** Note that the extension is still in early development, more features coming soon :)
+Core Values:
+- **Privacy** - All your data is stored locally on your browser and doesn't go beyond that (Your data stays yours, no external sketchy stuff)
+- **Transparency** - free, open-source, no ads
+- **Visuals** - Clean UI, straight to the point
+
+It's a hobby project and my main goal is just to make this the best it can be
+
+## 💡 Feedback
+
+Feel free to report and issue or any kind of suggestion or idea at the [Issues tab](https://github.com/VladNikiforov/time-flow/issues)
+
+## 🛠️ Contributing
+
+Before submitting a pull request I want to point out some things
+
+- If you want to submit a PR it must be tied to a specific issue, I'm not accepting random PRs with random changes
+- It's good practice to run `npm run format` before submitting to format everything neatly
+
+Thanks for understanding and helping improve the project thoughtfully!

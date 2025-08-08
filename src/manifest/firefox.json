@@ -1,7 +1,7 @@
 {
-  "name": "TimeFlow - Web Usage Time Tracker",
-  "description": "View your time spent on the web with this minimalistic browser extension",
-  "version": "1.2.1",
+  "name": "TimeFlow - Time Tracker",
+  "description": "Focus on what matters by keeping track of your time on the web",
+  "version": "2.0.0",
   "manifest_version": 2,
   "permissions": ["storage", "tabs"],
   "background": {

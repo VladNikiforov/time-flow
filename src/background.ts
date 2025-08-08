@@ -4,21 +4,38 @@ type BrowserAPI = typeof browser | typeof chrome
 const isFirefox = typeof browser !== 'undefined' && browser.runtime?.id
 export const browserAPI: BrowserAPI = isFirefox ? browser : chrome
 
-let isPaused = false
-
-browserAPI.storage.local.get(['isPaused'], (result) => {
-  isPaused = !!result.isPaused
+browserAPI.runtime.onInstalled.addListener(({ reason }) => {
+  if (reason === 'update') {
+    browserAPI.storage.local.clear()
+    console.log('Storage cleared due to version update')
+  }
 })
+
+async function getIsPaused(): Promise<boolean> {
+  return new Promise((resolve) => {
+    browserAPI.storage.local.get(['isPaused'], (result) => {
+      resolve(!!result.isPaused)
+    })
+  })
+}
+
+async function setIsPaused(value: boolean): Promise<void> {
+  return new Promise((resolve) => {
+    browserAPI.storage.local.set({ isPaused: value }, () => resolve())
+  })
+}
 
 browserAPI.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.action === 'setPause') {
-    isPaused = message.value
-    browserAPI.storage.local.set({ isPaused })
-    sendResponse({ isPaused })
+    setIsPaused(message.value).then(() => {
+      sendResponse({ isPaused: message.value })
+    })
     return true
   }
   if (message.action === 'getPause') {
-    sendResponse({ isPaused })
+    getIsPaused().then((paused) => {
+      sendResponse({ isPaused: paused })
+    })
     return true
   }
 })
@@ -59,7 +76,7 @@ async function saveData(data: BrowsingDataEntry): Promise<void> {
 }
 
 async function startTimer(tabId: number): Promise<void> {
-  if (isPaused) return
+  if (await getIsPaused()) return
   currentTabId = tabId
 
   try {
@@ -78,7 +95,8 @@ async function startTimer(tabId: number): Promise<void> {
 const unwantedPrefixes = ['moz-extension://', 'about:', 'chrome://', 'chrome-extension://']
 
 async function stopTimer(): Promise<void> {
-  if (!currentTabId || !currentTabUrl || !startTime || isPaused) return
+  if (!currentTabId || !currentTabUrl || !startTime) return
+  if (await getIsPaused()) return
 
   const endTime = Date.now()
   const elapsedSeconds = Math.floor((endTime - startTime) / 1000)
@@ -149,9 +167,7 @@ browserAPI.tabs.onActivated.addListener((activeInfo: chrome.tabs.TabActiveInfo) 
 
 browserAPI.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (tabId === currentTabId && changeInfo.status === 'complete' && tab.url) {
-    if (tab.url) {
-      safeSwitch(tabId)
-    }
+    safeSwitch(tabId)
   }
 })
 
