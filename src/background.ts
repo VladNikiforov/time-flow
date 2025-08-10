@@ -4,12 +4,7 @@ type BrowserAPI = typeof browser | typeof chrome
 const isFirefox = typeof browser !== 'undefined' && browser.runtime?.id
 export const browserAPI: BrowserAPI = isFirefox ? browser : chrome
 
-browserAPI.runtime.onInstalled.addListener(({ reason }) => {
-  if (reason === 'update') {
-    browserAPI.storage.local.clear()
-    console.log('Storage cleared due to version update')
-  }
-})
+export const addonPageURL = browserAPI.runtime.getURL('public/index.html')
 
 async function getIsPaused(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -31,8 +26,7 @@ browserAPI.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       sendResponse({ isPaused: message.value })
     })
     return true
-  }
-  if (message.action === 'getPause') {
+  } else if (message.action === 'getPause') {
     getIsPaused().then((paused) => {
       sendResponse({ isPaused: paused })
     })
@@ -55,7 +49,7 @@ let switchingTabs = false
 interface BrowsingDataEntry {
   date: string
   url: string
-  time: number
+  time: { start: number; end: number } | number
 }
 
 async function getData(date: string): Promise<BrowsingDataEntry[]> {
@@ -92,8 +86,6 @@ async function startTimer(tabId: number): Promise<void> {
   startTime = Date.now()
 }
 
-const unwantedPrefixes = ['moz-extension://', 'about:', 'chrome://', 'chrome-extension://']
-
 async function stopTimer(): Promise<void> {
   if (!currentTabId || !currentTabUrl || !startTime) return
   if (await getIsPaused()) return
@@ -103,7 +95,7 @@ async function stopTimer(): Promise<void> {
 
   const url = currentTabUrl
 
-  if (elapsedSeconds <= 0 || !url || unwantedPrefixes.some((prefix) => url.startsWith(prefix))) {
+  if (elapsedSeconds <= 0 || !url || url.startsWith(addonPageURL)) {
     console.log(`Ignoring tracking for invalid URL or time: ${url} (${elapsedSeconds}s)`)
     resetTimerState()
     return
@@ -111,7 +103,7 @@ async function stopTimer(): Promise<void> {
 
   console.log(`Stopped tracking ${url} after ${elapsedSeconds}s`)
 
-  const newData: BrowsingDataEntry = { date: today, url, time: elapsedSeconds }
+  const newData: BrowsingDataEntry = { date: today, url, time: { start: startTime, end: endTime} }
   await saveData(newData)
 
   await sendAllStoredData()
@@ -121,16 +113,18 @@ async function stopTimer(): Promise<void> {
 
 async function sendAllStoredData(): Promise<void> {
   browserAPI.storage.local.get(null, (allData) => {
-    const result: Record<string, { website: string; time: number }[]> = {}
+    const result: Record<string, { url: string; time: number }[]> = {}
 
     for (const [date, entries] of Object.entries(allData)) {
       if (!Array.isArray(entries)) continue
 
-      const filtered = entries.filter((entry: BrowsingDataEntry) => entry.time > 0 && entry.url && !unwantedPrefixes.some((prefix) => entry.url.startsWith(prefix)))
+      const invlidFilter = entries.filter((entry) => {
+        if (!entry.url || entry.url.startsWith(addonPageURL)) return false
 
-      if (filtered.length > 0) {
-        result[date] = filtered.map(({ url, time }) => ({ website: url, time }))
-      }
+        return typeof entry.time !== 'number' ? entry.time.end - entry.time.start > 0 : entry.time > 0
+      })
+
+      if (invlidFilter.length > 0) result[date] = invlidFilter
     }
 
     ;(browserAPI as typeof browser).runtime.sendMessage({
@@ -141,8 +135,7 @@ async function sendAllStoredData(): Promise<void> {
 }
 
 browserAPI.runtime.onMessage.addListener((message) => {
-  if (message.action !== 'requestAllData') return
-  sendAllStoredData()
+  if (message.action === 'requestAllData') sendAllStoredData()
 })
 
 function resetTimerState() {
@@ -166,13 +159,9 @@ browserAPI.tabs.onActivated.addListener((activeInfo: chrome.tabs.TabActiveInfo) 
 })
 
 browserAPI.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (tabId === currentTabId && changeInfo.status === 'complete' && tab.url) {
-    safeSwitch(tabId)
-  }
+  if (tabId === currentTabId && changeInfo.status === 'complete' && tab.url) safeSwitch(tabId)
 })
 
 browserAPI.windows.onFocusChanged.addListener((windowId: number) => {
-  if (windowId === browserAPI.windows.WINDOW_ID_NONE) {
-    stopTimer()
-  }
+  if (windowId === browserAPI.windows.WINDOW_ID_NONE) stopTimer()
 })

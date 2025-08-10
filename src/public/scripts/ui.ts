@@ -1,7 +1,7 @@
 import { formatDate, formatValue, getValues, getTotal, formatLabels, processAggregatedData, formatKey, getDomain } from './utils'
 import { getUiHue, getIsDark } from './theme'
 import { getStartDate, navigateChart, getCurrentStartDate, generateDateRange, fillMissingDates, getPreviousPeriodRange } from './date'
-import { rawData, WebsiteData, RawData } from '../main'
+import { rawData, WebsiteData, RawData, properData } from '../main'
 import { today } from '../../background'
 import Chart from 'chart.js/auto'
 
@@ -235,24 +235,24 @@ export function destroyPreviousChart() {
 const domainToUrlMap: Record<string, string> = {}
 function aggregateEntries(entries: WebsiteData[]): Record<string, number> {
   if (drillState.domain) {
-    const filtered = entries.filter((e) => getDomain(e.website || '') === drillState.domain)
+    const filtered = entries.filter((e) => getDomain(e.url || '') === drillState.domain)
     const pathAgg: Record<string, number> = {}
     filtered.forEach((entry) => {
       try {
-        const url = new URL(entry.website || '#')
+        const url = new URL(entry.url || '#')
         const path = url.pathname || '/'
         const value = getViewMode() === 'time' ? entry.time || 0 : 1
         pathAgg[path] = (pathAgg[path] || 0) + value
-        domainToUrlMap[path] = entry.website || ''
+        domainToUrlMap[path] = entry.url || ''
       } catch {
         pathAgg['/'] = (pathAgg['/'] || 0) + (entry.time || 0)
-        domainToUrlMap['/'] = entry.website || ''
+        domainToUrlMap['/'] = entry.url || ''
       }
     })
     return Object.fromEntries(Object.entries(pathAgg).sort((a, b) => b[1] - a[1]))
   } else {
     const aggregatedData = entries.reduce((acc: Record<string, number>, entry: WebsiteData) => {
-      const rawUrl = entry.website || 'unknown'
+      const rawUrl = entry.url || 'unknown'
       const key = getDomain(rawUrl)
       const value = getViewMode() === 'time' ? entry.time || 0 : 1
 
@@ -423,7 +423,7 @@ document.body.appendChild(importFileInput)
 
 exportDataButton.addEventListener('click', () => {
   if (dataMode === 'json') {
-    const blob = new Blob([JSON.stringify(rawData, null, 2)], { type: 'application/json' })
+    const blob = new Blob([JSON.stringify(properData, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -432,9 +432,9 @@ exportDataButton.addEventListener('click', () => {
     URL.revokeObjectURL(url)
   } else if (dataMode === 'csv') {
     const rows = [['date', 'website', 'time']]
-    for (const date in rawData) {
-      for (const entry of rawData[date]) {
-        rows.push([date, entry.website, entry.time.toString()])
+    for (const date in properData) {
+      for (const entry of properData[date]) {
+        rows.push([date, entry.url, entry.time.toString()])
       }
     }
     const csvContent = rows.map((r) => r.map((v) => `"${(v ?? '').toString().replace(/"/g, '""')}"`).join(',')).join('\n')
@@ -455,10 +455,10 @@ importFileInput.addEventListener('change', (event: any) => {
   const reader = new FileReader()
   reader.onload = (e: any) => {
     try {
-      Object.keys(rawData).forEach((key) => delete rawData[key])
+      Object.keys(properData).forEach((key) => delete properData[key])
       if (dataMode === 'json') {
         const importedData = JSON.parse(e.target.result)
-        Object.assign(rawData, importedData)
+        Object.assign(properData, importedData)
       } else if (dataMode === 'csv') {
         const text = e.target.result as string
         const lines = text.trim().split('\n')
@@ -467,11 +467,10 @@ importFileInput.addEventListener('change', (event: any) => {
         for (const line of lines) {
           const [date, website, time] = line.split(',').map((s) => s.replace(/^"|"$/g, '').replace(/""/g, '"'))
           if (!date || !website || isNaN(Number(time))) continue
-          if (!rawData[date]) rawData[date] = []
-          rawData[date].push({
-            website,
-            time: Number(time),
+          if (!properData[date]) properData[date] = []
+          properData[date].push({
             url: '',
+            time: Number(time),
           })
         }
       }

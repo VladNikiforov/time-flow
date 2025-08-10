@@ -1,13 +1,11 @@
 /* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
 
-import { browserAPI } from '../background.js'
+import { browserAPI, addonPageURL } from '../background.js'
 
 const pageButton = document.getElementById('main-page') as HTMLButtonElement
 const pauseBtn = document.getElementById('pause') as HTMLImageElement
 
 pageButton.addEventListener('click', () => {
-  const addonPageURL = browserAPI.runtime.getURL('public/index.html')
-
   browserAPI.tabs.create({ url: addonPageURL })
 })
 
