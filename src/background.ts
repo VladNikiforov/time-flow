@@ -6,18 +6,25 @@ export const browserAPI: BrowserAPI = isFirefox ? browser : chrome
 
 export const addonPageURL = browserAPI.runtime.getURL('public/index.html')
 
-async function getIsPaused(): Promise<boolean> {
+function storageGet(keys: string | string[]): Promise<any> {
   return new Promise((resolve) => {
-    browserAPI.storage.local.get(['isPaused'], (result) => {
-      resolve(!!result.isPaused)
-    })
+    browserAPI.storage.local.get(keys, (result) => resolve(result))
   })
 }
 
-async function setIsPaused(value: boolean): Promise<void> {
+function storageSet(items: any): Promise<void> {
   return new Promise((resolve) => {
-    browserAPI.storage.local.set({ isPaused: value }, () => resolve())
+    browserAPI.storage.local.set(items, () => resolve())
   })
+}
+
+export async function getIsPaused(): Promise<boolean> {
+  const result = await storageGet(['isPaused'])
+  return !!result.isPaused
+}
+
+export async function setIsPaused(value: boolean): Promise<void> {
+  await storageSet({ isPaused: value })
 }
 
 browserAPI.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -26,7 +33,8 @@ browserAPI.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       sendResponse({ isPaused: message.value })
     })
     return true
-  } else if (message.action === 'getPause') {
+  }
+  if (message.action === 'getPause') {
     getIsPaused().then((paused) => {
       sendResponse({ isPaused: paused })
     })
@@ -53,20 +61,14 @@ interface BrowsingDataEntry {
 }
 
 async function getData(date: string): Promise<BrowsingDataEntry[]> {
-  return new Promise((resolve) => {
-    browserAPI.storage.local.get([date], (result) => {
-      resolve(result[date] || [])
-    })
-  })
+  const result = await storageGet([date])
+  return result[date] || []
 }
 
 async function saveData(data: BrowsingDataEntry): Promise<void> {
   const existingData = await getData(data.date)
   existingData.push(data)
-
-  return new Promise((resolve) => {
-    browserAPI.storage.local.set({ [data.date]: existingData }, () => resolve())
-  })
+  await storageSet({ [data.date]: existingData })
 }
 
 async function startTimer(tabId: number): Promise<void> {
@@ -92,7 +94,6 @@ async function stopTimer(): Promise<void> {
 
   const endTime = Date.now()
   const elapsedSeconds = Math.floor((endTime - startTime) / 1000)
-
   const url = currentTabUrl
 
   if (elapsedSeconds <= 0 || !url || url.startsWith(addonPageURL)) {
@@ -103,28 +104,29 @@ async function stopTimer(): Promise<void> {
 
   console.log(`Stopped tracking ${url} after ${elapsedSeconds}s`)
 
-  const newData: BrowsingDataEntry = { date: today, url, time: { start: startTime, end: endTime} }
+  const newData: BrowsingDataEntry = {
+    date: today,
+    url,
+    time: { start: startTime, end: endTime },
+  }
   await saveData(newData)
-
   await sendAllStoredData()
-
   resetTimerState()
 }
 
 async function sendAllStoredData(): Promise<void> {
   browserAPI.storage.local.get(null, (allData) => {
-    const result: Record<string, { url: string; time: number }[]> = {}
+    const result: Record<string, BrowsingDataEntry[]> = {}
 
     for (const [date, entries] of Object.entries(allData)) {
       if (!Array.isArray(entries)) continue
 
-      const invlidFilter = entries.filter((entry) => {
+      const validEntries = entries.filter((entry: BrowsingDataEntry) => {
         if (!entry.url || entry.url.startsWith(addonPageURL)) return false
-
         return typeof entry.time !== 'number' ? entry.time.end - entry.time.start > 0 : entry.time > 0
       })
 
-      if (invlidFilter.length > 0) result[date] = invlidFilter
+      if (validEntries.length > 0) result[date] = validEntries
     }
 
     ;(browserAPI as typeof browser).runtime.sendMessage({

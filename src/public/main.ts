@@ -22,7 +22,7 @@ export function normalizeMessageData(data: Record<string, any[]>): Record<string
   for (const [date, entries] of Object.entries(data)) {
     if (!Array.isArray(entries)) continue
 
-    normalized[date] = entries.map(entry => {
+    normalized[date] = entries.map((entry) => {
       if (entry && typeof entry.time === 'object' && entry.time !== null) {
         if (typeof entry.time.start === 'number' && typeof entry.time.end === 'number') {
           const diff = Math.floor((entry.time.end - entry.time.start) / 1000)
@@ -38,12 +38,15 @@ export function normalizeMessageData(data: Record<string, any[]>): Record<string
 
 export const rawData: RawData = {}
 export const properData: any = {}
-browserAPI.runtime.onMessage.addListener(receiveData)
-function receiveData(message: any) {
-  if (message.action !== 'sendData') {
-    console.error('Error receiving data from background.js:', message)
-  }
 
+browserAPI.runtime.onMessage.addListener(receiveData)
+
+function receiveData(message: any) {
+  if (message.action !== 'sendData') return
+  if (!message.data || typeof message.data !== 'object') {
+    console.error('No data found in sendData message:', message)
+    return
+  }
   const filtered = normalizeMessageData(message.data)
   Object.assign(rawData, filtered)
   Object.assign(properData, message.data)

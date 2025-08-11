@@ -12,6 +12,7 @@ Focus on what matters by keeping track of your time on the web
 I just want a browser extension that just does its job and nothing more - clean and minimal. No unnecessary crap like ads and subscribtions
 
 Core Values:
+
 - **Privacy** - All your data is stored locally on your browser and doesn't go beyond that (Your data stays yours, no external sketchy stuff)
 - **Transparency** - free, open-source, no ads
 - **Visuals** - Clean UI, straight to the point
