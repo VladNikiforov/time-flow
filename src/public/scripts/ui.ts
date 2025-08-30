@@ -1,7 +1,7 @@
 import { formatDate, formatValue, getValues, getTotal, formatLabels, processAggregatedData, formatKey, getDomain } from './utils'
 import { getUiHue, getIsDark } from './theme'
 import { getStartDate, navigateChart, getCurrentStartDate, generateDateRange, fillMissingDates, getPreviousPeriodRange } from './date'
-import { rawData, WebsiteData, RawData, properData } from '../main'
+import { formattedData, WebsiteData, FormattedData, rawData } from '../main'
 import { today } from '../../background'
 import Chart from 'chart.js/auto'
 
@@ -22,8 +22,8 @@ export function colorAlgorithm(color: 'dark' | 'light', index = 0): string {
 const viewRangeElement = document.querySelectorAll('input[name="viewRange"]') as NodeListOf<HTMLInputElement>
 const viewModeElement = document.querySelectorAll('input[name="viewMode"]') as NodeListOf<HTMLInputElement>
 
-type ViewRange = 'Daily' | 'Week' | 'Month'
-export let viewRange: ViewRange = 'Daily'
+type ViewRange = 'Day' | 'Week' | 'Month'
+export let viewRange: ViewRange = 'Day'
 
 type ViewMode = 'time' | 'sessions'
 let viewMode: ViewMode = 'time'
@@ -35,7 +35,7 @@ export const dayDate = document.getElementById('dayDate') as HTMLElement
 export const mainChartNav = document.getElementById('mainChartNav') as HTMLDivElement
 
 export function updateUI() {
-  if (getViewRange() === 'Daily') {
+  if (getViewRange() === 'Day') {
     dayStats.style.display = 'flex'
     detailChart.style.display = 'block'
     mainChart.style.display = 'none'
@@ -80,20 +80,20 @@ export function getViewMode(): ViewMode {
 const prevButton = document.getElementById('prevButton') as HTMLButtonElement
 const nextButton = document.getElementById('nextButton') as HTMLButtonElement
 
-prevButton.addEventListener('click', () => (getViewRange() === 'Daily' ? navigateStats : navigateChart)(-1))
-nextButton.addEventListener('click', () => (getViewRange() === 'Daily' ? navigateStats : navigateChart)(1))
+prevButton.addEventListener('click', () => (getViewRange() === 'Day' ? navigateStats : navigateChart)(-1))
+nextButton.addEventListener('click', () => (getViewRange() === 'Day' ? navigateStats : navigateChart)(1))
 
 export function updateChart() {
   const dateRange = generateDateRange(getCurrentStartDate())
-  const filledData = fillMissingDates(rawData, dateRange)
-  if (getViewRange() === 'Daily') {
-    updateDailyStats(dateRange, filledData)
+  const filledData = fillMissingDates(formattedData, dateRange)
+  if (getViewRange() === 'Day') {
+    updateDayStats(dateRange, filledData)
   } else {
     renderMainChart(filledData)
   }
 }
 
-function updateDailyStats(dateRange: string[], filledData: RawData) {
+function updateDayStats(dateRange: string[], filledData: FormattedData) {
   const simulatedElement = [{ index: dateRange.indexOf(today) }]
   handleChartClick(simulatedElement, dateRange, filledData)
 }
@@ -101,7 +101,7 @@ function updateDailyStats(dateRange: string[], filledData: RawData) {
 let currentStatIndex = 0
 export function navigateStats(direction: number) {
   const dateRange: string[] | undefined = generateDateRange(getCurrentStartDate())
-  const filledData = fillMissingDates(rawData, dateRange)
+  const filledData = fillMissingDates(formattedData, dateRange)
 
   currentStatIndex += direction
   if (currentStatIndex < 0) currentStatIndex = dateRange.length - 1
@@ -115,7 +115,7 @@ export function navigateStats(direction: number) {
   handleChartClick([simulatedElement], dateRange, filledData)
 }
 
-export function renderMainChart(data: RawData) {
+export function renderMainChart(data: FormattedData) {
   if (window.mainChartInstance) window.mainChartInstance.destroy()
 
   const dates = Object.keys(data)
@@ -132,7 +132,7 @@ export function updateAverage(values: any) {
 
   const timeTrendElement = document.getElementById('timeTrend') as HTMLSpanElement
   const prevRange = getPreviousPeriodRange(getCurrentStartDate())
-  const prevFilled = fillMissingDates(rawData, prevRange)
+  const prevFilled = fillMissingDates(formattedData, prevRange)
   const prevValues = getValues(prevRange, prevFilled)
   const prevTotal = getTotal(prevValues)
   const currentTotal = getTotal(values)
@@ -150,7 +150,7 @@ export function updateAverage(values: any) {
   }
 }
 
-export function createMainChart(canvas: HTMLCanvasElement | null, dates: string[], values: number[], data: RawData) {
+export function createMainChart(canvas: HTMLCanvasElement | null, dates: string[], values: number[], data: FormattedData) {
   if (!canvas) return
   const options: any = {
     responsive: true,
@@ -202,7 +202,7 @@ export function createMainChart(canvas: HTMLCanvasElement | null, dates: string[
   })
 }
 
-export function handleChartClick(elements: Array<{ index: number }>, dates: string[], data: RawData) {
+export function handleChartClick(elements: Array<{ index: number }>, dates: string[], data: FormattedData) {
   if (elements.length == 0) return
   const index = elements[0].index
   const label = dates[index]
@@ -401,84 +401,3 @@ function togglePopup(action: Action) {
 settingsIcon.addEventListener('click', () => togglePopup('open'))
 closeButton.addEventListener('click', () => togglePopup('close'))
 overlay.addEventListener('click', () => togglePopup('close'))
-
-const dataFormatSelect = document.querySelectorAll('input[name="dataMode"]') as any
-const exportDataButton = document.getElementById('exportData') as HTMLButtonElement
-const importDataButton = document.getElementById('importData') as HTMLButtonElement
-
-type DataMode = 'csv' | 'json'
-
-let dataMode: DataMode = 'json'
-dataFormatSelect.forEach((radio: HTMLInputElement) => {
-  radio.addEventListener('change', () => {
-    dataMode = radio.value as DataMode
-  })
-})
-
-const importFileInput = document.createElement('input')
-importFileInput.type = 'file'
-importFileInput.accept = '.json,application/json,.csv,text/csv'
-importFileInput.style.display = 'none'
-document.body.appendChild(importFileInput)
-
-exportDataButton.addEventListener('click', () => {
-  if (dataMode === 'json') {
-    const blob = new Blob([JSON.stringify(properData, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `TimeFlow Export ${today}.json`
-    a.click()
-    URL.revokeObjectURL(url)
-  } else if (dataMode === 'csv') {
-    const rows = [['date', 'website', 'time']]
-    for (const date in properData) {
-      for (const entry of properData[date]) {
-        rows.push([date, entry.url, entry.time.toString()])
-      }
-    }
-    const csvContent = rows.map((r) => r.map((v) => `"${(v ?? '').toString().replace(/"/g, '""')}"`).join(',')).join('\n')
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `TimeFlow Export ${today}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
-})
-
-importDataButton.addEventListener('click', () => importFileInput.click())
-importFileInput.addEventListener('change', (event: any) => {
-  const file = event.target.files[0]
-  if (!file) return
-  const reader = new FileReader()
-  reader.onload = (e: any) => {
-    try {
-      Object.keys(properData).forEach((key) => delete properData[key])
-      if (dataMode === 'json') {
-        const importedData = JSON.parse(e.target.result)
-        Object.assign(properData, importedData)
-      } else if (dataMode === 'csv') {
-        const text = e.target.result as string
-        const lines = text.trim().split('\n')
-        const header = lines.shift()
-        if (!header || !header.toLowerCase().includes('date')) throw new Error('Invalid CSV header')
-        for (const line of lines) {
-          const [date, website, time] = line.split(',').map((s) => s.replace(/^"|"$/g, '').replace(/""/g, '"'))
-          if (!date || !website || isNaN(Number(time))) continue
-          if (!properData[date]) properData[date] = []
-          properData[date].push({
-            url: '',
-            time: Number(time),
-          })
-        }
-      }
-      updateChart()
-      alert('Data imported successfully!')
-    } catch (err) {
-      alert('Failed to import data')
-    }
-  }
-  reader.readAsText(file)
-})

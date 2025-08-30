@@ -1,5 +1,5 @@
 import { getViewMode, getViewRange } from './ui'
-import { RawData, WebsiteData } from '../main'
+import { FormattedData, WebsiteData } from '../main'
 import { parse as parseDomain } from 'tldts'
 
 export function formatDate(date: string) {
@@ -35,7 +35,7 @@ export function formatValue(value: number) {
   }
 }
 
-export function getValues(dates: string[], data: RawData): number[] {
+export function getValues(dates: string[], data: FormattedData): number[] {
   return dates.map((date: string) => {
     if (!data[date]) return 0
 

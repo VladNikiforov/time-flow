@@ -3,7 +3,7 @@
   "description": "Focus on what matters by keeping track of your time on the web",
   "version": "2.0.0",
   "manifest_version": 3,
-  "permissions": ["storage", "tabs"],
+  "permissions": ["storage", "tabs", "scripting"],
   "background": {
     "service_worker": "background.js",
     "type": "module"
