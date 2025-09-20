@@ -9,7 +9,7 @@ initTheme()
 
 export type WebsiteData = {
   url: string
-  time: number
+  time: number | { start: number; end: number }
 }
 
 export type FormattedData = {
@@ -20,18 +20,8 @@ export function normalizeMessageData(data: RawData[]): FormattedData {
   const normalized: FormattedData = {}
   for (const entry of data) {
     if (!entry.date || !entry.url || entry.time == null) continue
-
-    let time: number
-    if (typeof entry.time === 'number') {
-      time = entry.time
-    } else if (typeof entry.time === 'object' && entry.time.start != null && entry.time.end != null) {
-      time = Math.floor((entry.time.end - entry.time.start) / 1000)
-    } else {
-      time = 0
-    }
-
     if (!normalized[entry.date]) normalized[entry.date] = []
-    normalized[entry.date].push({ url: entry.url, time })
+    normalized[entry.date].push({ url: entry.url, time: entry.time })
   }
   return normalized
 }
@@ -108,11 +98,16 @@ exportDataButton.addEventListener('click', () => {
     const rows = [['date', 'website', 'time']]
     for (const entry of rawData) {
       if (!entry.date || !entry.url || entry.time == null) continue
-
-      const timeVal = typeof entry.time === 'number' ? entry.time : (entry.time.end - entry.time.start) / 1000
+      let timeVal: number
+      if (typeof entry.time === 'number') {
+        timeVal = entry.time
+      } else if (typeof entry.time === 'object' && entry.time.start != null && entry.time.end != null) {
+        timeVal = Math.floor((entry.time.end - entry.time.start) / 1000)
+      } else {
+        timeVal = 0
+      }
       rows.push([entry.date, entry.url, timeVal.toString()])
     }
-
     const csvContent = rows.map((r) => r.map((v) => `"${(v ?? '').toString().replace(/"/g, '""')}"`).join(',')).join('\n')
     const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
@@ -126,7 +121,6 @@ exportDataButton.addEventListener('click', () => {
 
 importDataButton.addEventListener('click', () => importFileInput.click())
 
-//TODO - make both old and new data importable
 importFileInput.addEventListener('change', (event: any) => {
   const file = event.target.files[0]
   if (!file) return
@@ -145,17 +139,13 @@ importFileInput.addEventListener('change', (event: any) => {
           if (!Array.isArray(entries)) continue
           for (const entry of entries) {
             if (!entry || !entry.url || entry.time == null) continue
-
-            const time = typeof entry.time === 'number' ? { start: entry.time, end: entry.time + 1 } : entry.time
-            incomingData.push({ ...entry, date, time })
+            incomingData.push({ ...entry, date, time: entry.time })
           }
         }
       } else if (Array.isArray(imported)) {
         for (const entry of imported) {
           if (!entry || !entry.url || entry.time == null || !entry.date) continue
-
-          const time = typeof entry.time === 'number' ? { start: entry.time, end: entry.time + 1 } : entry.time
-          incomingData.push({ ...entry, time })
+          incomingData.push({ ...entry, time: entry.time })
         }
       } else {
         throw new Error('Invalid JSON format')
@@ -165,6 +155,20 @@ importFileInput.addEventListener('change', (event: any) => {
 
       rawData.length = 0
       rawData.push(...incomingData)
+
+      const settings = await new Promise<{ uiHue?: number; isDark?: boolean }>((resolve) => {
+        browserAPI.storage.local.get(['uiHue', 'isDark'], (result: any) => {
+          resolve({ uiHue: result.uiHue, isDark: result.isDark })
+        })
+      })
+
+      const groupedByDate: Record<string, any[]> = {}
+      for (const entry of rawData) {
+        if (!groupedByDate[entry.date]) groupedByDate[entry.date] = []
+        groupedByDate[entry.date].push({ url: entry.url, time: entry.time })
+      }
+      await browserAPI.storage.local.clear()
+      await browserAPI.storage.local.set({ ...groupedByDate, ...settings })
 
       const formatted = normalizeMessageData(rawData)
       Object.keys(formattedData).forEach((k) => delete formattedData[k])

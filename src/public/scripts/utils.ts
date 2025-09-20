@@ -23,24 +23,40 @@ export function formatKey(key: string): string {
   return domain.length > 24 ? domain.slice(0, 24) + '...' : domain
 }
 
-export function formatValue(value: number) {
+export function formatValue(value: number | { start: number; end: number }) {
+  let seconds: number
+  if (typeof value === 'number') {
+    seconds = value
+  } else if (typeof value === 'object' && value.start != null && value.end != null) {
+    seconds = Math.floor((value.end - value.start) / 1000)
+  } else {
+    seconds = 0
+  }
   if (getViewMode() === 'time') {
-    const h = Math.floor(value / 3600)
-    const m = Math.floor((value % 3600) / 60)
-    const s = value % 60
-
+    const h = Math.floor(seconds / 3600)
+    const m = Math.floor((seconds % 3600) / 60)
+    const s = seconds % 60
     return h ? `${h}h${m ? ` ${m}m` : ''}${s ? ` ${s}s` : ''}` : m ? `${m}m${s ? ` ${s}s` : ''}` : `${s}s`
   } else if (getViewMode() === 'sessions') {
-    return `${value} session${value === 1 ? '' : 's'}`
+    return `${seconds} session${seconds === 1 ? '' : 's'}`
   }
 }
 
 export function getValues(dates: string[], data: FormattedData): number[] {
   return dates.map((date: string) => {
     if (!data[date]) return 0
-
     if (getViewMode() === 'time') {
-      return data[date].reduce((sum: number, entry: WebsiteData) => sum + (entry.time || 0), 0)
+      return data[date].reduce((sum: number, entry: WebsiteData) => {
+        let seconds: number
+        if (typeof entry.time === 'number') {
+          seconds = entry.time
+        } else if (typeof entry.time === 'object' && entry.time.start != null && entry.time.end != null) {
+          seconds = Math.floor((entry.time.end - entry.time.start) / 1000)
+        } else {
+          seconds = 0
+        }
+        return sum + seconds
+      }, 0)
     } else {
       return data[date].length
     }

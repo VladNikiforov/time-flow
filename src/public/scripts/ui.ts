@@ -234,6 +234,11 @@ export function destroyPreviousChart() {
 
 const domainToUrlMap: Record<string, string> = {}
 function aggregateEntries(entries: WebsiteData[]): Record<string, number> {
+  function getSeconds(time: number | { start: number; end: number }): number {
+    if (typeof time === 'number') return time
+    if (typeof time === 'object' && time.start != null && time.end != null) return Math.floor((time.end - time.start) / 1000)
+    return 0
+  }
   if (drillState.domain) {
     const filtered = entries.filter((e) => getDomain(e.url || '') === drillState.domain)
     const pathAgg: Record<string, number> = {}
@@ -241,11 +246,11 @@ function aggregateEntries(entries: WebsiteData[]): Record<string, number> {
       try {
         const url = new URL(entry.url || '#')
         const path = url.pathname || '/'
-        const value = getViewMode() === 'time' ? entry.time || 0 : 1
+        const value = getViewMode() === 'time' ? getSeconds(entry.time) : 1
         pathAgg[path] = (pathAgg[path] || 0) + value
         domainToUrlMap[path] = entry.url || ''
       } catch {
-        pathAgg['/'] = (pathAgg['/'] || 0) + (entry.time || 0)
+        pathAgg['/'] = (pathAgg['/'] || 0) + getSeconds(entry.time)
         domainToUrlMap['/'] = entry.url || ''
       }
     })
@@ -254,14 +259,11 @@ function aggregateEntries(entries: WebsiteData[]): Record<string, number> {
     const aggregatedData = entries.reduce((acc: Record<string, number>, entry: WebsiteData) => {
       const rawUrl = entry.url || 'unknown'
       const key = getDomain(rawUrl)
-      const value = getViewMode() === 'time' ? entry.time || 0 : 1
-
+      const value = getViewMode() === 'time' ? getSeconds(entry.time) : 1
       domainToUrlMap[key] = rawUrl
-
       acc[key] = (acc[key] || 0) + value
       return acc
     }, {})
-
     return Object.fromEntries(Object.entries(aggregatedData).sort((a, b) => b[1] - a[1]))
   }
 }
