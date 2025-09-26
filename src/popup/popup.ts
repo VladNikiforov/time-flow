@@ -1,4 +1,4 @@
-/* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
+/* TimeFlow - browser extension; (c) 2024 VladNikiforov; GPLv3, see LICENSE file */
 
 import { browserAPI, addonPageURL } from '../background'
 import '../public/style.css'

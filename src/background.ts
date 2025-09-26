@@ -1,4 +1,4 @@
-/* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
+/* TimeFlow - browser extension; (c) 2024 VladNikiforov; GPLv3, see LICENSE file */
 
 type BrowserAPI = typeof browser | typeof chrome
 const isFirefox = typeof browser !== 'undefined' && !!browser.runtime?.id
