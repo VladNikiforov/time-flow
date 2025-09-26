@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import tailwindcss from '@tailwindcss/vite'
 import { resolve } from 'path'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 
@@ -16,8 +17,6 @@ const staticCopyPlugin = () => {
       },
       { src: 'src/popup/popup.html', dest: 'popup', rename: 'popup.html' },
       { src: 'src/public/index.html', dest: 'public', rename: 'index.html' },
-      { src: 'src/public/style.css', dest: 'public', rename: 'style.css' },
-      { src: 'src/global.css', dest: '.' },
     ],
     watch: {
       reloadPageOnChange: true,
@@ -46,7 +45,12 @@ export default defineConfig(({ mode }): any => {
             }
             return map[chunk.name]
           },
-          assetFileNames: 'assets/[name].[ext]',
+          assetFileNames: (assetInfo: any) => {
+            if (assetInfo.name?.endsWith('.css')) {
+              return 'public/style.css'
+            }
+            return 'assets/[name].[ext]'
+          },
           format: 'esm',
         },
       },
@@ -56,6 +60,6 @@ export default defineConfig(({ mode }): any => {
       minify: !isDev,
       watch: isDev,
     },
-    plugins: [staticCopyPlugin()],
+    plugins: [staticCopyPlugin(), tailwindcss()],
   }
 })

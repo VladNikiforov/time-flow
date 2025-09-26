@@ -4,6 +4,7 @@ import { browserAPI, RawData, today } from '../background'
 import { initTheme, getFromStorage } from './scripts/theme'
 import { getStartDate } from './scripts/date'
 import { updateUI, updateChart } from './scripts/ui'
+import './style.css'
 
 initTheme()
 

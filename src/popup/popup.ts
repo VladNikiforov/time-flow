@@ -1,6 +1,7 @@
 /* MIT License Copyright (c) 2024-2025 @VladNikiforov See the LICENSE file */
 
 import { browserAPI, addonPageURL } from '../background'
+import '../public/style.css'
 
 const pageButton = document.getElementById('main-page') as HTMLButtonElement
 const pauseBtn = document.getElementById('pause') as HTMLImageElement
