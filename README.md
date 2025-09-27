@@ -13,9 +13,9 @@ I just want a browser extension that just does its job and nothing more - clean 
 
 Core Values:
 
-- **Privacy** - All your data is stored locally on your browser and doesn't go beyond that (Your data stays yours, no external sketchy stuff)
+- **Privacy** - fully local, your data doesn't leave your machine
 - **Transparency** - free, open-source, no ads
-- **Visuals** - Clean UI, straight to the point
+- **Visuals** - clean UI, straight to the point
 
 It's a hobby project and my main goal is just to make this the best it can be
 

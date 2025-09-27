@@ -1,5 +1,5 @@
 import { browserAPI } from '../../background'
-import { updateChart, settingsIcon, colorAlgorithm } from './ui'
+import { updateChart, colorAlgorithm } from './ui'
 
 let isDark: boolean
 let uiHue: number
@@ -16,14 +16,8 @@ export function initTheme() {
 }
 
 function updateTheme() {
-  const themeConfig = isDark ? { backgroundColor: '#222', textColor: '#fff', rotateValue: 0 } : { backgroundColor: '#eee', textColor: '#000', rotateValue: 180 }
-  const filterValue = `invert(${+isDark})`
-
-  document.documentElement.style.setProperty('--background-color', themeConfig.backgroundColor)
-  document.documentElement.style.setProperty('--text-color', themeConfig.textColor)
-  themeIcon.style.transform = `rotate(${themeConfig.rotateValue}deg)`
-  themeIcon.style.filter = filterValue
-  settingsIcon.style.filter = filterValue
+  document.documentElement.classList.toggle('dark')
+  themeIcon.style.transform = `rotate(${isDark ? 0 : 180}deg)`
 
   updateChart()
 }

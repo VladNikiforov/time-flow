@@ -20,7 +20,7 @@ export function getDomain(url: string): string {
 
 export function formatKey(key: string): string {
   const domain = getDomain(key)
-  return domain.length > 24 ? domain.slice(0, 24) + '...' : domain
+  return domain.length > 12 ? domain.slice(0, 12) + '...' : domain
 }
 
 export function formatValue(value: number | { start: number; end: number }) {

@@ -30,11 +30,7 @@ function uiHueLogic(uiHue: number) {
 }
 
 function isDarkLogic(isDark: boolean) {
-  const themeConfig = isDark ? { backgroundColor: '#222', textColor: '#fff' } : { backgroundColor: '#eee', textColor: '#000' }
-
-  document.documentElement.style.setProperty('--background-color', themeConfig.backgroundColor)
-  document.documentElement.style.setProperty('--text-color', themeConfig.textColor)
-  pauseBtn.style.filter = `invert(${+isDark})`
+  document.documentElement.classList.toggle('dark')
 }
 
 document.addEventListener('DOMContentLoaded', () => {

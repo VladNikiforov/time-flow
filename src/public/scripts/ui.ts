@@ -308,11 +308,11 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
 
   if (drillState.domain) {
     const domainLabel = document.createElement('span')
-    domainLabel.id = 'domainLabel'
+    domainLabel.classList.add('text-xl font-bold')
     domainLabel.textContent = `${formatKey(drillState.domain)}`
 
     const backBtn = document.createElement('button')
-    backBtn.id = 'backButton'
+    backBtn.classList.add('inline mr-4 mb-4')
     backBtn.textContent = '← Back'
 
     backBtn.onclick = () => {
@@ -365,7 +365,7 @@ function createProgressEntry(website: string, value: number, percentage: number,
 
   const labelDiv = document.createElement('div')
   const labelText = document.createElement('a')
-  labelText.classList.add('labelText')
+  labelText.classList.add('text-base')
   labelText.target = '_blank'
   labelText.href = domainToUrlMap[website]
   labelText.textContent = formatKey(website)
@@ -380,7 +380,7 @@ function createProgressEntry(website: string, value: number, percentage: number,
   entryContainer.appendChild(progressBar)
 
   const valueText = document.createElement('div')
-  valueText.classList.add('valueText')
+  valueText.classList.add('text-base')
   valueText.style.textAlign = 'center'
   valueText.textContent = `${formatValue(value)} (${percentage}%)`
   entryContainer.appendChild(valueText)
