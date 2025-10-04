@@ -97,11 +97,9 @@ progress::-moz-progress-bar {
 
 .icon {
   @apply cursor-pointer;
-  /* prefer using filter to invert embedded SVG icons when dark mode is active */
   filter: none;
 }
 
-/* when dark class is present invert icons so they appear light */
 .dark .icon {
   filter: invert(1) grayscale(1) brightness(1.2);
 }
