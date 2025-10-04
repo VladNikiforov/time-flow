@@ -1,8 +1,8 @@
 import { formatDate, formatValue, getValues, getTotal, formatLabels, processAggregatedData, formatKey, getDomain } from './utils'
 import { getUiHue, getIsDark } from './theme'
 import { getStartDate, navigateChart, getCurrentStartDate, generateDateRange, fillMissingDates, getPreviousPeriodRange } from './date'
-import { formattedData, WebsiteData, FormattedData, rawData } from '../main'
-import { today } from '../../background'
+import { fullData, FullData } from '../main'
+import { RawData, today } from '../../background'
 import Chart from 'chart.js/auto'
 
 declare global {
@@ -85,7 +85,7 @@ nextButton.addEventListener('click', () => (getViewRange() === 'Day' ? navigateS
 
 export function updateChart() {
   const dateRange = generateDateRange(getCurrentStartDate())
-  const filledData = fillMissingDates(formattedData, dateRange)
+  const filledData = fillMissingDates(fullData, dateRange)
   if (getViewRange() === 'Day') {
     updateDayStats(dateRange, filledData)
   } else {
@@ -93,7 +93,7 @@ export function updateChart() {
   }
 }
 
-function updateDayStats(dateRange: string[], filledData: FormattedData) {
+function updateDayStats(dateRange: string[], filledData: FullData) {
   const simulatedElement = [{ index: dateRange.indexOf(today) }]
   handleChartClick(simulatedElement, dateRange, filledData)
 }
@@ -101,7 +101,7 @@ function updateDayStats(dateRange: string[], filledData: FormattedData) {
 let currentStatIndex = 0
 export function navigateStats(direction: number) {
   const dateRange: string[] | undefined = generateDateRange(getCurrentStartDate())
-  const filledData = fillMissingDates(formattedData, dateRange)
+  const filledData = fillMissingDates(fullData, dateRange)
 
   currentStatIndex += direction
   if (currentStatIndex < 0) currentStatIndex = dateRange.length - 1
@@ -115,7 +115,7 @@ export function navigateStats(direction: number) {
   handleChartClick([simulatedElement], dateRange, filledData)
 }
 
-export function renderMainChart(data: FormattedData) {
+export function renderMainChart(data: FullData) {
   if (window.mainChartInstance) window.mainChartInstance.destroy()
 
   const dates = Object.keys(data)
@@ -132,7 +132,7 @@ export function updateAverage(values: any) {
 
   const timeTrendElement = document.getElementById('timeTrend') as HTMLSpanElement
   const prevRange = getPreviousPeriodRange(getCurrentStartDate())
-  const prevFilled = fillMissingDates(formattedData, prevRange)
+  const prevFilled = fillMissingDates(fullData, prevRange)
   const prevValues = getValues(prevRange, prevFilled)
   const prevTotal = getTotal(prevValues)
   const currentTotal = getTotal(values)
@@ -150,7 +150,7 @@ export function updateAverage(values: any) {
   }
 }
 
-export function createMainChart(canvas: HTMLCanvasElement | null, dates: string[], values: number[], data: FormattedData) {
+export function createMainChart(canvas: HTMLCanvasElement | null, dates: string[], values: number[], data: FullData) {
   if (!canvas) return
   const options: any = {
     responsive: true,
@@ -202,7 +202,7 @@ export function createMainChart(canvas: HTMLCanvasElement | null, dates: string[
   })
 }
 
-export function handleChartClick(elements: Array<{ index: number }>, dates: string[], data: FormattedData) {
+export function handleChartClick(elements: Array<{ index: number }>, dates: string[], data: FullData) {
   if (elements.length == 0) return
   const index = elements[0].index
   const label = dates[index]
@@ -211,10 +211,10 @@ export function handleChartClick(elements: Array<{ index: number }>, dates: stri
 }
 
 let drillState: { domain?: string } = {}
-let lastEntries: WebsiteData[] = []
+let lastEntries: RawData[] = []
 let lastCanvas: CanvasRenderingContext2D | null = null
 
-function renderDetailChart(entries: WebsiteData[], canvas: CanvasRenderingContext2D | null) {
+function renderDetailChart(entries: RawData[], canvas: CanvasRenderingContext2D | null) {
   if (!canvas) return
   lastEntries = entries
   lastCanvas = canvas
@@ -233,31 +233,31 @@ export function destroyPreviousChart() {
 }
 
 const domainToUrlMap: Record<string, string> = {}
-function aggregateEntries(entries: WebsiteData[]): Record<string, number> {
+function aggregateEntries(entries: RawData[]): Record<string, number> {
   function getSeconds(time: number | { start: number; end: number }): number {
     if (typeof time === 'number') return time
     if (typeof time === 'object' && time.start != null && time.end != null) return Math.floor((time.end - time.start) / 1000)
     return 0
   }
   if (drillState.domain) {
-    const filtered = entries.filter((e) => getDomain(e.url || '') === drillState.domain)
+    const filtered = entries.filter((e) => getDomain(e.website || '') === drillState.domain)
     const pathAgg: Record<string, number> = {}
     filtered.forEach((entry) => {
       try {
-        const url = new URL(entry.url || '#')
+        const url = new URL(entry.website || '#')
         const path = url.pathname || '/'
         const value = getViewMode() === 'time' ? getSeconds(entry.time) : 1
         pathAgg[path] = (pathAgg[path] || 0) + value
-        domainToUrlMap[path] = entry.url || ''
+        domainToUrlMap[path] = entry.website || ''
       } catch {
         pathAgg['/'] = (pathAgg['/'] || 0) + getSeconds(entry.time)
-        domainToUrlMap['/'] = entry.url || ''
+        domainToUrlMap['/'] = entry.website || ''
       }
     })
     return Object.fromEntries(Object.entries(pathAgg).sort((a, b) => b[1] - a[1]))
   } else {
-    const aggregatedData = entries.reduce((acc: Record<string, number>, entry: WebsiteData) => {
-      const rawUrl = entry.url || 'unknown'
+    const aggregatedData = entries.reduce((acc: Record<string, number>, entry: RawData) => {
+      const rawUrl = entry.website || 'unknown'
       const key = getDomain(rawUrl)
       const value = getViewMode() === 'time' ? getSeconds(entry.time) : 1
       domainToUrlMap[key] = rawUrl

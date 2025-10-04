@@ -1,4 +1,4 @@
-import { FormattedData } from '../main'
+import { FullData } from '../main'
 import { getViewRange, updateChart } from './ui'
 import { toLocalISODate } from '../../background'
 
@@ -58,8 +58,8 @@ export function generateDateRange(startDate: Date) {
   return dateRange
 }
 
-export function fillMissingDates(data: FormattedData, dateRange: string[]) {
-  const filledData: FormattedData = {}
+export function fillMissingDates(data: FullData, dateRange: string[]) {
+  const filledData: FullData = {}
 
   dateRange.forEach((date: string) => {
     const entries = data[date] || []

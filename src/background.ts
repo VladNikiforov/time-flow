@@ -39,8 +39,7 @@ export const today = toLocalISODate(new Date())
 // State Helpers
 
 export type RawData = {
-  date: string
-  url: string
+  website: string
   time: { start: number; end: number } | number
 }
 
@@ -49,13 +48,12 @@ async function getData(date: string): Promise<RawData[]> {
   return result[date] || []
 }
 
-async function saveData(data: RawData & { date: string }): Promise<void> {
-  const existingData = await getData(data.date)
-  existingData.push(data)
-  await storageSet({ [data.date]: existingData })
+async function saveData(date: string, entry: RawData): Promise<void> {
+  const existingData = await getData(date)
+  existingData.push(entry)
+  await storageSet({ [date]: existingData })
 }
 
-// Service worker safe state
 interface TimerState {
   startTime: number
   currentTabId: number | null
@@ -64,7 +62,12 @@ interface TimerState {
 }
 
 async function getTimerState(): Promise<TimerState> {
-  const state = await storageGet<Partial<TimerState>>(['startTime', 'currentTabId', 'currentTabUrl', 'switchingTabs'])
+  const state = await storageGet<Partial<TimerState>>([
+    'startTime',
+    'currentTabId',
+    'currentTabUrl',
+    'switchingTabs',
+  ])
   return {
     startTime: state.startTime ?? 0,
     currentTabId: state.currentTabId ?? null,
@@ -108,23 +111,22 @@ async function stopTimer(): Promise<void> {
 
   const endTime = Date.now()
   const elapsedSeconds = Math.floor((endTime - state.startTime) / 1000)
-  const url = state.currentTabUrl
+  const website = state.currentTabUrl
 
-  if (elapsedSeconds <= 0 || url.startsWith(addonPageURL)) {
-    console.log(`Ignoring tracking for invalid URL or time: ${url} (${elapsedSeconds}s)`)
+  if (elapsedSeconds <= 0 || website.startsWith(addonPageURL)) {
+    console.log(`Ignoring tracking for invalid URL or time: ${website} (${elapsedSeconds}s)`)
     await resetTimerState()
     return
   }
 
-  console.log(`Stopped tracking ${url} after ${elapsedSeconds}s`)
+  console.log(`Stopped tracking ${website} after ${elapsedSeconds}s`)
 
-  const newData: RawData = {
-    date: today,
-    url,
+  const newEntry: RawData = {
+    website,
     time: { start: state.startTime, end: endTime },
   }
 
-  await saveData(newData as RawData & { date: string })
+  await saveData(today, newEntry)
   await sendAllStoredData()
   await resetTimerState()
 }
@@ -139,8 +141,10 @@ async function sendAllStoredData(): Promise<void> {
     if (!Array.isArray(entries)) continue
 
     const validEntries = entries.filter((entry) => {
-      if (!('url' in entry) || !entry.url || entry.url.startsWith(addonPageURL)) return false
-      return typeof entry.time !== 'number' ? entry.time.end - entry.time.start > 0 : entry.time > 0
+      if (!('website' in entry) || !entry.website || entry.website.startsWith(addonPageURL)) return false
+      return typeof entry.time !== 'number'
+        ? entry.time.end - entry.time.start > 0
+        : entry.time > 0
     })
 
     if (validEntries.length > 0) result[date] = validEntries

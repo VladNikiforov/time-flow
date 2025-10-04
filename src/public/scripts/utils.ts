@@ -1,5 +1,6 @@
 import { getViewMode, getViewRange } from './ui'
-import { FormattedData, WebsiteData } from '../main'
+import { FullData } from '../main'
+import { RawData } from '../../background'
 import { parse as parseDomain } from 'tldts'
 
 export function formatDate(date: string) {
@@ -42,11 +43,11 @@ export function formatValue(value: number | { start: number; end: number }) {
   }
 }
 
-export function getValues(dates: string[], data: FormattedData): number[] {
+export function getValues(dates: string[], data: FullData): number[] {
   return dates.map((date: string) => {
     if (!data[date]) return 0
     if (getViewMode() === 'time') {
-      return data[date].reduce((sum: number, entry: WebsiteData) => {
+      return data[date].reduce((sum: number, entry: RawData) => {
         let seconds: number
         if (typeof entry.time === 'number') {
           seconds = entry.time
