@@ -239,19 +239,29 @@ function aggregateEntries(entries: RawData[]): Record<string, number> {
     if (typeof time === 'object' && time.start != null && time.end != null) return Math.floor((time.end - time.start) / 1000)
     return 0
   }
+  function ensureFullUrl(raw: string) {
+    if (!raw) return '#'
+    if (/^https?:\/\//i.test(raw)) return raw
+    return `https://${raw.replace(/^\/\//, '')}`
+  }
   if (drillState.domain) {
     const filtered = entries.filter((e) => getDomain(e.website || '') === drillState.domain)
     const pathAgg: Record<string, number> = {}
     filtered.forEach((entry) => {
       try {
-        const url = new URL(entry.website || '#')
-        const path = url.pathname || '/'
+        let urlObj: URL
+        try {
+          urlObj = new URL(entry.website || '')
+        } catch {
+          urlObj = new URL(ensureFullUrl(entry.website || ''))
+        }
+        const path = urlObj.pathname || '/'
         const value = getViewMode() === 'time' ? getSeconds(entry.time) : 1
         pathAgg[path] = (pathAgg[path] || 0) + value
-        domainToUrlMap[path] = entry.website || ''
+        domainToUrlMap[path] = ensureFullUrl(entry.website || '')
       } catch {
         pathAgg['/'] = (pathAgg['/'] || 0) + getSeconds(entry.time)
-        domainToUrlMap['/'] = entry.website || ''
+        domainToUrlMap['/'] = ensureFullUrl(entry.website || '')
       }
     })
     return Object.fromEntries(Object.entries(pathAgg).sort((a, b) => b[1] - a[1]))
@@ -260,7 +270,7 @@ function aggregateEntries(entries: RawData[]): Record<string, number> {
       const rawUrl = entry.website || 'unknown'
       const key = getDomain(rawUrl)
       const value = getViewMode() === 'time' ? getSeconds(entry.time) : 1
-      domainToUrlMap[key] = rawUrl
+      domainToUrlMap[key] = ensureFullUrl(rawUrl)
       acc[key] = (acc[key] || 0) + value
       return acc
     }, {})
@@ -307,12 +317,12 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
   progressContainer.innerHTML = ''
 
   if (drillState.domain) {
-    const domainLabel = document.createElement('span')
-    domainLabel.classList.add('text-xl font-bold')
+  const domainLabel = document.createElement('span')
+  domainLabel.classList.add('text-xl', 'font-bold')
     domainLabel.textContent = `${formatKey(drillState.domain)}`
 
-    const backBtn = document.createElement('button')
-    backBtn.classList.add('inline mr-4 mb-4')
+  const backBtn = document.createElement('button')
+  backBtn.classList.add('inline', 'mr-4', 'mb-4')
     backBtn.textContent = '← Back'
 
     backBtn.onclick = () => {
