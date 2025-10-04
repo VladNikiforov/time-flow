@@ -5,16 +5,16 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-background: #222;
-  --color-text: #fff;
-}
-
-.dark {
   --color-background: #eee;
   --color-text: #000;
 }
 
-::root {
+.dark {
+  --color-background: #222;
+  --color-text: #fff;
+}
+
+:root {
   --special-color-light: hsl(210, 48%, 52%);
   --special-color-dark: hsla(210, 48%, 52%, 0.2);
 }
@@ -96,7 +96,14 @@ progress::-moz-progress-bar {
 }
 
 .icon {
-  @apply cursor-pointer invert-0 dark:invert-100;
+  @apply cursor-pointer;
+  /* prefer using filter to invert embedded SVG icons when dark mode is active */
+  filter: none;
+}
+
+/* when dark class is present invert icons so they appear light */
+.dark .icon {
+  filter: invert(1) grayscale(1) brightness(1.2);
 }
 
 .gridDisplay {

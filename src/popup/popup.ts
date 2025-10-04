@@ -29,13 +29,19 @@ function uiHueLogic(uiHue: number) {
   pageButton.style.borderColor = colorAlgorithm('light')
 }
 
-function isDarkLogic(isDark: boolean) {
-  document.documentElement.classList.toggle('dark')
+function applyThemePref(pref: any) {
+  const theme: 'system' | 'light' | 'dark' = pref || 'system'
+  if (theme === 'system' && window.matchMedia) {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    document.documentElement.classList.toggle('dark', prefersDark)
+  } else {
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   getFromStorage('uiHue', uiHueLogic)
-  getFromStorage('isDark', isDarkLogic)
+  getFromStorage('theme', applyThemePref)
 })
 
 function updatePauseBtn(paused: boolean) {

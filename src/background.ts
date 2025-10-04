@@ -62,12 +62,7 @@ interface TimerState {
 }
 
 async function getTimerState(): Promise<TimerState> {
-  const state = await storageGet<Partial<TimerState>>([
-    'startTime',
-    'currentTabId',
-    'currentTabUrl',
-    'switchingTabs',
-  ])
+  const state = await storageGet<Partial<TimerState>>(['startTime', 'currentTabId', 'currentTabUrl', 'switchingTabs'])
   return {
     startTime: state.startTime ?? 0,
     currentTabId: state.currentTabId ?? null,
@@ -142,9 +137,7 @@ async function sendAllStoredData(): Promise<void> {
 
     const validEntries = entries.filter((entry) => {
       if (!('website' in entry) || !entry.website || entry.website.startsWith(addonPageURL)) return false
-      return typeof entry.time !== 'number'
-        ? entry.time.end - entry.time.start > 0
-        : entry.time > 0
+      return typeof entry.time !== 'number' ? entry.time.end - entry.time.start > 0 : entry.time > 0
     })
 
     if (validEntries.length > 0) result[date] = validEntries

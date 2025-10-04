@@ -20,7 +20,7 @@ browserAPI.runtime.onMessage.addListener((message: any) => {
 
   Object.assign(fullData, message.data)
   getFromStorage('uiHue')
-  getFromStorage('isDark')
+  getFromStorage('theme')
   getStartDate()
   updateUI()
 })
@@ -66,8 +66,8 @@ importFileInput.addEventListener('change', (event: any) => {
         }
       }
 
-      const settings = await new Promise<{ uiHue?: number; isDark?: boolean }>((resolve) => {
-        browserAPI.storage.local.get(['uiHue', 'isDark'], (result: any) => resolve(result))
+      const settings = await new Promise<{ uiHue?: number; theme?: string }>((resolve) => {
+        browserAPI.storage.local.get(['uiHue', 'theme'], (result: any) => resolve(result))
       })
       await browserAPI.storage.local.clear()
       await browserAPI.storage.local.set({ ...fullData, ...settings })

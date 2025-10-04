@@ -31,7 +31,7 @@
           <label for="sessions">sessions</label>
         </div>
         <!-- Settings SVG by Solar Icons https://www.svgrepo.com/svg/523734/settings -->
-        <img id="settingsIcon" class="mr-2 h-8 w-8" src="../assets/settings-icon.svg" />
+        <img id="settingsIcon" class="icon mr-2 h-8 w-8" src="../assets/settings-icon.svg" />
       </div>
     </nav>
 
@@ -70,14 +70,20 @@
           <h3>Appearance</h3>
           <div class="sectionContent">
             <div>
-              <label for="themeIcon">Theme:</label>
-              <!-- Theme SVG by Microsoft https://www.svgrepo.com/svg/310719/dark-theme -->
-              <img id="themeIcon" class="icon mb-2 h-6 w-6 transition-transform duration-500" src="../assets/theme-icon.svg" />
+              <label for="themeSelect">Theme:</label>
+              <div id="themeSelect" class="select mb-2">
+                <input type="radio" name="theme" id="theme-system" value="system" />
+                <label for="theme-system">System</label>
+                <input type="radio" name="theme" id="theme-light" value="light" />
+                <label for="theme-light">Light</label>
+                <input type="radio" name="theme" id="theme-dark" value="dark" />
+                <label for="theme-dark">Dark</label>
+              </div>
             </div>
             <div>
               <label for="hueSlider">Hue:</label>
-              <input type="number" id="hueValue" class="icon w-12 underline" min="1" max="360" />
-              <input type="range" id="hueSlider" min="1" max="360" />
+              <input type="number" id="hueValue" class="icon w-12 underline" min="0" max="360" />
+              <input type="range" id="hueSlider" min="0" max="360" />
             </div>
           </div>
         </div>
