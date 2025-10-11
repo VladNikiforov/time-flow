@@ -1,7 +1,7 @@
 {
   "name": "TimeFlow - Time Tracker",
   "description": "Focus on what matters by keeping track of your time on the web",
-  "version": "2.0.0",
+  "version": "1.3.0",
   "manifest_version": 3,
   "permissions": ["storage", "tabs"],
   "background": {
