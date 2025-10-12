@@ -9,19 +9,17 @@ Focus on what matters by keeping track of your time on the web
 
 ## ⭐ My goals & purpose of the utility
 
-I just want a browser extension that just does its job and nothing more - clean and minimal. No unnecessary crap like ads and subscribtions
+It's a hobby project and my main goal is just to make this the best it can be, built for users
 
 Core Values:
 
-- **Privacy** - fully local, your data doesn't leave your machine
+- **Privacy** - all your data stays local in your browser
 - **Transparency** - free, open-source, no ads
-- **Visuals** - clean UI, straight to the point
-
-It's a hobby project and my main goal is just to make this the best it can be
+- **UX** - clean UI, full control
 
 ## 💡 Feedback
 
-Feel free to report and issue or any kind of suggestion or idea at the [Issues tab](https://github.com/VladNikiforov/time-flow/issues)
+Feel free to submit an issue or any kind of suggestion or idea at the [Issues tab](https://github.com/VladNikiforov/time-flow/issues)
 
 ## 🛠️ Contributing
 
