@@ -53,9 +53,12 @@
 
       <div class="flex flex-1 overflow-auto p-2">
         <canvas id="detailChart" class="mr-4 h-full w-auto"></canvas>
-        <div id="dayStats" class="flex flex-1 flex-col">
-          <div id="dayTotal" class="justify-between text-center text-4xl"></div>
-          <div id="progressContainer"></div>
+        <div id="dayStats" class="flex h-full w-full flex-col gap-4">
+          <div class="flex flex-[7] flex-col">
+            <div id="dayTotal" class="mb-2 text-center text-4xl">Total Time</div>
+            <div id="entriesContainer"></div>
+          </div>
+          <div class="border-text flex flex-[3] rounded-lg border p-4"><div id="timeline" class="h-full w-full"></div></div>
         </div>
 
         <canvas id="mainChart" class="h-full"></canvas>

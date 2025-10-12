@@ -313,8 +313,8 @@ function createDetailChart(canvas: CanvasRenderingContext2D, websites: string[],
 
 const maxItems = 5
 function renderProgressBars(websites: string[], values: number[], totalSpentTime: number) {
-  const progressContainer = document.getElementById('progressContainer') as HTMLDivElement
-  progressContainer.innerHTML = ''
+  const entriesContainer = document.getElementById('entriesContainer') as HTMLDivElement
+  entriesContainer.innerHTML = ''
 
   if (drillState.domain) {
   const domainLabel = document.createElement('span')
@@ -330,8 +330,8 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
       updateChart()
     }
 
-    progressContainer.appendChild(backBtn)
-    progressContainer.appendChild(domainLabel)
+    entriesContainer.appendChild(backBtn)
+    entriesContainer.appendChild(domainLabel)
   }
 
   const entries = websites.map((website, index) => {
@@ -344,7 +344,7 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
         renderDetailChart(lastEntries, lastCanvas)
       }
     }
-    progressContainer.appendChild(entryContainer)
+    entriesContainer.appendChild(entryContainer)
     return entryContainer
   })
 
@@ -358,7 +358,7 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
       })
       showMoreButton.style.display = 'none'
     })
-    progressContainer.appendChild(showMoreButton)
+    entriesContainer.appendChild(showMoreButton)
   }
 
   const totalTime = document.getElementById('dayTotal') as HTMLDivElement
@@ -367,7 +367,7 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
 
 function createProgressEntry(website: string, value: number, percentage: number, index: number): HTMLDivElement {
   const entryContainer = document.createElement('div')
-  entryContainer.classList.add('gridDisplay')
+  entryContainer.classList.add('entryContainer')
 
   if (index >= maxItems) {
     entryContainer.classList.add('hidden')
