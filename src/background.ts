@@ -62,7 +62,12 @@ interface TimerState {
 }
 
 async function getTimerState(): Promise<TimerState> {
-  const state = await storageGet<Partial<TimerState>>(['startTime', 'currentTabId', 'currentTabUrl', 'switchingTabs'])
+  const state = await storageGet<Partial<TimerState>>([
+    'startTime',
+    'currentTabId',
+    'currentTabUrl',
+    'switchingTabs',
+  ])
   return {
     startTime: state.startTime ?? 0,
     currentTabId: state.currentTabId ?? null,
@@ -137,7 +142,9 @@ async function sendAllStoredData(): Promise<void> {
 
     const validEntries = entries.filter((entry) => {
       if (!('website' in entry) || !entry.website || entry.website.startsWith(addonPageURL)) return false
-      return typeof entry.time !== 'number' ? entry.time.end - entry.time.start > 0 : entry.time > 0
+      return typeof entry.time !== 'number'
+        ? entry.time.end - entry.time.start > 0
+        : entry.time > 0
     })
 
     if (validEntries.length > 0) result[date] = validEntries
@@ -163,19 +170,23 @@ browserAPI.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 })
 
-// Tab Switching
+// Tab Switching (debounced)
+
+let tabSwitchTimeout: any = null
 
 async function safeSwitch(tabId: number) {
-  const state = await getTimerState()
-  if (state.switchingTabs) return
-  await setTimerState({ switchingTabs: true })
-
-  try {
-    await stopTimer()
-    await startTimer(tabId)
-  } finally {
-    await setTimerState({ switchingTabs: false })
-  }
+  if (tabSwitchTimeout) clearTimeout(tabSwitchTimeout)
+  tabSwitchTimeout = setTimeout(async () => {
+    const state = await getTimerState()
+    if (state.switchingTabs) return
+    await setTimerState({ switchingTabs: true })
+    try {
+      await stopTimer()
+      await startTimer(tabId)
+    } finally {
+      await setTimerState({ switchingTabs: false })
+    }
+  }, 150)
 }
 
 // Event Listeners
@@ -186,9 +197,33 @@ browserAPI.tabs.onActivated.addListener(async (activeInfo) => {
 
 browserAPI.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   const state = await getTimerState()
-  if (tabId === state.currentTabId && changeInfo.status === 'complete' && tab.url) safeSwitch(tabId)
+  if (tabId === state.currentTabId && changeInfo.status === 'complete' && tab.url)
+    safeSwitch(tabId)
 })
 
-browserAPI.windows.onFocusChanged.addListener((windowId) => {
-  if (windowId === browserAPI.windows.WINDOW_ID_NONE) stopTimer()
+// Focus/unfocus and window close
+
+browserAPI.windows.onFocusChanged.addListener(async (windowId) => {
+  const state = await getTimerState()
+
+  if (windowId === browserAPI.windows.WINDOW_ID_NONE) {
+    console.log('Window unfocused — stopping timer')
+    await stopTimer()
+    return
+  }
+
+  try {
+    const [activeTab] = await browserAPI.tabs.query({ active: true, windowId })
+    if (activeTab && activeTab.id != null) {
+      console.log('Window focused again — resuming tracking')
+      await startTimer(activeTab.id)
+    }
+  } catch (e) {
+    console.error('Error resuming timer on focus:', e)
+  }
+})
+
+browserAPI.windows.onRemoved.addListener(async (windowId) => {
+  console.log(`Window ${windowId} closed — stopping timer`)
+  await stopTimer()
 })
