@@ -311,18 +311,19 @@ function createDetailChart(canvas: CanvasRenderingContext2D, websites: string[],
   })
 }
 
-const maxItems = 5
+//The commeneted code below is for "Show All" functionality, disabled for now, not sure if I should remove it entirely.
+//const maxItems = undefined!
 function renderProgressBars(websites: string[], values: number[], totalSpentTime: number) {
   const entriesContainer = document.getElementById('entriesContainer') as HTMLDivElement
   entriesContainer.innerHTML = ''
 
   if (drillState.domain) {
-  const domainLabel = document.createElement('span')
-  domainLabel.classList.add('text-xl', 'font-bold')
+    const domainLabel = document.createElement('span')
+    domainLabel.classList.add('text-xl', 'font-bold')
     domainLabel.textContent = `${formatKey(drillState.domain)}`
 
-  const backBtn = document.createElement('button')
-  backBtn.classList.add('inline', 'mr-4', 'mb-4')
+    const backBtn = document.createElement('button')
+    backBtn.classList.add('inline', 'mr-4', 'mb-4')
     backBtn.textContent = '← Back'
 
     backBtn.onclick = () => {
@@ -334,7 +335,7 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
     entriesContainer.appendChild(domainLabel)
   }
 
-  const entries = websites.map((website, index) => {
+  /*const entries = */websites.map((website, index) => {
     const percentage = Math.round((values[index] / totalSpentTime) * 100)
     const entryContainer = createProgressEntry(website, values[index], percentage, index)
     if (!drillState.domain) {
@@ -347,7 +348,7 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
     entriesContainer.appendChild(entryContainer)
     return entryContainer
   })
-
+  /*
   if (websites.length > maxItems) {
     const showMoreButton = document.createElement('button')
     showMoreButton.textContent = 'Show All'
@@ -360,7 +361,7 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
     })
     entriesContainer.appendChild(showMoreButton)
   }
-
+  */
   const totalTime = document.getElementById('dayTotal') as HTMLDivElement
   totalTime.textContent = formatValue(totalSpentTime) as string
 }
@@ -368,11 +369,11 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
 function createProgressEntry(website: string, value: number, percentage: number, index: number): HTMLDivElement {
   const entryContainer = document.createElement('div')
   entryContainer.classList.add('entryContainer')
-
+  /*
   if (index >= maxItems) {
     entryContainer.classList.add('hidden')
   }
-
+  */
   const labelDiv = document.createElement('div')
   const labelText = document.createElement('a')
   labelText.classList.add('text-base')
