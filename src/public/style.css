@@ -22,7 +22,7 @@
 @layer base {
   html,
   body {
-    @apply m-0 flex h-full flex-col;
+    @apply m-0 flex h-full flex-col font-mono;
   }
 
   body {
@@ -35,7 +35,7 @@
 
   button,
   select {
-    @apply text-text cursor-pointer rounded border border-[var(--special-color-light)] bg-[var(--special-color-dark)] px-3 py-2 transition-colors duration-300 hover:bg-[var(--special-color-light)];
+    @apply text-text cursor-pointer rounded border border-(--special-color-light) bg-(--special-color-dark) px-3 py-2 transition-colors duration-300 hover:bg-(--special-color-light);
   }
 
   main {
@@ -47,12 +47,12 @@
   }
 
   a {
-    @apply text-text no-underline transition-colors duration-300 hover:text-[var(--special-color-light)];
+    @apply text-text no-underline transition-colors duration-300 hover:text-(--special-color-light);
   }
 }
 
 ::selection {
-  @apply bg-[var(--special-color-light)];
+  @apply bg-(--special-color-light);
 }
 
 #entriesContainer {
@@ -64,27 +64,39 @@
 }
 
 progress {
-  @apply h-4 w-full appearance-none overflow-hidden rounded-full border bg-[var(--progress-bar-background)];
+  @apply h-4 w-full appearance-none overflow-hidden rounded-full border bg-(--progress-bar-background);
 }
 
 progress::-webkit-progress-bar {
-  @apply rounded-full bg-[var(--progress-bar-background)];
+  @apply rounded-full bg-(--progress-bar-background);
 }
 
 progress::-webkit-progress-value {
-  @apply rounded-l-full bg-[var(--progress-bar-fill)];
+  @apply rounded-l-full bg-(--progress-bar-fill);
 }
 
 progress::-moz-progress-bar {
-  @apply rounded-l-full bg-[var(--progress-bar-fill)];
+  @apply rounded-l-full bg-(--progress-bar-fill);
 }
 
 #popup {
-  @apply bg-background fixed top-1/2 left-1/2 z-20 hidden h-[80vh] w-[50vw] -translate-x-1/2 -translate-y-1/2 transform overflow-auto rounded-lg border border-[var(--special-color-light)] p-4 shadow-lg;
+  @apply bg-background fixed top-1/2 left-1/2 z-20 hidden h-[80vh] w-[50vw] -translate-x-1/2 -translate-y-1/2 transform overflow-auto rounded-lg border border-(--special-color-light) p-4 shadow-lg;
 }
 
 #popup::-webkit-scrollbar {
   display: none;
+}
+
+#overlay {
+  @apply hidden;
+}
+
+#overlay.open {
+  display: block !important;
+}
+
+#popup.open {
+  display: block !important;
 }
 
 .settingSection {
@@ -92,7 +104,78 @@ progress::-moz-progress-bar {
 }
 
 .sectionContent {
-  @apply border-l-4 border-[var(--special-color-dark)] pl-4;
+  position: relative;
+  padding-left: 1rem;
+  border-bottom-left-radius: 1px;
+}
+
+.sectionContent::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -0.5rem;
+  bottom: -0.5rem;
+  width: 1px;
+  background: var(--special-color-light);
+  border-radius: 1rem;
+}
+
+.popup-header {
+  @apply mb-4 flex items-start justify-between;
+}
+
+.popup-header h2 {
+  @apply m-0 text-xl font-extrabold;
+}
+
+.close-btn {
+  @apply rounded-full border-0 px-2 py-1 text-sm cursor-pointer bg-background hover:text-(--special-color-light);
+}
+
+.popup-body {
+  @apply space-y-4;
+}
+
+.section-head .muted {
+  @apply text-sm font-normal text-text/70;
+}
+
+.setting-row {
+  @apply mt-3 flex items-center justify-between gap-4;
+}
+
+.control {
+  @apply flex items-center gap-3;
+}
+
+.hue-number {
+  @apply w-20 rounded border px-2 py-1 text-sm border-(--special-color-light) bg-(--special-color-dark);
+}
+
+.hue-range {
+  @apply flex-1 h-2.5;
+  background: linear-gradient(to right, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%), hsl(360, 100%, 50%));
+}
+
+.muted {
+  color: var(--color-text);
+  opacity: 0.7;
+}
+
+.btn {
+  @apply inline-flex items-center gap-2 rounded px-3 py-2 text-sm border;
+}
+
+.btn-primary {
+  @apply bg-(--special-color-light) text-white border-(--special-color-light);
+}
+
+.btn-secondary {
+  @apply bg-(--special-color-dark) text-text border-(--special-color-light);
+}
+
+.popup-footer {
+  @apply mt-4 text-right;
 }
 
 .icon {
@@ -122,7 +205,7 @@ progress::-moz-progress-bar {
 }
 
 .select {
-  @apply mr-4 inline-flex overflow-hidden rounded-lg border border-[var(--special-color-light)] font-sans;
+  @apply mr-4 inline-flex overflow-hidden rounded-lg border border-(--special-color-light) font-sans;
 }
 
 .select input[type='radio'] {
@@ -130,13 +213,13 @@ progress::-moz-progress-bar {
 }
 
 .select label {
-  @apply text-text flex-1 cursor-pointer bg-[var(--special-color-dark)] px-3 py-2 text-center text-sm transition-colors duration-200 select-none;
+  @apply text-text flex-1 cursor-pointer bg-(--special-color-dark) px-3 py-2 text-center text-sm transition-colors duration-200 select-none;
 }
 
 .select label + input + label {
-  @apply border-l border-[var(--special-color-light)];
+  @apply border-l border-(--special-color-light);
 }
 
 .select input:checked + label {
-  @apply text-text bg-[var(--special-color-light)];
+  @apply text-text bg-(--special-color-light);
 }

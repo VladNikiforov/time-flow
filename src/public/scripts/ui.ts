@@ -1,6 +1,6 @@
 import { formatDate, formatValue, getValues, getTotal, formatLabels, processAggregatedData, formatKey, getDomain } from './utils'
 import { getUiHue, getIsDark } from './theme'
-import { getStartDate, navigateChart, getCurrentStartDate, generateDateRange, fillMissingDates, getPreviousPeriodRange } from './date'
+import { getStartDate, navigateChart, getCurrentStartDate, setCurrentStartDate, generateDateRange, fillMissingDates, getPreviousPeriodRange } from './date'
 import { fullData, FullData } from '../main'
 import { RawData, today } from '../../background'
 import Chart from 'chart.js/auto'
@@ -206,6 +206,16 @@ export function handleChartClick(elements: Array<{ index: number }>, dates: stri
   if (elements.length == 0) return
   const index = elements[0].index
   const label = dates[index]
+  if (getViewRange() !== 'Day') {
+    const parts = label.split('-').map((v) => parseInt(v, 10))
+    if (parts.length === 3) {
+      const [y, m, d] = parts
+      setCurrentStartDate(new Date(y, m - 1, d))
+    }
+    viewRange = 'Day'
+    updateUI()
+  }
+
   renderDetailChart(data[label], detailChart.getContext('2d'))
   dayDate.textContent = formatDate(label)
 }
@@ -406,9 +416,13 @@ const closeButton = document.getElementById('closeButton') as HTMLButtonElement
 
 type Action = 'open' | 'close'
 function togglePopup(action: Action) {
-  const actionCheck = action === 'open' ? 'block' : 'none'
-  overlay.style.display = actionCheck
-  popup.style.display = actionCheck
+  if (action === 'open') {
+    overlay.classList.add('open')
+    popup.classList.add('open')
+  } else {
+    overlay.classList.remove('open')
+    popup.classList.remove('open')
+  }
 }
 
 settingsIcon.addEventListener('click', () => togglePopup('open'))

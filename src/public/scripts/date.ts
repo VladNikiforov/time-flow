@@ -40,6 +40,12 @@ export function navigateChart(direction: number) {
 export function getCurrentStartDate() {
   return currentStartDate
 }
+
+export function setCurrentStartDate(date: Date) {
+  currentStartDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  currentStartDate.setHours(0, 0, 0, 0)
+}
+
 export function generateDateRange(startDate: Date) {
   let dateRange: string[] = []
   if (getViewRange() === 'Week') {

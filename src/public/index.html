@@ -36,7 +36,7 @@
     </nav>
 
     <main>
-      <div class="flex-shrink-0">
+      <div class="shrink-0">
         <span class="mr-4 inline">
           <button id="prevButton">&lt;</button>
           <button id="nextButton">&gt;</button>
@@ -54,7 +54,7 @@
       <div class="flex flex-1 overflow-auto p-2">
         <canvas id="detailChart" class="mr-4 h-full w-auto"></canvas>
         <div id="dayStats" class="flex h-full w-full flex-col gap-4">
-          <div class="flex flex-[7] flex-col">
+          <div class="flex flex-7 flex-col">
             <div id="dayTotal" class="mb-2 text-center text-4xl">Total Time</div>
             <div id="entriesContainer"></div>
           </div>
@@ -66,40 +66,55 @@
     </main>
 
     <aside>
-      <div id="overlay" class="fixed top-0 left-0 z-10 hidden h-full w-full bg-black/10 backdrop-blur-sm"></div>
+      <div id="overlay" class="fixed top-0 left-0 z-10 h-full w-full bg-black/10 backdrop-blur-sm"></div>
       <div id="popup">
-        <h2>Settings</h2>
-        <div class="settingSection">
-          <h3>Appearance</h3>
-          <div class="sectionContent">
-            <div>
-              <label for="themeSelect">Theme:</label>
-              <div id="themeSelect" class="select mb-2">
-                <input type="radio" name="theme" id="theme-system" value="system" />
-                <label for="theme-system">System</label>
-                <input type="radio" name="theme" id="theme-light" value="light" />
-                <label for="theme-light">Light</label>
-                <input type="radio" name="theme" id="theme-dark" value="dark" />
-                <label for="theme-dark">Dark</label>
+        <div class="popup-header">
+          <h2>Settings</h2>
+          <button id="closeButton" class="close-btn">✕</button>
+        </div>
+
+        <div class="popup-body">
+          <section class="settingSection section-card">
+            <div class="section-head">
+              <h3>Appearance</h3>
+              <p class="muted">Adjust theme and accent for the UI</p>
+            </div>
+            <div class="sectionContent">
+              <div class="setting-row">
+                <label for="themeSelect" class="control">Theme</label>
+                <div id="themeSelect" class="select">
+                  <input type="radio" name="theme" id="theme-system" value="system" />
+                  <label for="theme-system">System</label>
+                  <input type="radio" name="theme" id="theme-light" value="light" />
+                  <label for="theme-light">Light</label>
+                  <input type="radio" name="theme" id="theme-dark" value="dark" />
+                  <label for="theme-dark">Dark</label>
+                </div>
+              </div>
+
+              <div class="setting-row">
+                <label for="hueSlider" class="control">Accent Hue</label>
+                <div class="control">
+                  <input type="number" id="hueValue" min="0" max="360" class="hue-number" />
+                  <input type="range" id="hueSlider" min="0" max="360" class="hue-range" />
+                </div>
               </div>
             </div>
-            <div>
-              <label for="hueSlider">Hue:</label>
-              <input class="text-text" type="number" id="hueValue" class="icon w-12 underline" min="0" max="360" />
-              <input type="range" id="hueSlider" min="0" max="360" />
+          </section>
+
+          <section class="settingSection section-card">
+            <div class="section-head">
+              <h3>Data</h3>
+              <p class="muted">Export or import your tracked data</p>
             </div>
-          </div>
+            <div class="sectionContent setting-row">
+              <div class="control">
+                <button id="exportData" class="btn">Export</button>
+                <button id="importData" class="btn">Import</button>
+              </div>
+            </div>
+          </section>
         </div>
-
-        <div class="settingSection">
-          <h3>Data</h3>
-          <div class="sectionContent">
-            <button id="exportData">export</button>
-            <button id="importData">import</button>
-          </div>
-        </div>
-
-        <button id="closeButton" class="mt-4 block">Close</button>
       </div>
     </aside>
 
