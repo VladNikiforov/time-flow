@@ -1,8 +1,15 @@
 <!-- TimeFlow - browser extension; (c) 2024 VladNikiforov; GPLv3, see LICENSE file -->
 
-<html class="w-full" lang="en">
+<html lang="en">
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="../public/style.css" />
+    <style>
+      /* Ensure extension popup has a reasonable minimum width in Chrome */
+      html, body {
+        min-width: 320px;
+      }
+    </style>
   </head>
   <body>
     <div class="flex">
