@@ -129,7 +129,7 @@ progress::-moz-progress-bar {
 }
 
 .close-btn {
-  @apply rounded-full border-0 px-2 py-1 text-sm cursor-pointer bg-background hover:text-(--special-color-light);
+  @apply bg-background cursor-pointer rounded-full border-0 px-2 py-1 text-sm hover:text-(--special-color-light);
 }
 
 .popup-body {
@@ -137,7 +137,7 @@ progress::-moz-progress-bar {
 }
 
 .section-head .muted {
-  @apply text-sm font-normal text-text/70;
+  @apply text-text/70 text-sm font-normal;
 }
 
 .setting-row {
@@ -149,11 +149,11 @@ progress::-moz-progress-bar {
 }
 
 .hue-number {
-  @apply w-20 rounded border px-2 py-1 text-sm border-(--special-color-light) bg-(--special-color-dark);
+  @apply w-20 rounded border border-(--special-color-light) bg-(--special-color-dark) px-2 py-1 text-sm;
 }
 
 .hue-range {
-  @apply flex-1 h-2.5;
+  @apply h-2.5 flex-1;
   background: linear-gradient(to right, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%), hsl(360, 100%, 50%));
 }
 
@@ -163,15 +163,15 @@ progress::-moz-progress-bar {
 }
 
 .btn {
-  @apply inline-flex items-center gap-2 rounded px-3 py-2 text-sm border;
+  @apply inline-flex items-center gap-2 rounded border px-3 py-2 text-sm;
 }
 
 .btn-primary {
-  @apply bg-(--special-color-light) text-white border-(--special-color-light);
+  @apply border-(--special-color-light) bg-(--special-color-light) text-white;
 }
 
 .btn-secondary {
-  @apply bg-(--special-color-dark) text-text border-(--special-color-light);
+  @apply text-text border-(--special-color-light) bg-(--special-color-dark);
 }
 
 .popup-footer {

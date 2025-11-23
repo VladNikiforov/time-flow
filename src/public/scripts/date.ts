@@ -3,9 +3,11 @@ import { getViewRange, updateChart } from './ui'
 import { toLocalISODate } from '../../background'
 
 let currentStartDate: Date
+
 export function getStartDate() {
   const now = new Date()
   currentStartDate = (getViewRange() === 'Week' ? getStartOfWeek : getStartOfMonth)(now)
+  return currentStartDate
 }
 
 function getStartOfWeek(date: Date) {
@@ -26,6 +28,7 @@ export function getDaysInMonth(date: Date) {
 }
 
 export function navigateChart(direction: number) {
+  if (!currentStartDate) getStartDate()
   if (getViewRange() === 'Week') {
     const date = currentStartDate.getDate()
     currentStartDate.setDate(date + direction * 7)
@@ -38,6 +41,7 @@ export function navigateChart(direction: number) {
 }
 
 export function getCurrentStartDate() {
+  if (!currentStartDate) return getStartDate()
   return currentStartDate
 }
 

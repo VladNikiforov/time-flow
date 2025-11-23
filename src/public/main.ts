@@ -26,6 +26,19 @@ browserAPI.runtime.onMessage.addListener((message: any) => {
 })
 ;(browserAPI as typeof browser).runtime.sendMessage({ action: 'requestAllData' })
 
+let resizeTimer: number | undefined
+window.addEventListener('resize', () => {
+  if (resizeTimer) window.clearTimeout(resizeTimer)
+  resizeTimer = window.setTimeout(() => {
+    try {
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop || 0
+      location.reload()
+    } catch (e) {
+      console.error('Error reloading after resize:', e)
+    }
+  }, 300)
+})
+
 const exportDataButton = document.getElementById('exportData') as HTMLButtonElement
 const importDataButton = document.getElementById('importData') as HTMLButtonElement
 

@@ -213,6 +213,10 @@ export function handleChartClick(elements: Array<{ index: number }>, dates: stri
       setCurrentStartDate(new Date(y, m - 1, d))
     }
     viewRange = 'Day'
+    // Ensure the view-range input UI matches the programmatic change
+    viewRangeElement.forEach((radio: HTMLInputElement) => {
+      radio.checked = radio.value === 'Day'
+    })
     updateUI()
   }
 
@@ -345,7 +349,7 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
     entriesContainer.appendChild(domainLabel)
   }
 
-  /*const entries = */websites.map((website, index) => {
+  /*const entries = */ websites.map((website, index) => {
     const percentage = Math.round((values[index] / totalSpentTime) * 100)
     const entryContainer = createProgressEntry(website, values[index], percentage, index)
     if (!drillState.domain) {
