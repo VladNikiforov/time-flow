@@ -255,8 +255,7 @@ function aggregateEntries(entries: RawData[]): Record<string, number> {
   }
   function ensureFullUrl(raw: string) {
     if (!raw) return '#'
-    if (/^https?:\/\//i.test(raw)) return raw
-    return `https://${raw.replace(/^\/\//, '')}`
+    return raw
   }
   if (drillState.domain) {
     const filtered = entries.filter((e) => getDomain(e.website || '') === drillState.domain)
@@ -342,7 +341,7 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
 
     backBtn.onclick = () => {
       drillState = {}
-      updateChart()
+      renderDetailChart(lastEntries, lastCanvas)
     }
 
     entriesContainer.appendChild(backBtn)

@@ -4,7 +4,6 @@ import { browserAPI, RawData, today } from '../background'
 import { initTheme, getFromStorage } from './scripts/theme'
 import { getStartDate } from './scripts/date'
 import { updateUI, updateChart } from './scripts/ui'
-import './style.css'
 
 initTheme()
 
@@ -31,7 +30,6 @@ window.addEventListener('resize', () => {
   if (resizeTimer) window.clearTimeout(resizeTimer)
   resizeTimer = window.setTimeout(() => {
     try {
-      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop || 0
       location.reload()
     } catch (e) {
       console.error('Error reloading after resize:', e)
@@ -89,6 +87,7 @@ importFileInput.addEventListener('change', (event: any) => {
       updateChart()
       updateUI()
       alert('Data imported successfully!')
+      location.reload()
     } catch (err) {
       console.error('Import error:', err)
       alert('Failed to import data')
