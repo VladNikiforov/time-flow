@@ -22,5 +22,16 @@
     "48": "assets/favicon/48.png",
     "128": "assets/favicon/128.png"
   },
-  "content_security_policy": "script-src 'self'; object-src 'self';"
+  "content_security_policy": "script-src 'self'; object-src 'self';",
+
+  "browser_specific_settings": {
+   "gecko": {
+     "id": "{b7311499-6439-4548-b302-3474b05c642b}",
+      "data_collection_permissions": {
+        "required": ["none"],
+        "collect_usage": false,
+        "collect_crash": false
+      }
+    }
+  }
 }
