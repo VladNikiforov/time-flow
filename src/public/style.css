@@ -64,7 +64,7 @@
 }
 
 progress {
-  @apply h-4 w-full appearance-none overflow-hidden rounded-full border bg-(--progress-bar-background);
+  @apply h-4 w-full mx-2 appearance-none overflow-hidden rounded-full border bg-(--progress-bar-background);
 }
 
 progress::-webkit-progress-bar {
@@ -189,6 +189,14 @@ progress::-moz-progress-bar {
 
 .entryContainer {
   @apply border-text mb-4 grid grid-cols-3 rounded-lg border p-4 transition-colors duration-200 hover:bg-white/10;
+}
+
+.entry-label {
+  @apply overflow-hidden;
+}
+
+.entry-label a {
+  @apply block truncate;
 }
 
 #hueSlider {

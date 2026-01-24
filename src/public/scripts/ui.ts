@@ -7,7 +7,7 @@ import Chart from 'chart.js/auto'
 
 declare global {
   interface Window {
-    Chart: Chart
+    Chart: typeof Chart
     mainChartInstance: Chart
     detailChartInstance: Chart
   }
@@ -388,6 +388,7 @@ function createProgressEntry(website: string, value: number, percentage: number,
   }
   */
   const labelDiv = document.createElement('div')
+  labelDiv.classList.add('entry-label')
   const labelText = document.createElement('a')
   labelText.classList.add('text-base')
   labelText.target = '_blank'
