@@ -2,29 +2,28 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev:chrome": "cross-env BROWSER=chrome vite build --watch --mode development",
-    "dev:firefox": "cross-env BROWSER=firefox vite build --watch --mode development",
-    "build:chrome": "cross-env BROWSER=chrome vite build --mode production",
-    "build:firefox": "cross-env BROWSER=firefox vite build --mode production",
-    "format": "prettier --write ."
-  },
-  "devDependencies": {
-    "@tailwindcss/vite": "^4.1.13",
-    "@types/chart.js": "^4.0.1",
-    "@types/chrome": "^0.1.12",
-    "@types/firefox-webext-browser": "^120.0.4",
-    "@types/node": "^24.5.2",
-    "cross-env": "^10.0.0",
-    "prettier": "^3.6.2",
-    "prettier-plugin-tailwindcss": "^0.6.14",
-    "tailwindcss": "^4.1.13",
-    "tldts": "^7.0.15",
-    "typescript": "^5.9.2",
-    "vite": "^7.1.6",
-    "vite-plugin-static-copy": "^3.1.2"
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox",
+    "postinstall": "wxt prepare"
   },
   "dependencies": {
     "chart.js": "^4.5.0",
-    "vis-timeline": "^8.3.1"
+    "vis-timeline": "^8.3.1",
+    "tldts": "^7.0.15"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.13",
+    "@types/chrome": "^0.1.12",
+    "@types/node": "^24.5.2",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.6",
+    "wxt": "latest"
   }
 }

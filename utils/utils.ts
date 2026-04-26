@@ -1,7 +1,5 @@
-import { getViewMode, getViewRange } from './ui'
-import { FullData } from '../main'
-import { RawData } from '../../background'
 import { parse as parseDomain } from 'tldts'
+import { RawData, FullData } from './types'
 
 export function formatDate(date: string) {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -32,12 +30,13 @@ export function formatValue(value: number | { start: number; end: number }) {
   } else {
     seconds = 0
   }
+  // @ts-ignore
   if (getViewMode() === 'time') {
     const h = Math.floor(seconds / 3600)
     const m = Math.floor((seconds % 3600) / 60)
     const s = seconds % 60
     return h ? `${h}h${m ? ` ${m}m` : ''}${s ? ` ${s}s` : ''}` : m ? `${m}m${s ? ` ${s}s` : ''}` : `${s}s`
-  } else if (getViewMode() === 'sessions') {
+  } else {
     return `${seconds} session${seconds === 1 ? '' : 's'}`
   }
 }
@@ -45,6 +44,7 @@ export function formatValue(value: number | { start: number; end: number }) {
 export function getValues(dates: string[], data: FullData): number[] {
   return dates.map((date: string) => {
     if (!data[date]) return 0
+    // @ts-ignore
     if (getViewMode() === 'time') {
       return data[date].reduce((sum: number, entry: RawData) => {
         let seconds: number
@@ -70,6 +70,7 @@ export function getTotal(values: number[]) {
 export function formatLabels(dates: string[]): (string | number)[] {
   return dates.map((date: string) => {
     const d = new Date(date)
+    // @ts-ignore
     return getViewRange() === 'Week' ? `${d.toLocaleDateString('en-US', { weekday: 'short' })} ${d.getDate()}` : d.getDate()
   })
 }

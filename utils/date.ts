@@ -1,11 +1,17 @@
-import { FullData } from '../main'
-import { getViewRange, updateChart } from './ui'
-import { toLocalISODate } from '../../background'
+import { FullData } from './types'
+
+export function toLocalISODate(date: Date): string {
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+  return local.toISOString().slice(0, 10)
+}
+
+export const today = toLocalISODate(new Date())
 
 let currentStartDate: Date
 
 export function getStartDate() {
   const now = new Date()
+  // @ts-ignore
   currentStartDate = (getViewRange() === 'Week' ? getStartOfWeek : getStartOfMonth)(now)
   return currentStartDate
 }
@@ -29,6 +35,7 @@ export function getDaysInMonth(date: Date) {
 
 export function navigateChart(direction: number) {
   if (!currentStartDate) getStartDate()
+  // @ts-ignore
   if (getViewRange() === 'Week') {
     const date = currentStartDate.getDate()
     currentStartDate.setDate(date + direction * 7)
@@ -37,6 +44,7 @@ export function navigateChart(direction: number) {
     const month = currentStartDate.getMonth() + direction
     currentStartDate = new Date(year, month, 1)
   }
+  // @ts-ignore
   updateChart()
 }
 
@@ -52,6 +60,7 @@ export function setCurrentStartDate(date: Date) {
 
 export function generateDateRange(startDate: Date) {
   let dateRange: string[] = []
+  // @ts-ignore
   if (getViewRange() === 'Week') {
     for (let i = 0; i < 7; i++) {
       const date = new Date(startDate)
@@ -81,6 +90,7 @@ export function fillMissingDates(data: FullData, dateRange: string[]) {
 
 export function getPreviousPeriodRange(currentStartDate: Date): string[] {
   let prevStart: Date
+  // @ts-ignore
   if (getViewRange() === 'Week') {
     prevStart = new Date(currentStartDate)
     prevStart.setDate(currentStartDate.getDate() - 7)

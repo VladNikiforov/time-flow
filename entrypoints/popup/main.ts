@@ -1,9 +1,9 @@
 /* TimeFlow - browser extension; (c) 2024 VladNikiforov; GPLv3, see LICENSE file */
 
-import { browserAPI, addonPageURL, RawData, today } from '../background'
-import '../public/style.css'
+import '../../assets/style.css'
 import Chart from 'chart.js/auto'
 import { parse as parseDomain } from 'tldts'
+import { RawData, FullData } from '../../utils/types'
 
 declare global {
   interface Window {
@@ -60,15 +60,11 @@ function aggregateEntries(entries: RawData[]): Record<string, number> {
   return Object.fromEntries(Object.entries(aggregatedData).sort((a, b) => b[1] - a[1]))
 }
 
-type FullData = {
-  [date: string]: RawData[]
-}
-
 const fullData: FullData = {}
 
 let uiHue = 210 // default
 
-browserAPI.runtime.onMessage.addListener((message: any) => {
+browser.runtime.onMessage.addListener((message: any) => {
   if (message.action !== 'sendData') return
   console.log('Received sendData message:', message)
 
@@ -79,12 +75,14 @@ browserAPI.runtime.onMessage.addListener((message: any) => {
 const pageButton = document.getElementById('main-page') as HTMLButtonElement
 const pauseBtn = document.getElementById('pause') as HTMLImageElement
 
-pageButton.addEventListener('click', () => {
-  browserAPI.tabs.create({ url: addonPageURL })
-})
+if (pageButton) {
+  pageButton.addEventListener('click', () => {
+    browser.tabs.create({ url: '/main.html' })
+  })
+}
 
 function getFromStorage(key: any, callback: any) {
-  browserAPI.storage.local.get([key]).then((result) => {
+  browser.storage.local.get([key]).then((result) => {
     const value = result[key]
     console.log(key === undefined ? 'No data found for key:' : 'Data retrieved:', key, value)
     callback(value)
@@ -99,8 +97,10 @@ function uiHueLogic(uiHueValue: number) {
     return theme === 'dark' ? `hsla(${colorFormula}, 0.2)` : `hsl(${colorFormula})`
   }
 
-  pageButton.style.backgroundColor = colorAlgorithm('dark')
-  pageButton.style.borderColor = colorAlgorithm('light')
+  if (pageButton) {
+    pageButton.style.backgroundColor = colorAlgorithm('dark')
+    pageButton.style.borderColor = colorAlgorithm('light')
+  }
 }
 
 function colorAlgorithm(color: 'dark' | 'light', index = 0): string {
@@ -122,31 +122,37 @@ function applyThemePref(pref: any) {
 document.addEventListener('DOMContentLoaded', () => {
   getFromStorage('uiHue', uiHueLogic)
   getFromStorage('theme', applyThemePref)
-  ;(browserAPI as typeof browser).runtime.sendMessage({ action: 'requestAllData' })
+  browser.runtime.sendMessage({ action: 'requestAllData' })
 })
 
 function updatePauseBtn(paused: boolean) {
-  pauseBtn.src = `../assets/${paused ? 'resume' : 'pause'}.svg`
+  if (pauseBtn) {
+    // In WXT, assets in public/ are served from the root
+    pauseBtn.src = `/${paused ? 'resume' : 'pause'}.svg`
+  }
 }
 
 function getPauseState() {
-  ;(browserAPI as typeof browser).runtime.sendMessage({ action: 'getPause' } as any, (response: any) => {
+  browser.runtime.sendMessage({ action: 'getPause' }).then((response: any) => {
     updatePauseBtn(response?.isPaused)
   })
 }
 
-pauseBtn.addEventListener('click', () => {
-  ;(browserAPI as typeof browser).runtime.sendMessage({ action: 'getPause' } as any, (response: any) => {
-    const newPause = !response?.isPaused
-    ;(browserAPI as typeof browser).runtime.sendMessage({ action: 'setPause', value: newPause } as any, () => {
-      updatePauseBtn(newPause)
+if (pauseBtn) {
+  pauseBtn.addEventListener('click', () => {
+    browser.runtime.sendMessage({ action: 'getPause' }).then((response: any) => {
+      const newPause = !response?.isPaused
+      browser.runtime.sendMessage({ action: 'setPause', value: newPause }).then(() => {
+        updatePauseBtn(newPause)
+      })
     })
   })
-})
+}
 
 getPauseState()
 
 function updatePopup() {
+  // @ts-ignore
   const entries = fullData[today] || []
   renderDetailChart(entries)
 }
@@ -156,25 +162,28 @@ function renderDetailChart(entries: RawData[]) {
   const { websites, values, totalSpentTime } = processAggregatedData(aggregatedData)
 
   const detailChart = document.getElementById('detailChart') as HTMLCanvasElement
+  if (!detailChart) return
   const canvas = detailChart.getContext('2d')
   if (!canvas) return
 
   // Destroy previous chart if exists
-  if ((window as any).detailChartInstance) {
-    (window as any).detailChartInstance.destroy()
+  if (window.detailChartInstance) {
+    window.detailChartInstance.destroy()
   }
 
   createDetailChart(canvas, websites, values)
 
   const dayTotal = document.getElementById('dayTotal') as HTMLDivElement
-  dayTotal.textContent = formatValue(totalSpentTime) as string
+  if (dayTotal) {
+    dayTotal.textContent = formatValue(totalSpentTime) as string
+  }
 }
 
 function createDetailChart(canvas: CanvasRenderingContext2D, websites: string[], values: number[]) {
   const backgroundColors = websites.map((_, index) => colorAlgorithm('dark', index))
   const borderColors = websites.map((_, index) => colorAlgorithm('light', index))
 
-  ;(window as any).detailChartInstance = new Chart(canvas, {
+  window.detailChartInstance = new Chart(canvas, {
     type: 'doughnut',
     data: {
       labels: websites,
@@ -195,6 +204,7 @@ function createDetailChart(canvas: CanvasRenderingContext2D, websites: string[],
         legend: { display: false },
         tooltip: {
           callbacks: {
+            // @ts-ignore
             label: (context: any) => formatValue(context.raw),
           },
         },

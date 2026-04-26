@@ -1,29 +1,27 @@
 /* TimeFlow - browser extension; (c) 2024 VladNikiforov; GPLv3, see LICENSE file */
 
-import { browserAPI, RawData, today } from '../background'
-import { initTheme, getFromStorage } from './scripts/theme'
-import { getStartDate } from './scripts/date'
-import { updateUI, updateChart } from './scripts/ui'
+import '../../assets/style.css'
+import { RawData, FullData } from '../../utils/types'
 
+// @ts-ignore
 initTheme()
 
-export type FullData = {
-  [date: string]: RawData[]
-}
-
-export const fullData: FullData = {}
-
-browserAPI.runtime.onMessage.addListener((message: any) => {
+browser.runtime.onMessage.addListener((message: any) => {
   if (message.action !== 'sendData') return
   console.log('Received sendData message:', message)
 
+  // @ts-ignore
   Object.assign(fullData, message.data)
+  // @ts-ignore
   getFromStorage('uiHue')
+  // @ts-ignore
   getFromStorage('theme')
+  // @ts-ignore
   getStartDate()
+  // @ts-ignore
   updateUI()
 })
-;(browserAPI as typeof browser).runtime.sendMessage({ action: 'requestAllData' })
+browser.runtime.sendMessage({ action: 'requestAllData' })
 
 let resizeTimer: number | undefined
 window.addEventListener('resize', () => {
@@ -46,17 +44,24 @@ importFileInput.accept = '.json,application/json,text/json'
 importFileInput.style.display = 'none'
 document.body.appendChild(importFileInput)
 
-exportDataButton.addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(fullData, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `TimeFlow Export ${today}.json`
-  a.click()
-  URL.revokeObjectURL(url)
-})
+if (exportDataButton) {
+  exportDataButton.addEventListener('click', () => {
+    // @ts-ignore
+    const blob = new Blob([JSON.stringify(fullData, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    // @ts-ignore
+    a.download = `TimeFlow Export ${today}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  })
+}
 
-importDataButton.addEventListener('click', () => importFileInput.click())
+if (importDataButton) {
+  importDataButton.addEventListener('click', () => importFileInput.click())
+}
+
 importFileInput.addEventListener('change', (event: any) => {
   const file = event.target.files[0]
   if (!file) return
@@ -70,21 +75,25 @@ importFileInput.addEventListener('change', (event: any) => {
 
       for (const [date, entries] of Object.entries(imported)) {
         if (!Array.isArray(entries)) continue
+        // @ts-ignore
         if (!fullData[date]) fullData[date] = []
         for (const entry of entries) {
           if (!entry?.website || entry.time == null) continue
+          // @ts-ignore
           fullData[date].push(entry)
         }
       }
 
-      const settings = await new Promise<{ uiHue?: number; theme?: string }>((resolve) => {
-        browserAPI.storage.local.get(['uiHue', 'theme'], (result: any) => resolve(result))
-      })
-      await browserAPI.storage.local.clear()
-      await browserAPI.storage.local.set({ ...fullData, ...settings })
+      const settings = await browser.storage.local.get(['uiHue', 'theme'])
+      await browser.storage.local.clear()
+      // @ts-ignore
+      await browser.storage.local.set({ ...fullData, ...settings })
 
+      // @ts-ignore
       console.log('Updated fullData after import:', fullData)
+      // @ts-ignore
       updateChart()
+      // @ts-ignore
       updateUI()
       alert('Data imported successfully!')
       location.reload()

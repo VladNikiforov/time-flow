@@ -1,5 +1,4 @@
-import { browserAPI } from '../../background'
-import { updateChart, colorAlgorithm } from './ui'
+import { FullData } from './types'
 
 type ThemePref = 'system' | 'light' | 'dark'
 
@@ -14,18 +13,18 @@ const hueSlider = document.getElementById('hueSlider') as HTMLInputElement | nul
 const hueValue = document.getElementById('hueValue') as HTMLInputElement | null
 
 export function initTheme() {
-  browserAPI.storage.local.get(['theme', 'isDark', 'uiHue'], (result) => {
+  browser.storage.local.get(['theme', 'isDark', 'uiHue']).then((result) => {
     if (result.theme === undefined) {
       if (result.isDark !== undefined) {
         result.theme = result.isDark ? 'dark' : 'light'
-        browserAPI.storage.local.set({ theme: result.theme })
+        browser.storage.local.set({ theme: result.theme })
       } else {
-        browserAPI.storage.local.set({ theme: 'system' })
+        browser.storage.local.set({ theme: 'system' })
         result.theme = 'system'
       }
     }
 
-    if (result.uiHue === undefined) browserAPI.storage.local.set({ uiHue: 210 })
+    if (result.uiHue === undefined) browser.storage.local.set({ uiHue: 210 })
 
     themePref = result.theme
     applyThemePref()
@@ -49,17 +48,21 @@ export function initTheme() {
 
 function updateTheme() {
   document.documentElement.classList.toggle('dark', isDark)
-  updateChart()
+  // @ts-ignore
+  if (typeof updateChart === 'function') updateChart()
 }
 
 function updateHue() {
+  // @ts-ignore
   document.documentElement.style.setProperty('--special-color-dark', colorAlgorithm('dark'))
+  // @ts-ignore
   document.documentElement.style.setProperty('--special-color-light', colorAlgorithm('light'))
-  updateChart()
+  // @ts-ignore
+  if (typeof updateChart === 'function') updateChart()
 }
 
 export function getFromStorage(key: string) {
-  browserAPI.storage.local.get([key], (result) => {
+  browser.storage.local.get([key]).then((result) => {
     console.log(result[key] ? 'Data retrieved:' : 'No data found for key:', key, result[key])
 
     switch (key) {
@@ -86,7 +89,7 @@ export function getFromStorage(key: string) {
 }
 
 function saveToStorage(key: any, value: any) {
-  browserAPI.storage.local.set({ [key]: value }, () => {
+  browser.storage.local.set({ [key]: value }).then(() => {
     console.log('Data saved:', key, value)
   })
 }

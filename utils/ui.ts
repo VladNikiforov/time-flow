@@ -1,9 +1,5 @@
-import { formatDate, formatValue, getValues, getTotal, formatLabels, processAggregatedData, formatKey, getDomain } from './utils'
-import { getUiHue, getIsDark } from './theme'
-import { getStartDate, navigateChart, getCurrentStartDate, setCurrentStartDate, generateDateRange, fillMissingDates, getPreviousPeriodRange } from './date'
-import { fullData, FullData } from '../main'
-import { RawData, today } from '../../background'
 import Chart from 'chart.js/auto'
+import { RawData, FullData } from './types'
 
 declare global {
   interface Window {
@@ -14,6 +10,7 @@ declare global {
 }
 
 export function colorAlgorithm(color: 'dark' | 'light', index = 0): string {
+  // @ts-ignore
   const hue = (getUiHue() + index * 20) % 360
   const colorFormula = `${hue}, 48%, 52%`
   return color === 'dark' ? `hsla(${colorFormula}, 0.2)` : `hsl(${colorFormula})`
@@ -36,18 +33,18 @@ export const mainChartNav = document.getElementById('mainChartNav') as HTMLDivEl
 
 export function updateUI() {
   if (getViewRange() === 'Day') {
-    dayStats.style.display = 'flex'
-    detailChart.style.display = 'block'
-    mainChart.style.display = 'none'
-    mainChartNav.style.display = 'none'
-    dayDate.style.display = 'inline'
+    if (dayStats) dayStats.style.display = 'flex'
+    if (detailChart) detailChart.style.display = 'block'
+    if (mainChart) mainChart.style.display = 'none'
+    if (mainChartNav) mainChartNav.style.display = 'none'
+    if (dayDate) dayDate.style.display = 'inline'
   } else {
     destroyPreviousChart()
-    dayStats.style.display = 'none'
-    detailChart.style.display = 'none'
-    mainChart.style.display = 'block'
-    mainChartNav.style.display = 'inline'
-    dayDate.style.display = 'none'
+    if (dayStats) dayStats.style.display = 'none'
+    if (detailChart) detailChart.style.display = 'none'
+    if (mainChart) mainChart.style.display = 'block'
+    if (mainChartNav) mainChartNav.style.display = 'inline'
+    if (dayDate) dayDate.style.display = 'none'
   }
 }
 
@@ -55,6 +52,7 @@ viewRangeElement.forEach((radio: HTMLInputElement) => {
   radio.addEventListener('change', () => {
     viewRange = radio.value as ViewRange
 
+    // @ts-ignore
     getStartDate()
 
     updateUI()
@@ -80,11 +78,13 @@ export function getViewMode(): ViewMode {
 const prevButton = document.getElementById('prevButton') as HTMLButtonElement
 const nextButton = document.getElementById('nextButton') as HTMLButtonElement
 
-prevButton.addEventListener('click', () => (getViewRange() === 'Day' ? navigateStats : navigateChart)(-1))
-nextButton.addEventListener('click', () => (getViewRange() === 'Day' ? navigateStats : navigateChart)(1))
+if (prevButton) prevButton.addEventListener('click', () => (getViewRange() === 'Day' ? navigateStats : navigateChart)(-1))
+if (nextButton) nextButton.addEventListener('click', () => (getViewRange() === 'Day' ? navigateStats : navigateChart)(1))
 
 export function updateChart() {
+  // @ts-ignore
   const dateRange = generateDateRange(getCurrentStartDate())
+  // @ts-ignore
   const filledData = fillMissingDates(fullData, dateRange)
   if (getViewRange() === 'Day') {
     updateDayStats(dateRange, filledData)
@@ -94,22 +94,29 @@ export function updateChart() {
 }
 
 function updateDayStats(dateRange: string[], filledData: FullData) {
+  // @ts-ignore
   const simulatedElement = [{ index: dateRange.indexOf(today) }]
   handleChartClick(simulatedElement, dateRange, filledData)
 }
 
 let currentStatIndex = 0
 export function navigateStats(direction: number) {
-  const dateRange: string[] | undefined = generateDateRange(getCurrentStartDate())
+  // @ts-ignore
+  const dateRange: string[] = generateDateRange(getCurrentStartDate())
+  // @ts-ignore
   const filledData = fillMissingDates(fullData, dateRange)
 
   currentStatIndex += direction
   if (currentStatIndex < 0) currentStatIndex = dateRange.length - 1
   if (currentStatIndex >= dateRange.length) currentStatIndex = 0
 
+  // @ts-ignore
   const currentIndex = (dateRange.indexOf(today) + currentStatIndex) % dateRange.length
 
-  dayDate.textContent = formatDate(dateRange[currentIndex])
+  if (dayDate) {
+    // @ts-ignore
+    dayDate.textContent = formatDate(dateRange[currentIndex])
+  }
 
   const simulatedElement = { index: currentIndex }
   handleChartClick([simulatedElement], dateRange, filledData)
@@ -119,6 +126,7 @@ export function renderMainChart(data: FullData) {
   if (window.mainChartInstance) window.mainChartInstance.destroy()
 
   const dates = Object.keys(data)
+  // @ts-ignore
   const values = getValues(dates, data)
 
   updateAverage(values)
@@ -128,25 +136,35 @@ export function renderMainChart(data: FullData) {
 export function updateAverage(values: any) {
   const averageValue = Math.round(values.reduce((sum: number, time: number) => sum + time, 0) / values.length)
   const averageElement = document.getElementById('averageTime') as HTMLDivElement
-  averageElement.textContent = `${getViewRange()} Average: ${formatValue(averageValue)}`
+  if (averageElement) {
+    // @ts-ignore
+    averageElement.textContent = `${getViewRange()} Average: ${formatValue(averageValue)}`
+  }
 
   const timeTrendElement = document.getElementById('timeTrend') as HTMLSpanElement
-  const prevRange = getPreviousPeriodRange(getCurrentStartDate())
-  const prevFilled = fillMissingDates(fullData, prevRange)
-  const prevValues = getValues(prevRange, prevFilled)
-  const prevTotal = getTotal(prevValues)
-  const currentTotal = getTotal(values)
+  if (timeTrendElement) {
+    // @ts-ignore
+    const prevRange = getPreviousPeriodRange(getCurrentStartDate())
+    // @ts-ignore
+    const prevFilled = fillMissingDates(fullData, prevRange)
+    // @ts-ignore
+    const prevValues = getValues(prevRange, prevFilled)
+    // @ts-ignore
+    const prevTotal = getTotal(prevValues)
+    // @ts-ignore
+    const currentTotal = getTotal(values)
 
-  const percent = prevTotal > 0 ? Math.round(((currentTotal - prevTotal) / prevTotal) * 100) : 0
-  const arrow = percent > 0 ? '↑' : percent < 0 ? '↓' : ''
-  const range = getViewRange() === 'Week' ? 'last week' : 'last month'
+    const percent = prevTotal > 0 ? Math.round(((currentTotal - prevTotal) / prevTotal) * 100) : 0
+    const arrow = percent > 0 ? '↑' : percent < 0 ? '↓' : ''
+    const range = getViewRange() === 'Week' ? 'last week' : 'last month'
 
-  if (prevTotal !== 0 && percent !== 0) {
-    timeTrendElement.textContent = `${arrow} ${Math.abs(percent)}% than ${range}`
-    timeTrendElement.style.color = `hsl(${percent > 0 ? 1 : 120}, 48%, 52%)`
-  } else {
-    timeTrendElement.textContent = prevTotal !== 0 ? `No change since ${range}` : ''
-    timeTrendElement.style.color = '#858585'
+    if (prevTotal !== 0 && percent !== 0) {
+      timeTrendElement.textContent = `${arrow} ${Math.abs(percent)}% than ${range}`
+      timeTrendElement.style.color = `hsl(${percent > 0 ? 1 : 120}, 48%, 52%)`
+    } else {
+      timeTrendElement.textContent = prevTotal !== 0 ? `No change since ${range}` : ''
+      timeTrendElement.style.color = '#858585'
+    }
   }
 }
 
@@ -160,6 +178,7 @@ export function createMainChart(canvas: HTMLCanvasElement | null, dates: string[
       tooltip: {
         callbacks: {
           title: (context: any) => context[0].label,
+          // @ts-ignore
           label: (context: any) => formatValue(context.raw),
         },
       },
@@ -168,16 +187,21 @@ export function createMainChart(canvas: HTMLCanvasElement | null, dates: string[
     scales: {
       x: {
         ticks: {
+          // @ts-ignore
           color: getIsDark() ? '#fff' : '#000',
         },
+        // @ts-ignore
         grid: { color: getIsDark() ? '#ffffff1a' : '#0000001a' },
       },
       y: {
         beginAtZero: true,
         ticks: {
+          // @ts-ignore
           callback: (value: any) => formatValue(value),
+          // @ts-ignore
           color: getIsDark() ? '#fff' : '#000',
         },
+        // @ts-ignore
         grid: { color: getIsDark() ? '#ffffff1a' : '#0000001a' },
       },
     },
@@ -187,6 +211,7 @@ export function createMainChart(canvas: HTMLCanvasElement | null, dates: string[
   window.mainChartInstance = new Chart(canvas, {
     type: 'bar',
     data: {
+      // @ts-ignore
       labels: formatLabels(dates),
       datasets: [
         {
@@ -210,6 +235,7 @@ export function handleChartClick(elements: Array<{ index: number }>, dates: stri
     const parts = label.split('-').map((v) => parseInt(v, 10))
     if (parts.length === 3) {
       const [y, m, d] = parts
+      // @ts-ignore
       setCurrentStartDate(new Date(y, m - 1, d))
     }
     viewRange = 'Day'
@@ -220,8 +246,12 @@ export function handleChartClick(elements: Array<{ index: number }>, dates: stri
     updateUI()
   }
 
-  renderDetailChart(data[label], detailChart.getContext('2d'))
-  dayDate.textContent = formatDate(label)
+  const ctx = detailChart ? detailChart.getContext('2d') : null
+  if (ctx) renderDetailChart(data[label], ctx)
+  if (dayDate) {
+    // @ts-ignore
+    dayDate.textContent = formatDate(label)
+  }
 }
 
 let drillState: { domain?: string } = {}
@@ -233,6 +263,7 @@ function renderDetailChart(entries: RawData[], canvas: CanvasRenderingContext2D 
   lastEntries = entries
   lastCanvas = canvas
   const aggregatedData = aggregateEntries(entries)
+  // @ts-ignore
   const { websites, values, totalSpentTime } = processAggregatedData(aggregatedData)
 
   destroyPreviousChart()
@@ -258,6 +289,7 @@ function aggregateEntries(entries: RawData[]): Record<string, number> {
     return raw
   }
   if (drillState.domain) {
+    // @ts-ignore
     const filtered = entries.filter((e) => getDomain(e.website || '') === drillState.domain)
     const pathAgg: Record<string, number> = {}
     filtered.forEach((entry) => {
@@ -281,6 +313,7 @@ function aggregateEntries(entries: RawData[]): Record<string, number> {
   } else {
     const aggregatedData = entries.reduce((acc: Record<string, number>, entry: RawData) => {
       const rawUrl = entry.website || 'unknown'
+      // @ts-ignore
       const key = getDomain(rawUrl)
       const value = getViewMode() === 'time' ? getSeconds(entry.time) : 1
       domainToUrlMap[key] = ensureFullUrl(rawUrl)
@@ -316,6 +349,7 @@ function createDetailChart(canvas: CanvasRenderingContext2D, websites: string[],
         legend: { display: false },
         tooltip: {
           callbacks: {
+            // @ts-ignore
             label: (context: any) => formatValue(context.raw),
           },
         },
@@ -324,15 +358,15 @@ function createDetailChart(canvas: CanvasRenderingContext2D, websites: string[],
   })
 }
 
-//The commeneted code below is for "Show All" functionality, disabled for now, not sure if I should remove it entirely.
-//const maxItems = undefined!
 function renderProgressBars(websites: string[], values: number[], totalSpentTime: number) {
   const entriesContainer = document.getElementById('entriesContainer') as HTMLDivElement
+  if (!entriesContainer) return
   entriesContainer.innerHTML = ''
 
   if (drillState.domain) {
     const domainLabel = document.createElement('span')
     domainLabel.classList.add('text-xl', 'font-bold')
+    // @ts-ignore
     domainLabel.textContent = `${formatKey(drillState.domain)}`
 
     const backBtn = document.createElement('button')
@@ -348,7 +382,7 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
     entriesContainer.appendChild(domainLabel)
   }
 
-  /*const entries = */ websites.map((website, index) => {
+  websites.map((website, index) => {
     const percentage = Math.round((values[index] / totalSpentTime) * 100)
     const entryContainer = createProgressEntry(website, values[index], percentage, index)
     if (!drillState.domain) {
@@ -361,38 +395,25 @@ function renderProgressBars(websites: string[], values: number[], totalSpentTime
     entriesContainer.appendChild(entryContainer)
     return entryContainer
   })
-  /*
-  if (websites.length > maxItems) {
-    const showMoreButton = document.createElement('button')
-    showMoreButton.textContent = 'Show All'
-    showMoreButton.style.marginRight = '1rem'
-    showMoreButton.addEventListener('click', () => {
-      entries.slice(maxItems).forEach((entry) => {
-        entry.classList.remove('hidden')
-      })
-      showMoreButton.style.display = 'none'
-    })
-    entriesContainer.appendChild(showMoreButton)
-  }
-  */
+
   const totalTime = document.getElementById('dayTotal') as HTMLDivElement
-  totalTime.textContent = formatValue(totalSpentTime) as string
+  if (totalTime) {
+    // @ts-ignore
+    totalTime.textContent = formatValue(totalSpentTime) as string
+  }
 }
 
 function createProgressEntry(website: string, value: number, percentage: number, index: number): HTMLDivElement {
   const entryContainer = document.createElement('div')
   entryContainer.classList.add('entryContainer')
-  /*
-  if (index >= maxItems) {
-    entryContainer.classList.add('hidden')
-  }
-  */
+
   const labelDiv = document.createElement('div')
   labelDiv.classList.add('entry-label')
   const labelText = document.createElement('a')
   labelText.classList.add('text-base')
   labelText.target = '_blank'
   labelText.href = domainToUrlMap[website]
+  // @ts-ignore
   labelText.textContent = formatKey(website)
   labelDiv.appendChild(labelText)
   entryContainer.appendChild(labelDiv)
@@ -407,6 +428,7 @@ function createProgressEntry(website: string, value: number, percentage: number,
   const valueText = document.createElement('div')
   valueText.classList.add('text-base')
   valueText.style.textAlign = 'center'
+  // @ts-ignore
   valueText.textContent = `${formatValue(value)} (${percentage}%)`
   entryContainer.appendChild(valueText)
 
@@ -420,6 +442,7 @@ const closeButton = document.getElementById('closeButton') as HTMLButtonElement
 
 type Action = 'open' | 'close'
 function togglePopup(action: Action) {
+  if (!overlay || !popup) return
   if (action === 'open') {
     overlay.classList.add('open')
     popup.classList.add('open')
@@ -429,6 +452,6 @@ function togglePopup(action: Action) {
   }
 }
 
-settingsIcon.addEventListener('click', () => togglePopup('open'))
-closeButton.addEventListener('click', () => togglePopup('close'))
-overlay.addEventListener('click', () => togglePopup('close'))
+if (settingsIcon) settingsIcon.addEventListener('click', () => togglePopup('open'))
+if (closeButton) closeButton.addEventListener('click', () => togglePopup('close'))
+if (overlay) overlay.addEventListener('click', () => togglePopup('close'))

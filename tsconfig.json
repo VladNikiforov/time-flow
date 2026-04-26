@@ -1,12 +1,10 @@
 {
+  "extends": "./.wxt/tsconfig.json",
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "lib": ["ES2019", "DOM"],
-    "strict": true,
     "moduleResolution": "bundler",
-    "outDir": "dist",
-    "sourceMap": true
-  },
-  "exclude": ["dist", "node_modules"]
+    "strict": true,
+    "skipLibCheck": true
+  }
 }

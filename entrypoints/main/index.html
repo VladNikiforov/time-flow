@@ -6,9 +6,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TimeFlow</title>
-    <link rel="icon" type="image/png" href="../assets/favicon/16.png" />
-    <link rel="stylesheet" href="./style.css" />
-
+    <link rel="icon" type="image/png" href="/favicon/16.png" />
     <style>
       html,
       body {
@@ -45,7 +43,7 @@
           <label for="sessions">sessions</label>
         </div>
         <!-- Settings SVG by Solar Icons https://www.svgrepo.com/svg/523734/settings -->
-        <img id="settingsIcon" class="icon mr-2 h-8 w-8" src="../assets/settings-icon.svg" />
+        <img id="settingsIcon" class="icon mr-2 h-8 w-8" src="/settings-icon.svg" />
       </div>
     </nav>
 
@@ -72,7 +70,6 @@
             <div id="dayTotal" class="mb-2 text-center text-4xl font-bold">Total Time</div>
             <div id="entriesContainer" class="flex-1 overflow-y-auto"></div>
           </div>
-          <!--<div class="border-text flex flex-[3] rounded-lg border p-4"><div id="timeline" class="h-full w-full"></div></div>-->
         </div>
 
         <canvas id="mainChart" class="h-full"></canvas>
@@ -132,6 +129,6 @@
       </div>
     </aside>
 
-    <script src="main.js" type="module"></script>
+    <script src="./main.ts" type="module"></script>
   </body>
 </html>
