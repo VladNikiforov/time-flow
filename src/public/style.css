@@ -1,0 +1,193 @@
+::selection {
+  background-color: var(--special-color-light);
+}
+
+h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+nav {
+  background-color: var(--background-color);
+  backdrop-filter: blur(1px);
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+select {
+  margin-right: 1rem;
+}
+
+a {
+  text-decoration: none;
+  color: var(--text-color);
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: var(--special-color-light);
+}
+
+#rightNav {
+  display: flex;
+  align-items: center;
+}
+
+#progressContainer {
+  border: 1px solid var(--text-color);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-y: auto;
+  height: 300px;
+}
+
+.gridDisplay {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--text-color);
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+}
+
+progress {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 1rem;
+  border-radius: 1rem;
+  background-color: var(--progress-bar-background);
+  overflow: hidden;
+}
+
+progress::-webkit-progress-bar {
+  background-color: var(--progress-bar-background);
+  border-radius: 1rem;
+}
+
+progress::-webkit-progress-value {
+  background-color: var(--progress-bar-fill);
+  border-radius: 1rem 0 0 1rem;
+}
+
+progress::-moz-progress-bar {
+  background-color: var(--progress-bar-fill);
+  border-radius: 1rem 0 0 1rem;
+}
+
+#overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #0000001a;
+  backdrop-filter: blur(1px);
+  z-index: 1;
+}
+
+#popup {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--background-color);
+  box-shadow: 0 4px 8px #00000033;
+  border-radius: 0.5rem;
+  width: 50vw;
+  height: 50vh;
+  padding: 2rem;
+  z-index: 2;
+}
+
+#themeSection {
+  font-weight: bold;
+  margin-left: 0.5rem;
+  display: inline;
+}
+
+#settingsIcon,
+#themeIcon {
+  cursor: pointer;
+  filter: invert(1);
+}
+
+#settingsIcon {
+  margin-right: 0.5rem;
+  width: 2rem;
+  height: 2rem;
+}
+
+#themeIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-bottom: -0.5rem;
+  transition: transform 0.5s ease;
+}
+
+#hueSlider {
+  cursor: pointer;
+  margin-bottom: -0.5rem;
+}
+
+#closeButton {
+  margin: 1rem;
+  display: block;
+}
+
+#dayInfo {
+  display: flex;
+}
+
+.hidden {
+  display: none;
+}
+
+#averageTime {
+  display: inline;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+#mainChartNav {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+#dayDate {
+  display: inline;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+#dayTotal {
+  font-size: 2rem;
+  text-align: center;
+}
+
+#dayStats {
+  flex: 1;
+}
+
+.navButtons {
+  display: inline;
+  margin-right: 1rem;
+}
+
+#hueValue {
+  width: 3rem;
+}
+
+#popup div {
+  margin-left: 1rem;
+  margin-top: 1rem;
+}
+
+.labelText,
+.valueText {
+  font-size: 1rem;
+}

@@ -1,0 +1,136 @@
+<!DOCTYPE html><!-- TimeFlow - browser extension; (c) 2024 VladNikiforov; GPLv3, see LICENSE file -->
+
+
+<html lang="en">
+  <head>
+    <script type="module" src="http://localhost:3000/@vite/client"></script>
+<script src="http://localhost:3000/@id/virtual:wxt-html-plugins" type="module"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeFlow</title>
+    <link rel="icon" type="image/png" href="/favicon/16.png">
+    <style>
+      html,
+      body {
+        font-family: monospace;
+        font-size: large;
+      }
+
+      label,
+      button,
+      input {
+        font-family: monospace;
+      }
+    </style>  <script type="module" crossorigin="" src="/chunks/reload-html-D9IQCBBx.js"></script>
+</head>
+
+  <body>
+    <nav class="bg-background sticky top-0 flex justify-between backdrop-blur-sm">
+      <h1>TimeFlow - Dashboard</h1>
+
+      <div class="select">
+        <input type="radio" name="viewRange" id="day" value="Day" checked>
+        <label for="day">Day</label>
+        <input type="radio" name="viewRange" id="week" value="Week">
+        <label for="week">Week</label>
+        <input type="radio" name="viewRange" id="month" value="Month">
+        <label for="month">Month</label>
+      </div>
+
+      <div class="flex items-center">
+        <div class="select">
+          <input type="radio" name="viewMode" id="time" value="time" checked>
+          <label for="time">time</label>
+          <input type="radio" name="viewMode" id="sessions" value="sessions">
+          <label for="sessions">sessions</label>
+        </div>
+        <!-- Settings SVG by Solar Icons https://www.svgrepo.com/svg/523734/settings -->
+        <img id="settingsIcon" class="icon mr-2 h-8 w-8" src="/settings-icon.svg">
+      </div>
+    </nav>
+
+    <main>
+      <div class="shrink-0">
+        <span class="mr-4 inline">
+          <button id="prevButton" class="px-4 py-2">&lt;</button>
+          <button id="nextButton" class="px-4 py-2">&gt;</button>
+        </span>
+        <span>
+          <span id="dayDate" class="inline text-lg font-bold"></span>
+
+          <span id="mainChartNav" class="my-4">
+            <span id="averageTime" class="inline text-xl font-bold"></span>
+            <span id="timeTrend" class="ml-4"></span>
+          </span>
+        </span>
+      </div>
+
+      <div class="flex flex-1 overflow-auto p-2">
+        <canvas id="detailChart" class="mr-4 h-full w-auto"></canvas>
+        <div id="dayStats" class="flex h-full w-full flex-col gap-4">
+          <div class="flex flex-1 flex-col overflow-hidden">
+            <div id="dayTotal" class="mb-2 text-center text-4xl font-bold">Total Time</div>
+            <div id="entriesContainer" class="flex-1 overflow-y-auto"></div>
+          </div>
+        </div>
+
+        <canvas id="mainChart" class="h-full"></canvas>
+      </div>
+    </main>
+
+    <aside>
+      <div id="overlay" class="fixed top-0 left-0 z-10 h-full w-full bg-black/10 backdrop-blur-sm"></div>
+      <div id="popup">
+        <div class="popup-header">
+          <h2>Settings</h2>
+          <button id="closeButton" class="close-btn">✕</button>
+        </div>
+
+        <div class="popup-body">
+          <section class="settingSection section-card">
+            <div class="section-head">
+              <h3>Appearance</h3>
+              <p class="muted">Adjust theme and accent for the UI</p>
+            </div>
+            <div class="sectionContent">
+              <div class="setting-row">
+                <label for="themeSelect" class="control">Theme</label>
+                <div id="themeSelect" class="select">
+                  <input type="radio" name="theme" id="theme-system" value="system">
+                  <label for="theme-system">System</label>
+                  <input type="radio" name="theme" id="theme-light" value="light">
+                  <label for="theme-light">Light</label>
+                  <input type="radio" name="theme" id="theme-dark" value="dark">
+                  <label for="theme-dark">Dark</label>
+                </div>
+              </div>
+
+              <div class="setting-row">
+                <label for="hueSlider" class="control">Accent Hue</label>
+                <div class="control">
+                  <input type="number" id="hueValue" min="0" max="360" class="hue-number">
+                  <input type="range" id="hueSlider" min="0" max="360" class="hue-range">
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="settingSection section-card">
+            <div class="section-head">
+              <h3>Data</h3>
+              <p class="muted">Export or import your tracked data</p>
+            </div>
+            <div class="sectionContent setting-row">
+              <div class="control">
+                <button id="exportData" class="btn">Export</button>
+                <button id="importData" class="btn">Import</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </aside>
+
+    <script src="http://localhost:3000/entrypoints/main/main.ts" type="module"></script>
+  </body>
+</html>

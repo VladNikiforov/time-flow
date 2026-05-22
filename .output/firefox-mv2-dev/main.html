@@ -1,0 +1,158 @@
+<!DOCTYPE html><!-- TimeFlow - browser extension; (c) 2024 VladNikiforov; GPLv3, see LICENSE file -->
+
+
+<html lang="en">
+  <head>
+    <script type="module" src="http://localhost:3000/@vite/client"></script>
+<script src="http://localhost:3000/@id/virtual:wxt-html-plugins" type="module"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeFlow Dashboard</title>
+    <link rel="icon" type="image/png" href="/favicon/16.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">  <script type="module" crossorigin="" src="/chunks/reload-html-D9IQCBBx.js"></script>
+</head>
+
+  <body>
+    <nav>
+      <div class="flex items-center gap-3">
+        <img src="/favicon/48.png" alt="TimeFlow" class="h-8 w-8">
+        <h1 class="text-xl">TimeFlow</h1>
+      </div>
+
+      <div class="select-group">
+        <input type="radio" name="viewRange" id="day" value="Day" checked>
+        <label for="day">Day</label>
+        <input type="radio" name="viewRange" id="week" value="Week">
+        <label for="week">Week</label>
+        <input type="radio" name="viewRange" id="month" value="Month">
+        <label for="month">Month</label>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div class="select-group">
+          <input type="radio" name="viewMode" id="time" value="time" checked>
+          <label for="time">Time</label>
+          <input type="radio" name="viewMode" id="sessions" value="sessions">
+          <label for="sessions">Sessions</label>
+        </div>
+        <button id="settingsIcon" class="p-2 bg-transparent border-0 hover:bg-black/5 dark:hover:bg-white/5">
+          <img class="h-6 w-6 dark:invert" src="/settings-icon.svg">
+        </button>
+      </div>
+    </nav>
+
+    <main>
+      <header class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <button id="prevButton" class="p-2 rounded-full">←</button>
+          <h2 id="dayDate" class="text-2xl font-bold">Today</h2>
+          <button id="nextButton" class="p-2 rounded-full">→</button>
+        </div>
+        
+        <div id="mainChartNav" class="flex flex-col items-end">
+          <span id="averageTime" class="text-lg font-semibold"></span>
+          <span id="timeTrend" class="text-sm"></span>
+        </div>
+      </header>
+
+      <div class="dashboard-grid">
+        <div class="stats-container">
+          <section class="card flex flex-col gap-4">
+            <h3 class="text-text-muted text-sm font-semibold uppercase tracking-wider">Total Time</h3>
+            <div id="dayTotal" class="text-5xl font-bold tracking-tight">00:00:00</div>
+          </section>
+
+          <section class="card flex-1 flex flex-col gap-4 min-h-0">
+            <h3 class="text-text-muted text-sm font-semibold uppercase tracking-wider">Breakdown</h3>
+            <div id="entriesContainer" class="flex-1 overflow-y-auto pr-2">
+              <!-- Entries will be injected here -->
+            </div>
+          </section>
+        </div>
+
+        <div class="chart-container">
+          <section class="card flex-1 flex flex-col gap-4">
+            <h3 class="text-text-muted text-sm font-semibold uppercase tracking-wider">Activity Distribution</h3>
+            <div class="flex-1 relative min-h-[300px]">
+              <canvas id="detailChart"></canvas>
+              <canvas id="mainChart" class="hidden"></canvas>
+            </div>
+          </section>
+
+          <section id="timelineSection" class="card flex flex-col gap-4">
+            <h3 class="text-text-muted text-sm font-semibold uppercase tracking-wider">Daily Activity Timeline</h3>
+            <div id="timelineContainer" class="timeline">
+              <!-- Timeline track will be injected here -->
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <section id="logsSection" class="hidden">
+        <div class="card bg-black border-green-900/30">
+          <h3 class="text-green-500 text-sm font-mono mb-2 uppercase tracking-widest">System Logs</h3>
+          <div id="logsContainer" class="logs-container">
+            <!-- Logs will be injected here -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <aside>
+      <div id="overlay"></div>
+      <div id="popup">
+        <div class="popup-header flex items-center justify-between mb-8">
+          <h2 class="text-2xl">Settings</h2>
+          <button id="closeButton" class="p-1 bg-transparent text-text-muted hover:text-text">✕</button>
+        </div>
+
+        <div class="popup-body flex flex-col gap-8">
+          <section>
+            <h4 class="text-sm font-bold uppercase text-text-muted mb-4">Appearance</h4>
+            <div class="flex flex-col gap-6">
+              <div class="flex items-center justify-between">
+                <span>Theme</span>
+                <div id="themeSelect" class="select-group">
+                  <input type="radio" name="theme" id="theme-system" value="system">
+                  <label for="theme-system">System</label>
+                  <input type="radio" name="theme" id="theme-light" value="light">
+                  <label for="theme-light">Light</label>
+                  <input type="radio" name="theme" id="theme-dark" value="dark">
+                  <label for="theme-dark">Dark</label>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                  <span>Accent Hue</span>
+                  <input type="number" id="hueValue" min="0" max="360" class="w-16 bg-background border border-border rounded px-2 py-1 text-sm">
+                </div>
+                <input type="range" id="hueSlider" min="0" max="360" class="w-full h-1.5 bg-border rounded-lg appearance-none cursor-pointer accent-blue-600">
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span>Show Developer Logs</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="showLogs" class="sr-only peer">
+                  <div class="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h4 class="text-sm font-bold uppercase text-text-muted mb-4">Data Management</h4>
+            <div class="flex gap-4">
+              <button id="exportData" class="flex-1">Export JSON</button>
+              <button id="importData" class="flex-1 bg-transparent border-border text-text hover:bg-background">Import JSON</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </aside>
+
+    <script src="http://localhost:3000/entrypoints/main/main.ts" type="module"></script>
+  </body>
+</html>
