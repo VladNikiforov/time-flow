@@ -131,7 +131,12 @@ progress::-moz-progress-bar {
 
 #hueSlider {
   cursor: pointer;
-  margin-bottom: -0.5rem;
+  height: 0.5rem;
+  -webkit-appearance: none;
+  appearance: none;
+  background: linear-gradient(to right, #e31c1c, #e3e31c, #1ce31c, #1ce3e3, #1c1ce3, #e31ce3, #e31c1c);
+  border-radius: 5px;
+  outline: none;
 }
 
 #closeButton {
@@ -190,4 +195,26 @@ progress::-moz-progress-bar {
 .labelText,
 .valueText {
   font-size: 1rem;
+}
+
+#hueSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #333;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#hueSlider::-moz-range-thumb {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #333;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
